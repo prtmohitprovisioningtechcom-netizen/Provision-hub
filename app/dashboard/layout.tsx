@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   BarChart3,
@@ -49,8 +49,18 @@ const sidebarLinks = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    await logout();
+    router.replace('/login');
+    router.refresh();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -114,10 +124,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Button
             variant="ghost"
             className="w-full justify-start gap-2 text-red-600"
-            onClick={() => logout()}
+            disabled={isLoggingOut}
+            onClick={handleLogout}
           >
             <LogOut className="h-4 w-4" />
-            Logout
+            {isLoggingOut ? 'Logging out...' : 'Logout'}
           </Button>
         </div>
       </aside>

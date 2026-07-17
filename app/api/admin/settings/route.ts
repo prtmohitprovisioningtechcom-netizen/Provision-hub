@@ -43,7 +43,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    revalidatePath('/');
+    revalidatePath('/', 'layout');
     revalidatePath('/search');
     revalidatePath('/dashboard', 'layout');
     revalidatePath('/admin', 'layout');

@@ -11,6 +11,10 @@ const BRAND_EVENT = 'platform-branding-updated';
 let cachedBranding: PlatformBranding | null = null;
 let brandingRequest: Promise<PlatformBranding> | null = null;
 
+export function initializePlatformBranding(branding: PlatformBranding) {
+  cachedBranding = branding;
+}
+
 async function loadBranding(): Promise<PlatformBranding> {
   if (cachedBranding) return cachedBranding;
 

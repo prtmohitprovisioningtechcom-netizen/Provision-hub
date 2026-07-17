@@ -55,8 +55,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [dispatch]);
 
   const logout = useCallback(async () => {
-    await axios.delete('/api/auth');
-    dispatch(clearUser());
+    try {
+      await axios.post('/api/auth/logout', undefined, { timeout: 10000 });
+    } catch {
+      // Always clear local auth state; protected routes will reject stale sessions.
+    } finally {
+      dispatch(clearUser());
+    }
   }, [dispatch]);
 
   const value = useMemo(

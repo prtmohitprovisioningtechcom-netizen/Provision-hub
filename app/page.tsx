@@ -14,7 +14,10 @@ import { getPlatformSettings } from '@/lib/platform-settings';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getPlatformSettings();
-  const title = settings?.seoConfig?.title || `${siteConfig.name} - Build Stunning Company Landing Pages`;
+  const brandName = settings?.themeConfig?.logoText || siteConfig.name;
+  const configuredTitle =
+    settings?.seoConfig?.title || `${brandName} - Build Stunning Company Landing Pages`;
+  const title = configuredTitle.replaceAll('TenantHub', brandName);
   const description = settings?.seoConfig?.description || siteConfig.description;
 
   return {
@@ -24,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       url: siteConfig.url,
-      siteName: siteConfig.name,
+      siteName: brandName,
       type: 'website',
     },
     twitter: {

@@ -40,12 +40,3 @@ export async function getAuthUser(): Promise<AuthPayload | null> {
 export function hasRole(userRole: UserRole, allowedRoles: UserRole[]): boolean {
   return allowedRoles.includes(userRole);
 }
-
-export const AUTH_COOKIE = 'auth-token';
-export const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-  maxAge: 60 * 60 * 24 * 7, // 7 days
-  path: '/',
-};

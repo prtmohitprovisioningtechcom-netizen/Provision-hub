@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { usePlatformBranding } from '@/hooks/usePlatformBranding';
 
 interface TestimonialsConfig {
   title: string;
@@ -17,6 +18,8 @@ interface TestimonialsConfig {
 }
 
 export function Testimonials({ config }: { config?: TestimonialsConfig }) {
+  const branding = usePlatformBranding();
+  const brandName = branding.logoText || 'TenantHub';
   const defaultTestimonials = [
     {
       name: 'Sarah Johnson',
@@ -77,7 +80,9 @@ export function Testimonials({ config }: { config?: TestimonialsConfig }) {
                       <Star key={j} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">&ldquo;{t.content}&rdquo;</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    &ldquo;{t.content.replaceAll('TenantHub', brandName)}&rdquo;
+                  </p>
                   <div className="flex items-center gap-3">
                     <Avatar>
                       <AvatarFallback>{t.initials}</AvatarFallback>

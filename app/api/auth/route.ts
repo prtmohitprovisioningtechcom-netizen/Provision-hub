@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { AuthService } from '@/server/services/auth.service';
 import { loginSchema, registerSchema, companyRegisterSchema, forgotPasswordSchema, resetPasswordSchema, adminRegisterSchema } from '@/lib/validators';
 import { apiSuccess, apiError, parseBody } from '@/server/utils/api-response';
-import { COOKIE_OPTIONS, AUTH_COOKIE } from '@/lib/auth';
+import { COOKIE_OPTIONS, AUTH_COOKIE } from '@/lib/auth-cookie';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
@@ -95,6 +95,10 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE() {
   const response = apiSuccess({ message: 'Logged out' });
-  response.cookies.delete(AUTH_COOKIE);
+  response.cookies.set(AUTH_COOKIE, '', {
+    ...COOKIE_OPTIONS,
+    maxAge: 0,
+    expires: new Date(0),
+  });
   return response;
 }

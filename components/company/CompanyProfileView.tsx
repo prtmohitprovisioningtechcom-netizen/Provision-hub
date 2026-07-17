@@ -20,6 +20,7 @@ import { ContactForm } from './ContactForm';
 import { ReviewForm } from './ReviewForm';
 import { CompanyLanding } from './CompanyLanding';
 import { formatCurrency, formatDate, cn } from '@/lib/utils';
+import { usePlatformBranding } from '@/hooks/usePlatformBranding';
 import {
   ICompany,
   IProduct,
@@ -97,9 +98,11 @@ export function CompanyProfileView({
   landingPage,
   gallery,
 }: CompanyProfileViewProps) {
+  const platformBranding = usePlatformBranding();
+  const platformName = platformBranding.logoText || 'TenantHub';
   const whatsappNumber = company.socialLinks?.whatsapp || company.phone;
   const whatsappUrl = whatsappNumber
-    ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${company.name}, I found you on TenantHub and would like to enquire.`)}`
+    ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${company.name}, I found you on ${platformName} and would like to enquire.`)}`
     : null;
 
   const galleryImages = gallery?.images?.map((img) => img.url) || [];
