@@ -3,7 +3,10 @@ import { AuthService } from '@/server/services/auth.service';
 import { loginSchema, registerSchema, companyRegisterSchema, forgotPasswordSchema, resetPasswordSchema, adminRegisterSchema } from '@/lib/validators';
 import { apiSuccess, apiError, parseBody } from '@/server/utils/api-response';
 import { COOKIE_OPTIONS, AUTH_COOKIE } from '@/lib/auth';
-import { rateLimit, getClientIp } from '@/lib/security';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
