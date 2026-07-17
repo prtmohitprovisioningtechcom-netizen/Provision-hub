@@ -75,8 +75,18 @@ export async function POST(request: NextRequest) {
 
     return apiError('Invalid action');
   } catch (error) {
+    console.error('Authentication API error:', error);
     const message = error instanceof Error ? error.message : 'Authentication failed';
-    return apiError(message, 400);
+    const isDatabaseError =
+      error instanceof Error &&
+      (error.name.includes('Mongo') ||
+        error.name.includes('Mongoose') ||
+        error.message.includes('MONGODB_URI'));
+
+    return apiError(
+      isDatabaseError ? 'Database is temporarily unavailable' : message,
+      isDatabaseError ? 503 : 400,
+    );
   }
 }
 

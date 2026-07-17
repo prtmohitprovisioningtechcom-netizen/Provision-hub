@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     }
     return apiSuccess(settings);
   } catch (error) {
+    console.error('Failed to fetch platform settings:', error);
     return apiError('Failed to fetch settings', 500);
   }
 }
@@ -43,6 +44,7 @@ export async function PUT(request: NextRequest) {
 
     return apiSuccess(settings);
   } catch (error) {
+    console.error('Failed to update platform settings:', error);
     return apiError('Failed to update settings', 500);
   }
 }
