@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { authenticateRequest } from '@/server/middleware/auth';
 import { apiSuccess, apiError } from '@/server/utils/api-response';
 import { connectDB } from '@/lib/mongodb';
@@ -41,6 +42,11 @@ export async function PUT(request: NextRequest) {
         { new: true }
       );
     }
+
+    revalidatePath('/');
+    revalidatePath('/search');
+    revalidatePath('/dashboard', 'layout');
+    revalidatePath('/admin', 'layout');
 
     return apiSuccess(settings);
   } catch (error) {
