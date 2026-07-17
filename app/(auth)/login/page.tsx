@@ -45,7 +45,6 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <BrandLogo
-            showText={false}
             className="mx-auto mb-4"
             imageClassName="h-12 max-w-40"
             iconClassName="h-12 w-12"
