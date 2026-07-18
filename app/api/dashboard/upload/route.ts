@@ -22,17 +22,18 @@ export async function POST(request: NextRequest) {
     if (contentType.includes('multipart/form-data')) {
       const form = await request.formData();
       const file = form.get('file');
-      if (!(file instanceof File)) {
+      if (!file || typeof file === 'string' || !('arrayBuffer' in (file as any))) {
         return apiError('Please upload an image file', 400);
       }
-      mimeType = file.type || 'image/jpeg';
+      const actualFile = file as File;
+      mimeType = actualFile.type || 'image/jpeg';
       if (!ALLOWED_TYPES.has(mimeType.toLowerCase())) {
         return apiError('Please upload a valid PNG, JPG, WebP, or GIF image', 400);
       }
-      if (file.size > MAX_IMAGE_BYTES) {
+      if (actualFile.size > MAX_IMAGE_BYTES) {
         return apiError('Image must be smaller than 2.5MB after compression', 413);
       }
-      buffer = Buffer.from(await file.arrayBuffer());
+      buffer = Buffer.from(await actualFile.arrayBuffer());
     } else {
       // Legacy JSON base64 support (small images only)
       const { image } = (await request.json()) as { image?: unknown };
@@ -51,11 +52,25 @@ export async function POST(request: NextRequest) {
       buffer = Buffer.from(base64, 'base64');
     }
 
-    const uploaded = await uploadBufferToCloudinary(
-      buffer,
-      mimeType,
-      `multi-tenant/landing-pages/${auth.companyId}`,
-    );
+    let uploaded: { url: string; publicId?: string };
+    
+    // Check if Cloudinary is configured
+    if (
+      process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET
+    ) {
+      uploaded = await uploadBufferToCloudinary(
+        buffer,
+        mimeType,
+        `multi-tenant/landing-pages/${auth.companyId}`,
+      );
+    } else {
+      // Fallback: If Cloudinary is not configured, store as base64 Data URI
+      // This allows publishing to work immediately without setting up external storage
+      const dataUri = `data:${mimeType};base64,${buffer.toString('base64')}`;
+      uploaded = { url: dataUri };
+    }
 
     return apiSuccess(uploaded);
   } catch (error) {
