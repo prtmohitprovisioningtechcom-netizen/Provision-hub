@@ -123,13 +123,13 @@ export function CompanyProfileView({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Banner */}
-      <div className="relative h-64 sm:h-80 md:h-96 bg-gradient-to-r from-indigo-900 via-purple-900 to-black overflow-hidden">
+      <div className="relative h-72 sm:h-96 md:h-[28rem] bg-gray-900 overflow-hidden">
         {company.banner && (
-          <Image src={company.banner} alt={company.name} fill className="object-cover opacity-80 mix-blend-overlay" priority />
+          <Image src={company.banner} alt={company.name} fill className="object-cover opacity-60" priority />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-50/100 dark:from-gray-950/100 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-50 dark:from-gray-950 via-transparent to-black/60" />
         <div className="absolute top-6 left-6 z-10">
-          <Link href="/search" className="flex items-center gap-2 text-sm font-medium text-white/90 hover:text-white bg-black/20 hover:bg-black/40 px-4 py-2 rounded-full backdrop-blur-md transition-all">
+          <Link href="/search" className="flex items-center gap-2 text-sm font-medium text-white/90 hover:text-white bg-black/30 hover:bg-black/50 px-5 py-2.5 rounded-full backdrop-blur-md transition-all shadow-lg border border-white/10">
             ← Back to search
           </Link>
         </div>
@@ -138,46 +138,46 @@ export function CompanyProfileView({
       <div className="mx-auto max-w-7xl px-4 relative z-10">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="relative -mt-32 mb-12 flex flex-col sm:flex-row gap-8 items-start sm:items-end bg-white/70 dark:bg-gray-900/70 p-6 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-xl border border-white/20 dark:border-gray-800/50"
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="relative -mt-40 mb-16 flex flex-col sm:flex-row gap-8 items-start sm:items-end bg-white/80 dark:bg-gray-900/80 p-8 sm:p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-2xl border border-white/40 dark:border-gray-700/50"
         >
-          <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-2xl border-4 border-white/50 bg-white shadow-2xl dark:border-gray-800/50 dark:bg-gray-900">
+          <div className="relative h-40 w-40 shrink-0 overflow-hidden rounded-3xl border-4 border-white/80 bg-white shadow-2xl dark:border-gray-800/80 dark:bg-gray-900 transform hover:scale-105 transition-transform duration-500">
             {company.logo ? (
               <Image src={company.logo} alt={company.name} fill className="object-cover" />
             ) : (
-              <div className="flex h-full items-center justify-center bg-indigo-100 text-3xl font-bold text-indigo-600">
+              <div className="flex h-full items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 text-5xl font-black text-indigo-600">
                 {company.name.charAt(0)}
               </div>
             )}
           </div>
-          <div className="flex-1 pb-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+          <div className="flex-1 pb-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                 {company.name}
               </h1>
               {company.isVerified && (
-                <BadgeCheck className="h-6 w-6 text-blue-500" aria-label="Verified" />
+                <BadgeCheck className="h-8 w-8 text-blue-500" aria-label="Verified" />
               )}
             </div>
-            <p className="text-indigo-600 font-medium">{company.category}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-gray-500">
-              <span className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            <p className="mt-1 text-lg font-semibold text-indigo-600 uppercase tracking-wider">{company.category}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-gray-600 dark:text-gray-400 font-medium">
+              <span className="flex items-center gap-1.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 px-3 py-1 rounded-full">
+                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
                 {company.rating.toFixed(1)} ({company.reviewCount} reviews)
               </span>
-              <span className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
+              <span className="flex items-center gap-1.5">
+                <MapPin className="h-4 w-4 text-gray-400" />
                 {company.address.city}, {company.address.state}, {company.address.country}
               </span>
             </div>
           </div>
-          <div className="flex gap-2 pb-2">
+          <div className="flex gap-3 pb-3">
             {whatsappUrl && (
-              <Button asChild variant="gradient" size="lg">
+              <Button asChild className="bg-[#25D366] hover:bg-[#1ebd5b] text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 rounded-full px-6" size="lg">
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-5 w-5" />
+                  <MessageCircle className="h-5 w-5 mr-2" />
                   WhatsApp
                 </a>
               </Button>

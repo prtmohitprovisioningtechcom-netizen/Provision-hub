@@ -70,6 +70,20 @@ export default function WebsitePage() {
     );
   };
 
+  const handleImageUpload = (id: string, file: File | null) => {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image size must be less than 2MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      updateSection(id, 'image', base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSave = async () => {
     if (!companyId) return;
     setSaving(true);
@@ -182,6 +196,32 @@ export default function WebsitePage() {
                     onChange={(e) => updateSection(section.id, 'content', e.target.value)}
                   />
                 </div>
+                {['hero', 'about'].includes(section.type) && (
+                  <div>
+                    <Label>Background/Hero Image</Label>
+                    {section.image && (
+                      <div className="mt-2 mb-4 relative h-32 w-64 overflow-hidden rounded-md border">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={section.image} alt="Preview" className="h-full w-full object-cover" />
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="absolute top-2 right-2 h-6 w-6 p-0"
+                          onClick={() => updateSection(section.id, 'image', '')}
+                        >
+                          &times;
+                        </Button>
+                      </div>
+                    )}
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="mt-1"
+                      onChange={(e) => handleImageUpload(section.id, e.target.files?.[0] || null)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Upload a high-quality image (Max 2MB)</p>
+                  </div>
+                )}
               </CardContent>
             )}
           </Card>

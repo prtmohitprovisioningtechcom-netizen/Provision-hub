@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { ILandingPageSection, IProduct, IService } from '@/types';
 import { ContactForm } from './ContactForm';
 import { cn, formatCurrency } from '@/lib/utils';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Eye } from 'lucide-react';
 import { useState } from 'react';
 
 interface CompanyLandingProps {
@@ -78,30 +78,53 @@ export function CompanyLanding({
               <motion.section
                 key={section.id}
                 {...fadeUp}
-                className="relative overflow-hidden rounded-2xl bg-linear-to-br from-indigo-600 to-purple-700 text-white"
-                style={{ background: `linear-gradient(135deg, ${primaryColor}, #8b5cf6)` }}
+                className="relative overflow-hidden min-h-[600px] flex items-center bg-gray-900"
               >
-                <div className="grid gap-8 p-8 md:grid-cols-2 md:p-12 lg:p-16">
-                  <div className="flex flex-col justify-center">
-                    <h2 className="text-3xl font-bold md:text-4xl lg:text-5xl">{section.title}</h2>
-                    {section.subtitle && (
-                      <p className="mt-4 text-lg text-white/90">{section.subtitle}</p>
-                    )}
-                    {section.content && (
-                      <p className="mt-4 text-white/80">{section.content}</p>
-                    )}
+                {/* Background image or gradient */}
+                {section.image ? (
+                  <div className="absolute inset-0">
+                    <Image
+                      src={section.image}
+                      alt={section.title}
+                      fill
+                      className="object-cover opacity-40"
+                      priority={index === 0}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent" />
                   </div>
-                  {section.image && (
-                    <div className="relative aspect-video overflow-hidden rounded-xl">
-                      <Image
-                        src={section.image}
-                        alt={section.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        className="object-cover"
-                        priority={index === 0}
-                      />
-                    </div>
+                ) : (
+                  <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${primaryColor}, #1e1b4b)` }} />
+                )}
+
+                <div className="relative z-10 mx-auto max-w-5xl px-6 py-20 text-center text-white">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                  >
+                    <h2 className="text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
+                      {section.title}
+                    </h2>
+                  </motion.div>
+                  {section.subtitle && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.4 }}
+                      className="mx-auto mt-6 max-w-2xl text-xl text-gray-200 font-light"
+                    >
+                      {section.subtitle}
+                    </motion.p>
+                  )}
+                  {section.content && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.6 }}
+                      className="mx-auto mt-4 max-w-2xl text-md text-gray-400"
+                    >
+                      {section.content}
+                    </motion.p>
                   )}
                 </div>
               </motion.section>
@@ -109,26 +132,33 @@ export function CompanyLanding({
 
           case 'about':
             return (
-              <motion.section key={section.id} {...fadeUp} className="py-16 px-4">
-                <div className="mx-auto max-w-6xl grid gap-10 md:grid-cols-2 items-center">
-                  <div>
-                    <h2 className="text-3xl font-bold mb-4">{section.title}</h2>
+              <motion.section key={section.id} {...fadeUp} className="py-24 px-4 bg-white dark:bg-gray-950 relative overflow-hidden">
+                {/* Decorative blob */}
+                <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-50 dark:bg-indigo-950/20 rounded-full blur-3xl -z-10 transform -translate-x-1/2 -translate-y-1/2" />
+                <div className="mx-auto max-w-7xl grid gap-16 md:grid-cols-2 items-center">
+                  <div className="space-y-6">
+                    <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+                      {section.title}
+                    </h2>
                     {section.subtitle && (
-                      <p className="text-indigo-600 font-medium mb-4">{section.subtitle}</p>
+                      <p className="text-lg font-semibold uppercase tracking-widest" style={{ color: primaryColor }}>
+                        {section.subtitle}
+                      </p>
                     )}
-                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
                       {section.content}
                     </p>
                   </div>
                   {section.image && (
-                    <div className="relative aspect-4/3 overflow-hidden rounded-2xl">
+                    <div className="relative aspect-[4/5] md:aspect-square overflow-hidden rounded-3xl shadow-2xl group">
                       <Image
                         src={section.image}
                         alt={section.title}
                         fill
                         sizes="(max-width: 768px) 100vw, 50vw"
-                        className="object-cover"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                       />
+                      <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/10 dark:ring-white/10" />
                     </div>
                   )}
                 </div>
@@ -140,16 +170,16 @@ export function CompanyLanding({
               <motion.section
                 key={section.id}
                 {...fadeUp}
-                className="py-16 px-4 bg-gray-50 dark:bg-gray-900/50"
+                className="py-24 px-4 bg-gray-50 dark:bg-gray-900/40 relative"
               >
-                <div className="mx-auto max-w-6xl">
-                  <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold">{section.title}</h2>
+                <div className="mx-auto max-w-7xl">
+                  <div className="text-center mb-16 space-y-4">
+                    <h2 className="text-4xl font-extrabold tracking-tight">{section.title}</h2>
                     {section.subtitle && (
-                      <p className="mt-2 text-gray-500">{section.subtitle}</p>
+                      <p className="mx-auto max-w-2xl text-xl text-gray-500">{section.subtitle}</p>
                     )}
                   </div>
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                     {(items.length
                       ? items.map((item) => ({
                           name: readField(item, 'name'),
@@ -164,16 +194,22 @@ export function CompanyLanding({
                     ).map((item, i) => (
                         <motion.div
                           key={i}
-                          initial={{ opacity: 0, y: 16 }}
+                          initial={{ opacity: 0, y: 20 }}
                           whileInView={{ opacity: 1, y: 0 }}
                           viewport={{ once: true }}
                           transition={{ delay: i * 0.1 }}
-                          className="rounded-xl border bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+                          className="group relative rounded-3xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl dark:border-gray-800 dark:bg-gray-950"
                         >
-                          <h3 className="font-semibold text-lg">{item.name}</h3>
-                          <p className="mt-2 text-sm text-gray-500 line-clamp-3">{item.description}</p>
+                          <div className="mb-4 h-12 w-12 rounded-xl flex items-center justify-center text-white" style={{ background: primaryColor }}>
+                            {/* Abstract icon based on index */}
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={i % 2 === 0 ? "M13 10V3L4 14h7v7l9-11h-7z" : "M5 13l4 4L19 7"} />
+                            </svg>
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors">{item.name}</h3>
+                          <p className="mt-4 text-gray-600 dark:text-gray-400 line-clamp-3 leading-relaxed">{item.description}</p>
                           {item.price > 0 && (
-                            <p className="mt-4 font-bold" style={{ color: primaryColor }}>
+                            <p className="mt-6 text-2xl font-black" style={{ color: primaryColor }}>
                               {formatCurrency(item.price)}
                             </p>
                           )}
@@ -186,15 +222,15 @@ export function CompanyLanding({
 
           case 'products':
             return (
-              <motion.section key={section.id} {...fadeUp} className="py-16 px-4">
-                <div className="mx-auto max-w-6xl">
-                  <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold">{section.title}</h2>
+              <motion.section key={section.id} {...fadeUp} className="py-24 px-4 relative">
+                <div className="mx-auto max-w-7xl">
+                  <div className="text-center mb-16 space-y-4">
+                    <h2 className="text-4xl font-extrabold tracking-tight">{section.title}</h2>
                     {section.subtitle && (
-                      <p className="mt-2 text-gray-500">{section.subtitle}</p>
+                      <p className="mx-auto max-w-2xl text-xl text-gray-500">{section.subtitle}</p>
                     )}
                   </div>
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                     {(items.length
                       ? items.map((item) => ({
                           name: readField(item, 'name'),
@@ -214,41 +250,42 @@ export function CompanyLanding({
                     ).map((product, i) => (
                         <motion.div
                           key={i}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
+                          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                          whileInView={{ opacity: 1, scale: 1, y: 0 }}
                           viewport={{ once: true }}
                           transition={{ delay: i * 0.08 }}
-                          className="group overflow-hidden rounded-xl border bg-white dark:border-gray-800 dark:bg-gray-900"
+                          className="group flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                         >
-                          <div className="relative aspect-square bg-gray-100 dark:bg-gray-800">
+                          <div className="relative aspect-[4/5] bg-gray-100 dark:bg-gray-900 overflow-hidden">
                             {product.images?.[0] ? (
                               <Image
                                 src={product.images[0]}
                                 alt={product.name}
                                 fill
                                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                                className="object-cover"
+                                className="object-cover transition-transform duration-500 group-hover:scale-110"
                               />
                             ) : (
                               <div className="flex h-full items-center justify-center text-gray-400">
                                 No image
                               </div>
                             )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                           </div>
-                          <div className="p-4">
-                            <h3 className="font-medium truncate">{product.name}</h3>
-                            <div className="mt-2 flex items-center gap-2">
+                          <div className="p-6 flex-1 flex flex-col justify-between">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">{product.name}</h3>
+                            <div className="mt-4 flex flex-wrap items-baseline gap-2">
                               {product.offerPrice ? (
                                 <>
-                                  <span className="font-bold" style={{ color: primaryColor }}>
+                                  <span className="text-2xl font-black" style={{ color: primaryColor }}>
                                     {formatCurrency(product.offerPrice)}
                                   </span>
-                                  <span className="text-sm text-gray-400 line-through">
+                                  <span className="text-sm font-medium text-gray-400 line-through">
                                     {formatCurrency(product.price)}
                                   </span>
                                 </>
                               ) : (
-                                <span className="font-bold" style={{ color: primaryColor }}>
+                                <span className="text-2xl font-black" style={{ color: primaryColor }}>
                                   {formatCurrency(product.price)}
                                 </span>
                               )}
@@ -266,27 +303,30 @@ export function CompanyLanding({
               <motion.section
                 key={section.id}
                 {...fadeUp}
-                className="py-16 px-4 bg-gray-50 dark:bg-gray-900/50"
+                className="py-24 px-4 bg-gray-950 text-white relative"
               >
-                <div className="mx-auto max-w-6xl">
-                  <h2 className="text-3xl font-bold text-center mb-12">{section.title}</h2>
-                  <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="mx-auto max-w-7xl">
+                  <h2 className="text-4xl font-extrabold text-center mb-16">{section.title}</h2>
+                  <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
                     {(section.images || []).map((img, i) => (
                       <motion.div
                         key={i}
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: i * 0.05 }}
-                        className="relative aspect-square overflow-hidden rounded-xl"
+                        className="relative overflow-hidden rounded-2xl break-inside-avoid group cursor-pointer"
                       >
-                        <Image
-                          src={img}
-                          alt={`Gallery ${i + 1}`}
-                          fill
-                          sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          className="object-cover hover:scale-105 transition-transform duration-300"
+                        {/* Using standard img for masonry to natural aspect ratio */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img 
+                          src={img} 
+                          alt={`Gallery ${i + 1}`} 
+                          className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1" 
                         />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                          <Eye className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transform scale-50 group-hover:scale-100 transition-all duration-300 delay-100" />
+                        </div>
                       </motion.div>
                     ))}
                   </div>
@@ -296,23 +336,34 @@ export function CompanyLanding({
 
           case 'testimonials':
             return (
-              <motion.section key={section.id} {...fadeUp} className="py-16 px-4">
-                <div className="mx-auto max-w-6xl">
-                  <h2 className="text-3xl font-bold text-center mb-12">{section.title}</h2>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <motion.section key={section.id} {...fadeUp} className="py-24 px-4 bg-indigo-50/50 dark:bg-indigo-950/10">
+                <div className="mx-auto max-w-7xl">
+                  <h2 className="text-4xl font-extrabold text-center mb-16">{section.title}</h2>
+                  <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                     {items.map((item, i) => (
                       <motion.blockquote
                         key={i}
-                        initial={{ opacity: 0, y: 16 }}
+                        initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: i * 0.1 }}
-                        className="rounded-xl border p-6 dark:border-gray-800"
+                        className="relative rounded-3xl bg-white p-8 shadow-xl dark:bg-gray-900"
                       >
-                        <p className="text-gray-600 dark:text-gray-400 italic">
-                          &ldquo;{item.quote || item.comment}&rdquo;
+                        <div className="absolute -top-4 -left-2 text-6xl text-indigo-200 dark:text-indigo-900/40 font-serif">
+                          &ldquo;
+                        </div>
+                        <p className="relative z-10 text-lg text-gray-700 dark:text-gray-300 italic font-medium leading-relaxed">
+                          {item.quote || item.comment}
                         </p>
-                        <footer className="mt-4 font-medium">{item.name || item.author}</footer>
+                        <footer className="mt-8 flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                            {(item.name || item.author || 'A').charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-900 dark:text-white">{item.name || item.author}</p>
+                            <p className="text-sm text-gray-500">Verified Customer</p>
+                          </div>
+                        </footer>
                       </motion.blockquote>
                     ))}
                   </div>
