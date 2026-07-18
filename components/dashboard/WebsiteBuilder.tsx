@@ -1110,7 +1110,7 @@ export default function WebsiteBuilder() {
                         {selected.type === 'services' ? 'Service cards' : 'Product cards'}
                       </Label>
                       <p className="mt-1 text-xs text-gray-500">
-                        Add custom cards here, or leave empty to use items from the dashboard catalog automatically.
+                        Add custom cards here to showcase your {selected.type === 'services' ? 'services' : 'products'}.
                       </p>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => addItem(selected)}>
@@ -1232,7 +1232,7 @@ export default function WebsiteBuilder() {
 
                   {!selected.items?.length && (
                     <div className="rounded-xl border border-dashed p-6 text-center text-sm text-gray-500">
-                      Dashboard catalog items will be displayed automatically.
+                      No items added yet. Click Add {selected.type === 'services' ? 'service' : 'product'} to start.
                     </div>
                   )}
                 </div>
@@ -1247,7 +1247,7 @@ export default function WebsiteBuilder() {
                       </Label>
                       <p className="mt-1 text-xs text-gray-500">
                         {selected.type === 'blogs'
-                          ? 'Add custom cards, or leave empty to show published posts from Dashboard → Blogs.'
+                          ? 'Add custom cards to feature your blog posts.'
                           : 'Highlight the benefits that make your company stand out.'}
                       </p>
                     </div>

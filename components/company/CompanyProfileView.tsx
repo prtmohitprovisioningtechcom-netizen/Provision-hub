@@ -132,17 +132,7 @@ export function CompanyProfileView({
     landingPage.sections.some((s) => s.isVisible);
 
   const enrichedSections = hasLanding
-    ? landingPage!.sections!.map((section) => {
-        if (
-          section.type === 'gallery' &&
-          !section.items?.length &&
-          !section.images?.length &&
-          galleryItems.length
-        ) {
-          return { ...section, items: galleryItems };
-        }
-        return section;
-      })
+    ? landingPage!.sections!
     : [];
   const navbarSection = enrichedSections.find(
     (section) => section.type === 'navbar',

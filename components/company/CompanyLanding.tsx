@@ -5,6 +5,15 @@ import { motion } from 'framer-motion';
 import { IBlog, ILandingPageSection, IProduct, IService } from '@/types';
 import { ContactForm } from './ContactForm';
 import { NewsletterForm } from './NewsletterForm';
+import { ReviewForm } from './ReviewForm';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { cn, formatCurrency } from '@/lib/utils';
 import {
   ArrowUpRight,
@@ -80,15 +89,16 @@ export function CompanyLanding({
   rating = 0,
   reviewCount = 0,
 }: CompanyLandingProps) {
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
   const visibleSections = [...sections]
     .filter((section) => {
       if (!section.isVisible) return false;
       if (section.type === 'navbar') return false;
       if (section.type === 'services') {
-        return Boolean(section.items?.length || services.length);
+        return Boolean(section.items?.length);
       }
       if (section.type === 'products') {
-        return Boolean(section.items?.length || products.length);
+        return Boolean(section.items?.length);
       }
       if (section.type === 'gallery') {
         return Boolean(section.items?.length || section.images?.length);
@@ -96,7 +106,7 @@ export function CompanyLanding({
       if (section.type === 'why-choose-us') {
         return Boolean(section.items?.length);
       }
-      if (section.type === 'blogs') return Boolean(section.items?.length || blogs.length);
+      if (section.type === 'blogs') return Boolean(section.items?.length);
       if (section.type === 'faq' || section.type === 'testimonials') {
         return Boolean(section.items?.length);
       }
@@ -332,19 +342,12 @@ export function CompanyLanding({
                     )}
                   </div>
                   <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                    {(items.length
-                      ? items.map((item) => ({
+                    {items.map((item) => ({
                           name: readField(item, 'name'),
                           description: readField(item, 'description'),
                           price: readNumber(item, 'price'),
                           image: readField(item, 'image'),
-                        }))
-                      : services.map((service) => ({
-                          name: service.name,
-                          description: service.description,
-                          price: service.price,
-                          image: service.gallery?.[0] || '',
-                        }))
+                        })
                     ).map((item, i) => (
                         <motion.div
                           key={i}
@@ -396,8 +399,7 @@ export function CompanyLanding({
                     )}
                   </div>
                   <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                    {(items.length
-                      ? items.map((item) => ({
+                    {items.map((item) => ({
                           name: readField(item, 'name'),
                           description: readField(item, 'description'),
                           images: Array.isArray(item.images)
@@ -406,14 +408,7 @@ export function CompanyLanding({
                           price: readNumber(item, 'price'),
                           offerPrice:
                             item.offerPrice != null ? readNumber(item, 'offerPrice') : undefined,
-                        }))
-                      : products.map((product) => ({
-                          name: product.name,
-                          description: product.description,
-                          images: product.images,
-                          price: product.price,
-                          offerPrice: product.offerPrice,
-                        }))
+                        })
                     ).map((product, i) => (
                         <motion.div
                           key={i}
@@ -532,18 +527,7 @@ export function CompanyLanding({
           }
 
           case 'blogs': {
-            const blogItems = section.items?.length
-              ? items
-              : blogs.map((blog) => ({
-                  title: blog.title,
-                  description:
-                    blog.excerpt ||
-                    `${blog.content.replace(/<[^>]*>/g, '').slice(0, 180)}${
-                      blog.content.length > 180 ? '…' : ''
-                    }`,
-                  image: blog.featuredImage || '',
-                  link: '',
-                }));
+            const blogItems = items;
             return (
               <motion.section
                 key={section.id}
@@ -795,6 +779,32 @@ export function CompanyLanding({
             return null;
         }
       })}
+
+      {/* Floating Review Button */}
+      <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+        <DialogTrigger asChild>
+          <button 
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full px-5 py-3.5 text-sm font-bold text-white shadow-xl transition-all hover:scale-105"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <Star className="h-5 w-5 fill-white" />
+            Rate Us
+          </button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Write a Review</DialogTitle>
+            <DialogDescription>
+              Share your experience with {companyName}. Your review helps others!
+            </DialogDescription>
+          </DialogHeader>
+          <ReviewForm 
+            companyId={companyId} 
+            onSuccess={() => setIsReviewOpen(false)} 
+            className="mt-4" 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
