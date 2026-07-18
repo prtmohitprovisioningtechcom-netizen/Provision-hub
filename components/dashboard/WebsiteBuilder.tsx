@@ -489,14 +489,44 @@ export default function WebsiteBuilder() {
     }
     setSaving(true);
     try {
+      const cleanBase64 = (obj: any): any => {
+        if (!obj) return obj;
+        if (typeof obj === 'string') {
+          if (obj.startsWith('data:image/') && obj.length > 50000) {
+            return ''; // Strip out large base64 images to prevent 413 error
+          }
+          return obj;
+        }
+        if (Array.isArray(obj)) return obj.map(cleanBase64);
+        if (typeof obj === 'object') {
+          const newObj: any = {};
+          for (const key in obj) {
+            newObj[key] = cleanBase64(obj[key]);
+          }
+          return newObj;
+        }
+        return obj;
+      };
+
       const normalized = [...sections]
         .sort((a, b) => a.order - b.order)
-        .map((section, order) => ({ ...section, order }));
+        .map((section, order) => cleanBase64({ ...section, order }));
 
       const payloadSize = JSON.stringify({ sections: normalized }).length;
       if (payloadSize > 3_200_000) {
+        // Find which section is taking up the most space
+        let largestSection = normalized[0];
+        let maxLen = 0;
+        for (const sec of normalized) {
+          const len = JSON.stringify(sec).length;
+          if (len > maxLen) {
+            maxLen = len;
+            largestSection = sec;
+          }
+        }
         toast.error(
-          'Page content is too large to publish. Remove some gallery images and try again.',
+          `Page content is too large to publish (Current size: ${(payloadSize / 1024 / 1024).toFixed(2)}MB). The "${largestSection.type}" section is taking up the most space (${(maxLen / 1024 / 1024).toFixed(2)}MB). Please remove and re-upload its images.`,
+          { duration: 8000 }
         );
         setSections(normalized);
         return;
