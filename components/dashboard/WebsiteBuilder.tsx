@@ -6,7 +6,8 @@ import {
   ArrowDown, 
   ArrowUp, 
   Check, 
-  ChevronRight, 
+  ChevronRight,
+  ChevronLeft,
   Eye, 
   EyeOff, 
   Globe, 
@@ -446,45 +447,47 @@ export default function WebsiteBuilder() {
       <div className="grid h-[calc(100vh-140px)] gap-5 lg:grid-cols-[400px_minmax(0,1fr)]">
         {/* Left Side: Editor */}
         <div className="flex h-full flex-col gap-5 overflow-y-auto pr-2 pb-10">
-          <Card>
-            <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex min-w-0 items-center gap-4">
-            <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-100 text-xl font-bold text-indigo-600 dark:bg-gray-900">
-              {companyLogo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={companyLogo} alt="" className="h-full w-full object-cover" />
-              ) : (
-                companyName.charAt(0) || 'C'
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="font-semibold">Navbar branding</p>
-              <p className="truncate text-sm text-gray-500">
-                {companyName || 'Your company'} · Upload the logo shown on your public website.
-              </p>
-            </div>
-          </div>
-          <Label
-            htmlFor="navbar-logo-upload"
-            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
-          >
-            {uploading === 'navbar-logo' ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <ImagePlus className="h-4 w-4" />
-            )}
-            {companyLogo ? 'Replace logo' : 'Upload logo'}
-            <Input
-              id="navbar-logo-upload"
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/gif"
-              className="sr-only"
-              disabled={uploading !== null}
-              onChange={(event) => handleNavbarLogo(event.target.files?.[0])}
-            />
-          </Label>
-        </CardContent>
-      </Card>
+          {!selected ? (
+            <>
+              <Card>
+                <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-100 text-xl font-bold text-indigo-600 dark:bg-gray-900">
+                      {companyLogo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={companyLogo} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        companyName.charAt(0) || 'C'
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold">Navbar branding</p>
+                      <p className="truncate text-sm text-gray-500">
+                        {companyName || 'Your company'} · Logo shown on public site.
+                      </p>
+                    </div>
+                  </div>
+                  <Label
+                    htmlFor="navbar-logo-upload"
+                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+                  >
+                    {uploading === 'navbar-logo' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ImagePlus className="h-4 w-4" />
+                    )}
+                    {companyLogo ? 'Replace logo' : 'Upload logo'}
+                    <Input
+                      id="navbar-logo-upload"
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      className="sr-only"
+                      disabled={uploading !== null}
+                      onChange={(event) => handleNavbarLogo(event.target.files?.[0])}
+                    />
+                  </Label>
+                </CardContent>
+              </Card>
 
           <Card className="overflow-hidden">
             <div className="border-b bg-gray-50 px-4 py-3 dark:bg-gray-900">
@@ -531,13 +534,28 @@ export default function WebsiteBuilder() {
                 ))}
             </CardContent>
           </Card>
-
-          {selected ? (
-            <Card className="overflow-hidden">
-            <div className="flex flex-col gap-3 border-b bg-gray-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:bg-gray-900">
+          </>
+          ) : (
+            <Card className="overflow-hidden border-indigo-200 shadow-xl dark:border-indigo-800">
+            <div className="flex items-center gap-3 border-b bg-indigo-50/50 px-4 py-3 dark:bg-indigo-950/20">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedId(null)}
+                className="h-8 gap-1 pl-1.5 text-gray-600 hover:bg-gray-200/50 dark:text-gray-400"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Back
+              </Button>
+              <div className="h-4 w-px bg-gray-300 dark:bg-gray-700" />
+              <span className="text-sm font-semibold capitalize text-indigo-900 dark:text-indigo-300">
+                Edit {selected.type} section
+              </span>
+            </div>
+            <div className="flex flex-col gap-3 border-b bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:bg-gray-900">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold capitalize">{selected.type} section</h2>
+                  <h2 className="text-lg font-bold capitalize">{selected.title || selected.type}</h2>
                   <span
                     className={cn(
                       'rounded-full px-2 py-0.5 text-xs font-medium',
@@ -581,8 +599,7 @@ export default function WebsiteBuilder() {
                 </Button>
               </div>
             </div>
-
-            <CardContent className="space-y-7 p-5 sm:p-7">
+            <CardContent className="space-y-7 p-5 sm:p-7 bg-white dark:bg-gray-900">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="section-title">Heading</Label>
@@ -1202,13 +1219,6 @@ export default function WebsiteBuilder() {
                   </p>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="flex min-h-80 flex-col items-center justify-center text-center">
-              <LayoutTemplate className="mb-3 h-10 w-10 text-gray-400" />
-              <p className="font-medium">Select a section to start designing</p>
             </CardContent>
           </Card>
         )}
