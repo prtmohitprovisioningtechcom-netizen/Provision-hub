@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Moon, Sun, Shield } from 'lucide-react';
+import { Menu, X, Moon, Sun, Shield, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BrandLogo } from '@/components/BrandLogo';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -12,6 +12,7 @@ import { NAV_LINKS } from '@/constants';
 
 export function Navbar({ config }: { config?: any }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { mode, toggle } = useTheme();
   const { isAuthenticated, user } = useAuth();
 
@@ -54,7 +55,7 @@ export function Navbar({ config }: { config?: any }) {
           </Button>
 
           {isAuthenticated && user?.role === 'super_admin' ? (
-            <Link href="/admin">
+            <Link href="/admin" className="hidden sm:block">
               <Button variant="outline" size="sm" className="gap-1.5 border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-400">
                 <Shield className="h-4 w-4" />
                 Admin
@@ -72,23 +73,51 @@ export function Navbar({ config }: { config?: any }) {
           {isAuthenticated ? (
             <Link href={dashboardLink}>
               <Button variant="gradient" size="sm">
-                Dashboard
+                Sign in
               </Button>
             </Link>
           ) : (
             <>
               <Link href="/login" className="hidden sm:block">
                 <Button variant="ghost" size="sm">
-                  Login
+                  Sign in
                 </Button>
               </Link>
-              <Link href="/register/company">
+              <Link href="/register/company" className="hidden sm:block">
                 <Button variant="gradient" size="sm">
                   Get Started
                 </Button>
               </Link>
             </>
           )}
+
+          {/* New Quick Links Dropdown */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="gap-1.5"
+            >
+              Menu <ChevronDown className="h-4 w-4" />
+            </Button>
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950 py-1 z-50"
+                >
+                  <Link href="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Home</Link>
+                  <Link href="/leads/new" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Post Your Requirements</Link>
+                  <Link href="/search" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Product/ Service Directory</Link>
+                  <Link href="/search?verified=true" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Verified Business</Link>
+                  <Link href={isAuthenticated ? "/dashboard/settings" : "/login"} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Settings</Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <Button
             variant="ghost"

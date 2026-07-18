@@ -18,7 +18,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { CompanyCard } from '@/components/company/CompanyCard';
 import { BrandLogo } from '@/components/BrandLogo';
-import { BUSINESS_CATEGORIES } from '@/constants';
 import Link from 'next/link';
 
 interface SearchCompany {
@@ -50,6 +49,7 @@ export default function SearchContent() {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [categories, setCategories] = useState<{name: string, slug: string}[]>([]);
 
   const query = searchParams.get('query') || '';
   const category = searchParams.get('category') || '';
@@ -112,6 +112,14 @@ export default function SearchContent() {
     fetchCompanies(controller.signal);
     return () => controller.abort();
   }, [fetchCompanies]);
+
+  useEffect(() => {
+    axios.get('/api/categories').then(res => {
+      if (res.data.success) {
+        setCategories(res.data.data);
+      }
+    }).catch(console.error);
+  }, []);
 
   useEffect(() => {
     setLocalQuery(query);
@@ -178,9 +186,9 @@ export default function SearchContent() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All categories</SelectItem>
-                    {BUSINESS_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.slug} value={cat.name}>
+                        {cat.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

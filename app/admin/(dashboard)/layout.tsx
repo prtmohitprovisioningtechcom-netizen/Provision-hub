@@ -11,6 +11,7 @@ import {
   X,
   ChevronLeft,
   Shield,
+  Tags,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn, getInitials } from '@/lib/utils';
@@ -23,6 +24,7 @@ const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/companies', label: 'Companies', icon: Building2 },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/categories', label: 'Categories', icon: Tags },
   { href: '/admin/customize', label: 'Customize Site', icon: Shield },
 ];
 

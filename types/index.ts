@@ -112,6 +112,8 @@ export interface ILandingPageSection {
   content?: string;
   image?: string;
   images?: string[];
+  buttonText?: string;
+  buttonLink?: string;
   items?: Record<string, unknown>[];
   isVisible: boolean;
   order: number;

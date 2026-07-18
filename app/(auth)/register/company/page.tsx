@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -19,7 +19,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BrandLogo } from '@/components/BrandLogo';
-import { BUSINESS_CATEGORIES } from '@/constants';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
@@ -27,8 +26,17 @@ import { setUser } from '@/store/slices/authSlice';
 
 export default function CompanyRegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [categories, setCategories] = useState<{name: string, slug: string}[]>([]);
   const router = useRouter();
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    axios.get('/api/categories').then(res => {
+      if (res.data.success) {
+        setCategories(res.data.data);
+      }
+    }).catch(console.error);
+  }, []);
 
   const {
     register,
@@ -110,8 +118,8 @@ export default function CompanyRegisterPage() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {BUSINESS_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.slug} value={cat.name}>{cat.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

@@ -34,6 +34,14 @@ function readNumber(item: Record<string, unknown>, key: string): number {
   return typeof value === 'number' ? value : Number(value ?? 0);
 }
 
+function safeLandingLink(link: string | undefined, fallback: string) {
+  if (!link) return fallback;
+  if (link.startsWith('#') || link.startsWith('/') || link.startsWith('https://')) {
+    return link;
+  }
+  return fallback;
+}
+
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -140,7 +148,7 @@ export function CompanyLanding({
                       {section.content}
                     </motion.p>
                   )}
-                  {hasContactSection && (
+                  {(section.buttonText || hasContactSection) && (
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
@@ -148,10 +156,13 @@ export function CompanyLanding({
                       className="mt-9"
                     >
                       <a
-                        href="#contact"
+                        href={safeLandingLink(
+                          section.buttonLink,
+                          hasContactSection ? '#contact' : '/',
+                        )}
                         className="inline-flex items-center rounded-full bg-white px-7 py-3.5 text-sm font-bold text-gray-900 shadow-xl transition hover:-translate-y-0.5 hover:bg-gray-100"
                       >
-                        Get in touch
+                        {section.buttonText || 'Get in touch'}
                       </a>
                     </motion.div>
                   )}
@@ -214,11 +225,13 @@ export function CompanyLanding({
                           name: readField(item, 'name'),
                           description: readField(item, 'description'),
                           price: readNumber(item, 'price'),
+                          image: readField(item, 'image'),
                         }))
                       : services.map((service) => ({
                           name: service.name,
                           description: service.description,
                           price: service.price,
+                          image: service.gallery?.[0] || '',
                         }))
                     ).map((item, i) => (
                         <motion.div
@@ -229,6 +242,17 @@ export function CompanyLanding({
                           transition={{ delay: i * 0.1 }}
                           className="group relative rounded-3xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl dark:border-gray-800 dark:bg-gray-950"
                         >
+                          {item.image && (
+                            <div className="relative -mx-8 -mt-8 mb-6 h-48 overflow-hidden">
+                              <Image
+                                src={item.image}
+                                alt={item.name}
+                                fill
+                                sizes="(max-width: 768px) 100vw, 33vw"
+                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            </div>
+                          )}
                           <div className="mb-4 h-12 w-12 rounded-xl flex items-center justify-center text-white" style={{ background: primaryColor }}>
                             {/* Abstract icon based on index */}
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -263,6 +287,7 @@ export function CompanyLanding({
                     {(items.length
                       ? items.map((item) => ({
                           name: readField(item, 'name'),
+                          description: readField(item, 'description'),
                           images: Array.isArray(item.images)
                             ? (item.images as string[])
                             : [],
@@ -272,6 +297,7 @@ export function CompanyLanding({
                         }))
                       : products.map((product) => ({
                           name: product.name,
+                          description: product.description,
                           images: product.images,
                           price: product.price,
                           offerPrice: product.offerPrice,
@@ -303,6 +329,11 @@ export function CompanyLanding({
                           </div>
                           <div className="p-6 flex-1 flex flex-col justify-between">
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">{product.name}</h3>
+                            {product.description && (
+                              <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-gray-500">
+                                {product.description}
+                              </p>
+                            )}
                             <div className="mt-4 flex flex-wrap items-baseline gap-2">
                               {product.offerPrice ? (
                                 <>
@@ -368,6 +399,11 @@ export function CompanyLanding({
               <motion.section key={section.id} {...fadeUp} className="py-24 px-4 bg-indigo-50/50 dark:bg-indigo-950/10">
                 <div className="mx-auto max-w-7xl">
                   <h2 className="text-4xl font-extrabold text-center mb-16">{section.title}</h2>
+                  {section.subtitle && (
+                    <p className="-mt-12 mb-16 text-center text-lg text-gray-500">
+                      {section.subtitle}
+                    </p>
+                  )}
                   <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                     {items.map((item, i) => (
                       <motion.blockquote
@@ -385,12 +421,23 @@ export function CompanyLanding({
                           {item.quote || item.comment}
                         </p>
                         <footer className="mt-8 flex items-center gap-4">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-indigo-400 to-purple-500 font-bold text-white">
-                            {(item.name || item.author || 'A').charAt(0)}
-                          </div>
+                          {item.image ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={String(item.image)}
+                              alt=""
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-indigo-400 to-purple-500 font-bold text-white">
+                              {(item.name || item.author || 'A').charAt(0)}
+                            </div>
+                          )}
                           <div>
                             <p className="font-bold text-gray-900 dark:text-white">{item.name || item.author}</p>
-                            <p className="text-sm text-gray-500">Verified Customer</p>
+                            <p className="text-sm text-gray-500">
+                              {item.role || 'Verified Customer'}
+                            </p>
                           </div>
                         </footer>
                       </motion.blockquote>
@@ -409,6 +456,11 @@ export function CompanyLanding({
               >
                 <div className="mx-auto max-w-3xl">
                   <h2 className="text-3xl font-bold text-center mb-12">{section.title}</h2>
+                  {section.subtitle && (
+                    <p className="-mt-8 mb-12 text-center text-gray-500">
+                      {section.subtitle}
+                    </p>
+                  )}
                   <div>
                     {items.map((item, i) => (
                       <FAQItem

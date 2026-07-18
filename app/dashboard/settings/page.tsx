@@ -13,7 +13,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BUSINESS_CATEGORIES } from '@/constants';
 
 interface CompanyForm {
   name: string;
@@ -36,6 +35,7 @@ export default function SettingsPage() {
   const { companySlug } = useCompany();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState<{name: string, slug: string}[]>([]);
 
   const { register, handleSubmit, reset } = useForm<CompanyForm>();
 
@@ -69,6 +69,12 @@ export default function SettingsPage() {
       })
       .catch(() => toast.error('Failed to load company settings'))
       .finally(() => setLoading(false));
+
+    axios.get('/api/categories').then(res => {
+      if (res.data.success) {
+        setCategories(res.data.data);
+      }
+    }).catch(console.error);
   }, [companySlug, reset]);
 
   const onSubmit = async (data: CompanyForm) => {
@@ -149,9 +155,9 @@ export default function SettingsPage() {
                 {...register('category')}
               >
                 <option value="">Select category</option>
-                {BUSINESS_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
+                {categories.map((cat) => (
+                  <option key={cat.slug} value={cat.name}>
+                    {cat.name}
                   </option>
                 ))}
               </select>

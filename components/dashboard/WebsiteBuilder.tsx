@@ -151,7 +151,7 @@ export default function WebsiteBuilder() {
     sectionId: string,
     index: number,
     key: string,
-    value: string,
+    value: unknown,
   ) => {
     const section = sections.find((item) => item.id === sectionId);
     if (!section) return;
@@ -161,10 +161,27 @@ export default function WebsiteBuilder() {
   };
 
   const addItem = (section: ILandingPageSection) => {
-    const item =
-      section.type === 'faq'
-        ? { question: 'New question', answer: 'Add your answer here.' }
-        : { name: 'Customer name', quote: 'Share what your customer said.' };
+    let item: BuilderItem;
+    if (section.type === 'faq') {
+      item = { question: 'New question', answer: 'Add your answer here.' };
+    } else if (section.type === 'testimonials') {
+      item = {
+        name: 'Customer name',
+        role: 'Customer',
+        quote: 'Share what your customer said.',
+        image: '',
+      };
+    } else if (section.type === 'services') {
+      item = { name: 'New service', description: '', price: 0, image: '' };
+    } else {
+      item = {
+        name: 'New product',
+        description: '',
+        price: 0,
+        offerPrice: '',
+        images: [],
+      };
+    }
     updateSection(section.id, { items: [...(section.items || []), item] });
   };
 
@@ -236,6 +253,22 @@ export default function WebsiteBuilder() {
     } catch {
       toast.error('Could not update navbar logo');
     }
+  };
+
+  const handleItemImage = async (
+    section: ILandingPageSection,
+    itemIndex: number,
+    file?: File,
+  ) => {
+    if (!file) return;
+    const url = await uploadImage(file, `${section.id}-item-${itemIndex}`);
+    if (!url) return;
+    updateItem(
+      section.id,
+      itemIndex,
+      section.type === 'products' ? 'images' : 'image',
+      section.type === 'products' ? [url] : url,
+    );
   };
 
   const handleGalleryImages = async (
@@ -500,7 +533,7 @@ export default function WebsiteBuilder() {
                     placeholder="A short line that supports the heading"
                   />
                 </div>
-                {['hero', 'about'].includes(selected.type) && (
+                {['hero', 'about', 'footer'].includes(selected.type) && (
                   <div className="space-y-2 sm:col-span-2">
                     <Label htmlFor="section-content">Description</Label>
                     <Textarea
@@ -514,6 +547,36 @@ export default function WebsiteBuilder() {
                       placeholder="Write polished, customer-focused copy..."
                     />
                   </div>
+                )}
+                {selected.type === 'hero' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="hero-button-text">Button text</Label>
+                      <Input
+                        id="hero-button-text"
+                        value={selected.buttonText || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, {
+                            buttonText: event.target.value,
+                          })
+                        }
+                        placeholder="Get in touch"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hero-button-link">Button link</Label>
+                      <Input
+                        id="hero-button-link"
+                        value={selected.buttonLink || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, {
+                            buttonLink: event.target.value,
+                          })
+                        }
+                        placeholder="#contact"
+                      />
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -649,6 +712,142 @@ export default function WebsiteBuilder() {
                 </div>
               )}
 
+              {['services', 'products'].includes(selected.type) && (
+                <div className="space-y-4 border-t pt-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <Label>
+                        {selected.type === 'services' ? 'Service cards' : 'Product cards'}
+                      </Label>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Add custom cards here, or leave empty to use items from the dashboard catalog automatically.
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => addItem(selected)}>
+                      <Plus className="h-4 w-4" />
+                      Add {selected.type === 'services' ? 'service' : 'product'}
+                    </Button>
+                  </div>
+
+                  {(selected.items || []).map((rawItem, index) => {
+                    const item = rawItem as BuilderItem;
+                    const isProduct = selected.type === 'products';
+                    const itemImage = isProduct
+                      ? Array.isArray(item.images)
+                        ? String(item.images[0] || '')
+                        : ''
+                      : String(item.image || '');
+
+                    return (
+                      <div
+                        key={index}
+                        className="relative grid gap-4 rounded-2xl border bg-gray-50 p-4 sm:grid-cols-[120px_1fr] dark:bg-gray-900"
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 z-10 text-red-500"
+                          onClick={() => removeItem(selected.id, index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+
+                        <Label
+                          htmlFor={`${selected.id}-item-image-${index}`}
+                          className="group relative flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed bg-white dark:bg-gray-950"
+                        >
+                          {itemImage ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={itemImage} alt="" className="h-full w-full object-cover" />
+                          ) : uploading === `${selected.id}-item-${index}` ? (
+                            <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+                          ) : (
+                            <span className="flex flex-col items-center gap-1 text-xs text-gray-500">
+                              <ImagePlus className="h-6 w-6" />
+                              Add image
+                            </span>
+                          )}
+                          <Input
+                            id={`${selected.id}-item-image-${index}`}
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/gif"
+                            className="sr-only"
+                            disabled={uploading !== null}
+                            onChange={(event) =>
+                              handleItemImage(selected, index, event.target.files?.[0])
+                            }
+                          />
+                        </Label>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="space-y-2 sm:col-span-2">
+                            <Label>Name</Label>
+                            <Input
+                              value={String(item.name || '')}
+                              onChange={(event) =>
+                                updateItem(selected.id, index, 'name', event.target.value)
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2 sm:col-span-2">
+                            <Label>Description</Label>
+                            <Textarea
+                              rows={3}
+                              value={String(item.description || '')}
+                              onChange={(event) =>
+                                updateItem(
+                                  selected.id,
+                                  index,
+                                  'description',
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Price</Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={String(item.price ?? '')}
+                              onChange={(event) =>
+                                updateItem(selected.id, index, 'price', event.target.value)
+                              }
+                            />
+                          </div>
+                          {isProduct && (
+                            <div className="space-y-2">
+                              <Label>Offer price</Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={String(item.offerPrice ?? '')}
+                                onChange={(event) =>
+                                  updateItem(
+                                    selected.id,
+                                    index,
+                                    'offerPrice',
+                                    event.target.value,
+                                  )
+                                }
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {!selected.items?.length && (
+                    <div className="rounded-xl border border-dashed p-6 text-center text-sm text-gray-500">
+                      Dashboard catalog items will be displayed automatically.
+                    </div>
+                  )}
+                </div>
+              )}
+
               {['faq', 'testimonials'].includes(selected.type) && (
                 <div className="space-y-4 border-t pt-6">
                   <div className="flex items-center justify-between">
@@ -692,6 +891,52 @@ export default function WebsiteBuilder() {
                             }
                           />
                         </div>
+                        {!isFaq && (
+                          <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                            <div className="space-y-2">
+                              <Label>Role or company</Label>
+                              <Input
+                                value={String(item.role || '')}
+                                onChange={(event) =>
+                                  updateItem(
+                                    selected.id,
+                                    index,
+                                    'role',
+                                    event.target.value,
+                                  )
+                                }
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Photo</Label>
+                              <Label
+                                htmlFor={`${selected.id}-testimonial-${index}`}
+                                className="flex h-10 cursor-pointer items-center gap-2 rounded-lg border bg-white px-3 text-sm dark:bg-gray-950"
+                              >
+                                {uploading === `${selected.id}-item-${index}` ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <ImagePlus className="h-4 w-4" />
+                                )}
+                                {item.image ? 'Replace' : 'Upload'}
+                                <Input
+                                  id={`${selected.id}-testimonial-${index}`}
+                                  type="file"
+                                  accept="image/png,image/jpeg,image/webp"
+                                  className="sr-only"
+                                  disabled={uploading !== null}
+                                  onChange={(event) =>
+                                    handleItemImage(
+                                      selected,
+                                      index,
+                                      event.target.files?.[0],
+                                    )
+                                  }
+                                />
+                              </Label>
+                            </div>
+                          </div>
+                        )}
                         <div className="space-y-2">
                           <Label>{isFaq ? 'Answer' : 'Quote'}</Label>
                           <Textarea
@@ -718,14 +963,10 @@ export default function WebsiteBuilder() {
                 </div>
               )}
 
-              {['services', 'products', 'contact', 'footer'].includes(selected.type) && (
+              {['contact', 'footer'].includes(selected.type) && (
                 <div className="flex items-start gap-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-900 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200">
                   <Sparkles className="mt-0.5 h-5 w-5 shrink-0" />
                   <p>
-                    {selected.type === 'services' &&
-                      'Service cards are filled automatically from Dashboard → Services.'}
-                    {selected.type === 'products' &&
-                      'Product cards and images are filled automatically from Dashboard → Products.'}
                     {selected.type === 'contact' &&
                       'The enquiry form automatically sends leads to Dashboard → Leads.'}
                     {selected.type === 'footer' &&
