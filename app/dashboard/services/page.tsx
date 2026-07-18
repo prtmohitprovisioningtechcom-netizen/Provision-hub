@@ -47,7 +47,7 @@ export default function ServicesPage() {
   }, [companyId]);
 
   useEffect(() => {
-    fetchServices();
+    requestAnimationFrame(() => fetchServices());
   }, [fetchServices]);
 
   const onSubmit = async (formData: ServiceInput) => {

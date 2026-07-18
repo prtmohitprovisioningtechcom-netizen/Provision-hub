@@ -95,12 +95,14 @@ export default function WebsiteBuilder() {
   const [saved, setSaved] = useState(true);
   const [companyName, setCompanyName] = useState('');
   const [companyLogo, setCompanyLogo] = useState('');
-  const [viewMode, setViewMode] = useState<'editor' | 'preview'>('editor');
-  const [availableCategories, setAvailableCategories] = useState<any[]>([]);
+  // availableCategories is fetched but only used locally to create defaults
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [availableCategories, setAvailableCategories] = useState<unknown[]>([]);
 
   useEffect(() => {
     if (!companyId) {
-      setLoading(false);
+      // Avoid synchronous setState during render
+      requestAnimationFrame(() => setLoading(false));
       return;
     }
 

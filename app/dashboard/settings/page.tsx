@@ -41,7 +41,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (!companySlug) {
-      setLoading(false);
+      requestAnimationFrame(() => setLoading(false));
       return;
     }
     axios

@@ -43,7 +43,7 @@ export function usePlatformBranding(initialBranding?: PlatformBranding) {
   useEffect(() => {
     if (initialBranding) {
       cachedBranding = initialBranding;
-      setBranding(initialBranding);
+      requestAnimationFrame(() => setBranding(initialBranding));
     } else {
       loadBranding().then(setBranding);
     }

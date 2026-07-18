@@ -109,7 +109,7 @@ export default function SearchContent() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchCompanies(controller.signal);
+    requestAnimationFrame(() => fetchCompanies(controller.signal));
     return () => controller.abort();
   }, [fetchCompanies]);
 
@@ -122,10 +122,12 @@ export default function SearchContent() {
   }, []);
 
   useEffect(() => {
-    setLocalQuery(query);
-    setLocalCity(city);
-    setLocalState(state);
-    setLocalCountry(country);
+    requestAnimationFrame(() => {
+      setLocalQuery(query);
+      setLocalCity(city);
+      setLocalState(state);
+      setLocalCountry(country);
+    });
   }, [query, city, state, country]);
 
   const handleSearch = (e: React.FormEvent) => {

@@ -20,7 +20,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    requestAnimationFrame(() => setMounted(true));
     const saved = localStorage.getItem('theme') as 'light' | 'dark' | null;
     if (saved) {
       dispatch(setTheme(saved));

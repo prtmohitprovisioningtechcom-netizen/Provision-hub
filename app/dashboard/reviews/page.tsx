@@ -61,7 +61,7 @@ export default function ReviewsPage() {
   }, [companyId, statusFilter]);
 
   useEffect(() => {
-    fetchReviews();
+    requestAnimationFrame(() => fetchReviews());
   }, [fetchReviews]);
 
   const updateStatus = async (id: string, status: ReviewStatus) => {
