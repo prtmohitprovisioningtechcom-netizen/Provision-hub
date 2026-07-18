@@ -77,12 +77,10 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
     { href: '/post-requirement', label: 'Post Requirement', icon: ClipboardPlus },
     { href: '/search', label: 'Company Directory', icon: Search },
     { href: '/search?verified=true', label: 'Verified Businesses', icon: BadgeCheck },
-    ...(isAuthenticated 
-      ? [{ href: accountLink, label: accountLabel, icon: Settings }]
-      : [
-          { href: '/login', label: 'Sign in', icon: Shield },
-          { href: '/register/company', label: 'Get Started', icon: ClipboardPlus }
-        ])
+    { href: accountLink, label: accountLabel, icon: Settings },
+    { href: '/login', label: 'Sign in', icon: Shield },
+    { href: '/register/company', label: 'Get Started', icon: ClipboardPlus },
+    { href: '/admin/login', label: 'Admin Sign in', icon: Shield }
   ];
 
   const closeMenu = () => setIsOpen(false);
@@ -171,7 +169,6 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
           </div>
 
           <div className="hidden items-center gap-2 lg:flex">
-            {!isAuthenticated && (
               <Button
                 asChild
                 variant="outline"
@@ -183,7 +180,6 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
                   Admin
                 </Link>
               </Button>
-            )}
           </div>
 
           <Button
@@ -230,6 +226,7 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
               >
                 Company Directory
               </Link>
+
               <Link
                 href="/post-requirement"
                 className="rounded-lg px-3 py-2.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950"
@@ -237,43 +234,36 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
               >
                 Post Requirement
               </Link>
-
               <div className="my-2 border-t border-gray-200 dark:border-gray-800" />
-
-              {isAuthenticated ? (
-                <Link
-                  href={accountLink}
-                  className="rounded-lg bg-indigo-600 px-3 py-2.5 text-center text-sm font-semibold text-white"
-                  onClick={closeMenu}
-                >
-                  {accountLabel}
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900"
-                    onClick={closeMenu}
-                  >
-                    Sign in
-                  </Link>
-                  <Link
-                    href="/register/company"
-                    className="rounded-lg bg-indigo-600 px-3 py-2.5 text-center text-sm font-semibold text-white"
-                    onClick={closeMenu}
-                  >
-                    Register Company
-                  </Link>
-                  <Link
-                    href="/admin/login"
-                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950"
-                    onClick={closeMenu}
-                  >
-                    <Shield className="h-4 w-4" />
-                    Admin Sign in
-                  </Link>
-                </>
-              )}
+              <Link
+                href={accountLink}
+                className="rounded-lg bg-indigo-600 px-3 py-2.5 text-center text-sm font-semibold text-white"
+                onClick={closeMenu}
+              >
+                {accountLabel}
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900"
+                onClick={closeMenu}
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/register/company"
+                className="rounded-lg bg-indigo-600 px-3 py-2.5 text-center text-sm font-semibold text-white"
+                onClick={closeMenu}
+              >
+                Register Company
+              </Link>
+              <Link
+                href="/admin/login"
+                className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950"
+                onClick={closeMenu}
+              >
+                <Shield className="h-4 w-4" />
+                Admin Sign in
+              </Link>
             </div>
           </motion.div>
         )}

@@ -446,7 +446,7 @@ export default function WebsiteBuilder() {
 
       <div className="grid h-[calc(100vh-140px)] gap-5 lg:grid-cols-[400px_minmax(0,1fr)]">
         {/* Left Side: Editor */}
-        <div className="flex h-full flex-col gap-5 overflow-y-auto pr-2 pb-10">
+        <div className="flex h-full min-h-0 flex-col gap-5 overflow-y-auto pr-2 pb-10">
           {!selected ? (
             <>
               <Card>
@@ -1225,7 +1225,7 @@ export default function WebsiteBuilder() {
         </div>
 
         {/* Right Side: Live Preview */}
-        <div className="hidden lg:block h-full overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950 shadow-inner">
+        <div className="hidden lg:block h-full min-h-0 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950 shadow-inner">
           <div className="flex h-12 items-center gap-2 border-b bg-white px-4 dark:bg-gray-900">
             <div className="flex gap-1.5">
               <div className="h-3 w-3 rounded-full bg-red-400" />
