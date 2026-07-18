@@ -91,22 +91,14 @@ export function Navbar({ config }: { config?: any }) {
             </>
           )}
 
-          {/* Prominent Post Requirement Button */}
-          <Link href="/post-requirement" className="hidden lg:block">
-            <Button variant="default" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-[0_0_15px_rgba(79,70,229,0.5)]">
-              Post Requirement
-            </Button>
-          </Link>
-
           {/* New Quick Links Dropdown */}
           <div className="relative">
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="gap-1.5"
             >
-              Menu <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-4 w-4" />
             </Button>
             <AnimatePresence>
               {isDropdownOpen && (
