@@ -83,6 +83,7 @@ export function CompanyLanding({
   const visibleSections = [...sections]
     .filter((section) => {
       if (!section.isVisible) return false;
+      if (section.type === 'navbar') return false;
       if (section.type === 'services') {
         return Boolean(section.items?.length || services.length);
       }
@@ -201,7 +202,7 @@ export function CompanyLanding({
                 <div className="relative mx-auto grid max-w-6xl items-center gap-8 text-center md:grid-cols-[1fr_auto_1fr] md:text-left">
                   <div>
                     <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: primaryColor }}>
-                      Customer rating
+                      {section.eyebrow || 'Customer rating'}
                     </p>
                     <h2 className="mt-3 text-3xl font-extrabold text-gray-900 sm:text-4xl dark:text-white">
                       {section.title}
@@ -714,7 +715,7 @@ export function CompanyLanding({
                 />
                 <div className="relative mx-auto max-w-4xl">
                   <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: primaryColor }}>
-                    Stay connected
+                    {section.eyebrow || 'Stay connected'}
                   </p>
                   <h2 className="mt-4 text-4xl font-extrabold sm:text-5xl">{section.title}</h2>
                   {section.subtitle && <p className="mx-auto mt-5 max-w-2xl text-lg text-gray-300">{section.subtitle}</p>}
@@ -722,9 +723,12 @@ export function CompanyLanding({
                   <NewsletterForm
                     companyId={companyId}
                     buttonText={section.buttonText || 'Subscribe'}
+                    placeholder={section.placeholder || 'Enter your email address'}
                     primaryColor={primaryColor}
                   />
-                  <p className="mt-4 text-xs text-gray-500">No spam. Unsubscribe whenever you want.</p>
+                  <p className="mt-4 text-xs text-gray-500">
+                    {section.note || 'No spam. Unsubscribe whenever you want.'}
+                  </p>
                 </div>
               </motion.section>
             );
@@ -751,9 +755,39 @@ export function CompanyLanding({
               <motion.footer
                 key={section.id}
                 {...fadeUp}
-                className="py-8 px-4 border-t dark:border-gray-800 text-center text-gray-500"
+                className="border-t border-white/10 bg-gray-950 px-4 py-14 text-white"
               >
-                <p>{section.content || `© ${new Date().getFullYear()} ${companyName}. All rights reserved.`}</p>
+                <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.5fr_1fr] md:items-start">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: primaryColor }}>
+                      {companyName}
+                    </p>
+                    <h2 className="mt-4 max-w-xl text-3xl font-extrabold">
+                      {section.title || companyName}
+                    </h2>
+                    {section.subtitle && (
+                      <p className="mt-3 max-w-xl text-gray-400">{section.subtitle}</p>
+                    )}
+                  </div>
+                  <nav className="flex flex-wrap gap-x-6 gap-y-3 md:justify-end">
+                    {items.map((item, itemIndex) => {
+                      const link = safeLandingLink(readField(item, 'link'), '/');
+                      return (
+                        <a
+                          key={itemIndex}
+                          href={link}
+                          className="text-sm font-medium text-gray-300 transition hover:text-white"
+                        >
+                          {readField(item, 'label')}
+                        </a>
+                      );
+                    })}
+                  </nav>
+                </div>
+                <div className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 text-sm text-gray-500">
+                  {section.content ||
+                    `© ${new Date().getFullYear()} ${companyName}. All rights reserved.`}
+                </div>
               </motion.footer>
             );
 

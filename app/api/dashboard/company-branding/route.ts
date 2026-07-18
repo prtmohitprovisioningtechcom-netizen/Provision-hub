@@ -28,18 +28,37 @@ export async function PUT(request: NextRequest) {
     if (auth instanceof Response) return auth;
     if (!auth.companyId) return apiError('No company associated', 400);
 
-    const body = (await request.json()) as { logo?: unknown };
-    if (
-      typeof body.logo !== 'string' ||
-      (!body.logo.startsWith('https://') && !body.logo.startsWith('data:image/'))
-    ) {
+    const body = (await request.json()) as {
+      logo?: unknown;
+      primaryColor?: unknown;
+    };
+    const update: Record<string, string> = {};
+    if (body.logo !== undefined) {
+      if (
+        typeof body.logo !== 'string' ||
+        (!body.logo.startsWith('https://') && !body.logo.startsWith('data:image/'))
+      ) {
+        return apiError('Invalid logo image', 400);
+      }
+      update.logo = body.logo;
+    }
+    if (body.primaryColor !== undefined) {
+      if (
+        typeof body.primaryColor !== 'string' ||
+        !/^#[0-9a-fA-F]{6}$/.test(body.primaryColor)
+      ) {
+        return apiError('Invalid brand color', 400);
+      }
+      update['theme.primaryColor'] = body.primaryColor;
+    }
+    if (!Object.keys(update).length) {
       return apiError('Invalid logo image', 400);
     }
 
     await connectDB();
     const company = await Company.findByIdAndUpdate(
       auth.companyId,
-      { logo: body.logo },
+      { $set: update },
       { new: true },
     )
       .select('name slug logo theme')
@@ -47,7 +66,7 @@ export async function PUT(request: NextRequest) {
     if (!company) return apiError('Company not found', 404);
 
     revalidatePath(`/company/${company.slug}`);
-    return apiSuccess(company, 'Navbar logo updated');
+    return apiSuccess(company, 'Company branding updated');
   } catch {
     return apiError('Failed to update navbar logo', 500);
   }

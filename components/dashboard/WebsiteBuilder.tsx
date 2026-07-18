@@ -20,11 +20,17 @@ import {
   Trash2, 
   UploadCloud, 
   MonitorPlay, 
-  Code 
+  Monitor,
+  Smartphone,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/services/api';
-import { IBlog, ILandingPageSection } from '@/types';
+import {
+  IBlog,
+  ILandingPageSection,
+  IProduct,
+  IService,
+} from '@/types';
 import { useCompany } from '@/hooks/useCompany';
 import { CompanyLanding } from '@/components/company/CompanyLanding';
 import { Button } from '@/components/ui/button';
@@ -39,6 +45,7 @@ import { LANDING_SECTIONS } from '@/constants';
 type BuilderItem = Record<string, unknown>;
 
 const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
+  navbar: 'Customize your logo, brand name, navigation link, and enquiry button.',
   hero: 'Create a strong first impression with a headline and cover image.',
   rating: 'Show your real customer rating in a bold trust-building block.',
   about: 'Tell your story with an engaging image and company introduction.',
@@ -138,6 +145,15 @@ export default function WebsiteBuilder() {
   const [companyRating, setCompanyRating] = useState(0);
   const [companyReviewCount, setCompanyReviewCount] = useState(0);
   const [publishedBlogs, setPublishedBlogs] = useState<IBlog[]>([]);
+  const [primaryColor, setPrimaryColor] = useState('#6366f1');
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>(
+    'desktop',
+  );
+  const [catalogProducts, setCatalogProducts] = useState<IProduct[]>([]);
+  const [catalogServices, setCatalogServices] = useState<IService[]>([]);
+  const [catalogGalleryItems, setCatalogGalleryItems] = useState<
+    Record<string, unknown>[]
+  >([]);
   useEffect(() => {
     if (!companyId) {
       // Avoid synchronous setState during render
@@ -147,10 +163,20 @@ export default function WebsiteBuilder() {
 
     const load = async () => {
       try {
-        const [{ data }, { data: brandingResponse }, { data: blogsResponse }] = await Promise.all([
+        const [
+          { data },
+          { data: brandingResponse },
+          { data: blogsResponse },
+          { data: productsResponse },
+          { data: servicesResponse },
+          { data: galleryResponse },
+        ] = await Promise.all([
           api.get('/api/dashboard/landing-page'),
           api.get('/api/dashboard/company-branding'),
           api.get('/api/dashboard/blogs'),
+          api.get(`/api/products?companyId=${companyId}&limit=12`),
+          api.get(`/api/services?companyId=${companyId}&limit=12`),
+          api.get('/api/dashboard/gallery'),
         ]);
 
         const rawSections =
@@ -158,18 +184,41 @@ export default function WebsiteBuilder() {
         const loaded = mergeMissingSections(rawSections);
         const ordered = [...loaded].sort((a, b) => a.order - b.order);
         setSections(ordered);
-        setSelectedId(ordered[0]?.id ?? null);
-        setSaved(rawSections.length === loaded.length);
+        setSelectedId(null);
+        setSaved(JSON.stringify(rawSections) === JSON.stringify(loaded));
         if (brandingResponse.success) {
           setCompanyName(brandingResponse.data?.name || '');
           setCompanyLogo(brandingResponse.data?.logo || '');
           setCompanyRating(Number(brandingResponse.data?.rating || 0));
           setCompanyReviewCount(Number(brandingResponse.data?.reviewCount || 0));
+          setPrimaryColor(
+            brandingResponse.data?.theme?.primaryColor || '#6366f1',
+          );
         }
         if (blogsResponse.success) {
           setPublishedBlogs(
             ((blogsResponse.data || []) as IBlog[]).filter(
               (blog) => blog.status === 'published',
+            ),
+          );
+        }
+        if (productsResponse.success) {
+          setCatalogProducts(productsResponse.data || []);
+        }
+        if (servicesResponse.success) {
+          setCatalogServices(servicesResponse.data || []);
+        }
+        if (galleryResponse.success) {
+          setCatalogGalleryItems(
+            (galleryResponse.data?.images || []).map(
+              (
+                image: { url?: string; caption?: string },
+                index: number,
+              ) => ({
+                image: image.url || '',
+                title: image.caption || `Gallery image ${index + 1}`,
+                description: image.caption || '',
+              }),
             ),
           );
         }
@@ -186,6 +235,21 @@ export default function WebsiteBuilder() {
   const selected = useMemo(
     () => sections.find((section) => section.id === selectedId) ?? null,
     [sections, selectedId],
+  );
+  const previewNavbar = useMemo(
+    () => sections.find((section) => section.type === 'navbar'),
+    [sections],
+  );
+  const previewSections = useMemo(
+    () =>
+      sections.map((section) =>
+        section.type === 'gallery' &&
+        !section.items?.length &&
+        catalogGalleryItems.length
+          ? { ...section, items: catalogGalleryItems }
+          : section,
+      ),
+    [sections, catalogGalleryItems],
   );
 
   const updateSection = (
@@ -238,6 +302,8 @@ export default function WebsiteBuilder() {
         image: '',
         link: '',
       };
+    } else if (section.type === 'navbar' || section.type === 'footer') {
+      item = { label: 'New link', link: '/' };
     } else {
       item = {
         name: 'New product',
@@ -264,6 +330,12 @@ export default function WebsiteBuilder() {
       const index = ordered.findIndex((section) => section.id === id);
       const nextIndex = index + direction;
       if (index < 0 || nextIndex < 0 || nextIndex >= ordered.length) return current;
+      if (
+        ordered[index].type === 'navbar' ||
+        ordered[nextIndex].type === 'navbar'
+      ) {
+        return current;
+      }
       [ordered[index], ordered[nextIndex]] = [ordered[nextIndex], ordered[index]];
       return ordered.map((section, order) => ({ ...section, order }));
     });
@@ -317,6 +389,18 @@ export default function WebsiteBuilder() {
       toast.success('Navbar logo updated');
     } catch {
       toast.error('Could not update navbar logo');
+    }
+  };
+
+  const handleBrandColorSave = async () => {
+    try {
+      const { data } = await api.put('/api/dashboard/company-branding', {
+        primaryColor,
+      });
+      if (!data.success) throw new Error('Update failed');
+      toast.success('Brand color updated');
+    } catch {
+      toast.error('Could not update brand color');
     }
   };
 
@@ -449,46 +533,6 @@ export default function WebsiteBuilder() {
         <div className="flex h-full min-h-0 flex-col gap-5 overflow-y-auto pr-2 pb-10">
           {!selected ? (
             <>
-              <Card>
-                <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex min-w-0 items-center gap-4">
-                    <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-100 text-xl font-bold text-indigo-600 dark:bg-gray-900">
-                      {companyLogo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={companyLogo} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        companyName.charAt(0) || 'C'
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold">Navbar branding</p>
-                      <p className="truncate text-sm text-gray-500">
-                        {companyName || 'Your company'} · Logo shown on public site.
-                      </p>
-                    </div>
-                  </div>
-                  <Label
-                    htmlFor="navbar-logo-upload"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
-                  >
-                    {uploading === 'navbar-logo' ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <ImagePlus className="h-4 w-4" />
-                    )}
-                    {companyLogo ? 'Replace logo' : 'Upload logo'}
-                    <Input
-                      id="navbar-logo-upload"
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/gif"
-                      className="sr-only"
-                      disabled={uploading !== null}
-                      onChange={(event) => handleNavbarLogo(event.target.files?.[0])}
-                    />
-                  </Label>
-                </CardContent>
-              </Card>
-
           <Card className="overflow-hidden">
             <div className="border-b bg-gray-50 px-4 py-3 dark:bg-gray-900">
               <div className="flex items-center gap-2 font-semibold">
@@ -575,7 +619,15 @@ export default function WebsiteBuilder() {
                   size="icon"
                   title="Move up"
                   onClick={() => moveSection(selected.id, -1)}
-                  disabled={selected.order === 0}
+                  disabled={
+                    selected.type === 'navbar' ||
+                    selected.order === 0 ||
+                    sections.some(
+                      (section) =>
+                        section.type === 'navbar' &&
+                        section.order === selected.order - 1,
+                    )
+                  }
                 >
                   <ArrowUp className="h-4 w-4" />
                 </Button>
@@ -584,7 +636,10 @@ export default function WebsiteBuilder() {
                   size="icon"
                   title="Move down"
                   onClick={() => moveSection(selected.id, 1)}
-                  disabled={selected.order === sections.length - 1}
+                  disabled={
+                    selected.type === 'navbar' ||
+                    selected.order === sections.length - 1
+                  }
                 >
                   <ArrowDown className="h-4 w-4" />
                 </Button>
@@ -602,7 +657,13 @@ export default function WebsiteBuilder() {
             <CardContent className="space-y-7 p-5 sm:p-7 bg-white dark:bg-gray-900">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="section-title">Heading</Label>
+                  <Label htmlFor="section-title">
+                    {selected.type === 'navbar'
+                      ? 'Brand name'
+                      : selected.type === 'footer'
+                        ? 'Footer heading'
+                        : 'Heading'}
+                  </Label>
                   <Input
                     id="section-title"
                     value={selected.title}
@@ -614,7 +675,9 @@ export default function WebsiteBuilder() {
                   />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="section-subtitle">Supporting text</Label>
+                  <Label htmlFor="section-subtitle">
+                    {selected.type === 'navbar' ? 'Navbar tagline' : 'Supporting text'}
+                  </Label>
                   <Input
                     id="section-subtitle"
                     value={selected.subtitle || ''}
@@ -671,22 +734,155 @@ export default function WebsiteBuilder() {
                   </>
                 )}
                 {selected.type === 'subscribe' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Small label</Label>
+                      <Input
+                        value={selected.eyebrow || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, { eyebrow: event.target.value })
+                        }
+                        placeholder="Stay connected"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="subscribe-button-text">Button text</Label>
+                      <Input
+                        id="subscribe-button-text"
+                        value={selected.buttonText || ''}
+                        maxLength={40}
+                        onChange={(event) =>
+                          updateSection(selected.id, {
+                            buttonText: event.target.value,
+                          })
+                        }
+                        placeholder="Subscribe"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email placeholder</Label>
+                      <Input
+                        value={selected.placeholder || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, {
+                            placeholder: event.target.value,
+                          })
+                        }
+                        placeholder="Enter your email address"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Privacy note</Label>
+                      <Input
+                        value={selected.note || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, { note: event.target.value })
+                        }
+                        placeholder="No spam. Unsubscribe whenever you want."
+                      />
+                    </div>
+                  </>
+                )}
+                {selected.type === 'rating' && (
                   <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="subscribe-button-text">Button text</Label>
+                    <Label>Small label</Label>
                     <Input
-                      id="subscribe-button-text"
-                      value={selected.buttonText || ''}
-                      maxLength={40}
+                      value={selected.eyebrow || ''}
                       onChange={(event) =>
-                        updateSection(selected.id, {
-                          buttonText: event.target.value,
-                        })
+                        updateSection(selected.id, { eyebrow: event.target.value })
                       }
-                      placeholder="Subscribe"
+                      placeholder="Customer rating"
                     />
+                    <p className="text-xs text-gray-500">
+                      Rating score and review count stay connected to approved customer reviews.
+                    </p>
                   </div>
                 )}
               </div>
+
+              {selected.type === 'navbar' && (
+                <div className="space-y-5 border-t pt-6">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-3">
+                      <Label>Company logo</Label>
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border bg-gray-100 text-xl font-bold text-indigo-600 dark:bg-gray-900">
+                          {companyLogo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={companyLogo} alt="" className="h-full w-full object-contain p-1" />
+                          ) : (
+                            companyName.charAt(0) || 'C'
+                          )}
+                        </div>
+                        <Label
+                          htmlFor="navbar-editor-logo"
+                          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-900"
+                        >
+                          {uploading === 'navbar-logo' ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <ImagePlus className="h-4 w-4" />
+                          )}
+                          {companyLogo ? 'Replace logo' : 'Upload logo'}
+                          <Input
+                            id="navbar-editor-logo"
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/gif"
+                            className="sr-only"
+                            disabled={uploading !== null}
+                            onChange={(event) =>
+                              handleNavbarLogo(event.target.files?.[0])
+                            }
+                          />
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <Label htmlFor="brand-color">Brand color</Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          id="brand-color"
+                          type="color"
+                          value={primaryColor}
+                          onChange={(event) => setPrimaryColor(event.target.value)}
+                          className="h-12 w-16 cursor-pointer p-1"
+                        />
+                        <Input
+                          value={primaryColor}
+                          pattern="^#[0-9a-fA-F]{6}$"
+                          maxLength={7}
+                          onChange={(event) => setPrimaryColor(event.target.value)}
+                        />
+                        <Button type="button" variant="outline" onClick={handleBrandColorSave}>
+                          Apply
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Enquiry button text</Label>
+                      <Input
+                        value={selected.buttonText || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, { buttonText: event.target.value })
+                        }
+                        placeholder="Enquire now"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Custom button link (optional)</Label>
+                      <Input
+                        value={selected.buttonLink || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, { buttonLink: event.target.value })
+                        }
+                        placeholder="Leave empty to use WhatsApp"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {IMAGE_SECTIONS.includes(selected.type) && (
                 <div className="space-y-3 border-t pt-6">
@@ -1208,6 +1404,62 @@ export default function WebsiteBuilder() {
                 </div>
               )}
 
+              {['navbar', 'footer'].includes(selected.type) && (
+                <div className="space-y-4 border-t pt-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <Label>{selected.type === 'navbar' ? 'Navigation links' : 'Footer links'}</Label>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Add clear labels and valid internal or external links.
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => addItem(selected)}>
+                      <Plus className="h-4 w-4" />
+                      Add link
+                    </Button>
+                  </div>
+                  {(selected.items || []).map((rawItem, index) => {
+                    const item = rawItem as BuilderItem;
+                    return (
+                      <div
+                        key={index}
+                        className="relative grid gap-3 rounded-xl border bg-gray-50 p-4 pr-12 sm:grid-cols-2 dark:bg-gray-900"
+                      >
+                        <div className="space-y-1">
+                          <Label>Label</Label>
+                          <Input
+                            value={String(item.label || '')}
+                            onChange={(event) =>
+                              updateItem(selected.id, index, 'label', event.target.value)
+                            }
+                            placeholder="Contact"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label>Link</Label>
+                          <Input
+                            value={String(item.link || '')}
+                            onChange={(event) =>
+                              updateItem(selected.id, index, 'link', event.target.value)
+                            }
+                            placeholder="#contact or https://..."
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-6 text-red-500"
+                          onClick={() => removeItem(selected.id, index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {['contact', 'footer'].includes(selected.type) && (
                 <div className="flex items-start gap-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-900 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200">
                   <Sparkles className="mt-0.5 h-5 w-5 shrink-0" />
@@ -1236,16 +1488,86 @@ export default function WebsiteBuilder() {
               <Globe className="mr-1.5 h-3 w-3" />
               {companySlug ? `${companySlug}.tenant.hub` : 'Live Preview'}
             </div>
+            <div className="flex rounded-lg border p-0.5">
+              <button
+                type="button"
+                onClick={() => setPreviewDevice('desktop')}
+                className={cn(
+                  'rounded-md p-1.5',
+                  previewDevice === 'desktop'
+                    ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                    : 'text-gray-400',
+                )}
+                aria-label="Desktop preview"
+              >
+                <Monitor className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewDevice('mobile')}
+                className={cn(
+                  'rounded-md p-1.5',
+                  previewDevice === 'mobile'
+                    ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                    : 'text-gray-400',
+                )}
+                aria-label="Mobile preview"
+              >
+                <Smartphone className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
-          <div className="h-[calc(100%-48px)] overflow-y-auto">
-            <div className="bg-white">
+          <div className="h-[calc(100%-48px)] overflow-y-auto bg-gray-100 p-2 dark:bg-gray-950">
+            <div
+              className={cn(
+                'mx-auto min-h-full overflow-hidden bg-white shadow-sm transition-all',
+                previewDevice === 'mobile' ? 'max-w-sm' : 'max-w-none',
+              )}
+            >
+              {previewNavbar?.isVisible !== false && (
+                <div className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-white/95 px-5 backdrop-blur">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-50 font-bold text-indigo-600">
+                      {companyLogo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={companyLogo} alt="" className="h-full w-full object-contain p-1" />
+                      ) : (
+                        companyName.charAt(0) || 'C'
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold">
+                        {previewNavbar?.title &&
+                        previewNavbar.title !== 'Company Navigation'
+                          ? previewNavbar.title
+                          : companyName || 'Your company'}
+                      </p>
+                      {previewNavbar?.subtitle && (
+                        <p className="truncate text-[10px] text-gray-500">
+                          {previewNavbar.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="rounded-full px-4 py-2 text-xs font-semibold text-white"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    {previewNavbar?.buttonText || 'Enquire now'}
+                  </button>
+                </div>
+              )}
               <CompanyLanding 
-                sections={sections} 
+                sections={previewSections} 
                 companyId={companyId || ''} 
                 companyName={companyName} 
+                products={catalogProducts}
+                services={catalogServices}
                 blogs={publishedBlogs}
                 rating={companyRating}
                 reviewCount={companyReviewCount}
+                primaryColor={primaryColor}
               />
             </div>
           </div>

@@ -107,6 +107,7 @@ export interface ICompany {
 export interface ILandingPageSection {
   id: string;
   type:
+    | 'navbar'
     | 'hero'
     | 'rating'
     | 'about'
@@ -127,6 +128,9 @@ export interface ILandingPageSection {
   images?: string[];
   buttonText?: string;
   buttonLink?: string;
+  eyebrow?: string;
+  note?: string;
+  placeholder?: string;
   items?: Record<string, unknown>[];
   isVisible: boolean;
   order: number;

@@ -49,7 +49,11 @@ export async function POST(request: NextRequest) {
       return apiError('Each landing page section can only be added once', 400);
     }
     const normalizedSections = [...sections]
-      .sort((a, b) => Number(a.order || 0) - Number(b.order || 0))
+      .sort((a, b) => {
+        if (a.type === 'navbar') return -1;
+        if (b.type === 'navbar') return 1;
+        return Number(a.order || 0) - Number(b.order || 0);
+      })
       .map((section, order) => ({ ...section, order }));
 
     await connectDB();

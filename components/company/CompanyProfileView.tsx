@@ -51,6 +51,17 @@ interface CompanyProfileViewProps {
   gallery: GalleryData | null;
 }
 
+function safeCompanyLink(link: string | undefined, fallback = '/') {
+  if (
+    link?.startsWith('/') ||
+    link?.startsWith('#') ||
+    link?.startsWith('https://')
+  ) {
+    return link;
+  }
+  return fallback;
+}
+
 const socialLabels: Record<keyof SocialLinks, string> = {
   facebook: 'Facebook',
   twitter: 'Twitter',
@@ -133,11 +144,26 @@ export function CompanyProfileView({
         return section;
       })
     : [];
+  const navbarSection = enrichedSections.find(
+    (section) => section.type === 'navbar',
+  );
+  const navbarItems = (navbarSection?.items || []) as Array<{
+    label?: string;
+    link?: string;
+  }>;
+  const navbarName =
+    navbarSection?.title && navbarSection.title !== 'Company Navigation'
+      ? navbarSection.title
+      : company.name;
+  const navbarButtonLink = navbarSection?.buttonLink
+    ? safeCompanyLink(navbarSection.buttonLink, whatsappUrl || '/')
+    : whatsappUrl;
 
   if (hasLanding) {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-950">
-        <header className="sticky top-0 z-50 border-b border-gray-200/80 bg-white/90 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/90">
+        {navbarSection?.isVisible !== false && (
+          <header className="sticky top-0 z-50 border-b border-gray-200/80 bg-white/90 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/90">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
             <Link href={`/company/${company.slug}`} className="flex min-w-0 items-center gap-3">
               {company.logo ? (
@@ -153,32 +179,54 @@ export function CompanyProfileView({
                 </span>
               )}
               <div className="flex items-center gap-2">
-                <span className="truncate text-base font-bold sm:text-lg">{company.name}</span>
+                <span>
+                  <span className="block truncate text-base font-bold sm:text-lg">{navbarName}</span>
+                  {navbarSection?.subtitle && (
+                    <span className="hidden truncate text-xs text-gray-500 md:block">
+                      {navbarSection.subtitle}
+                    </span>
+                  )}
+                </span>
                 {company.isVerified && (
                   <BadgeCheck className="h-5 w-5 text-blue-500 shrink-0" aria-label="Verified" />
                 )}
               </div>
             </Link>
             <div className="flex items-center gap-2">
-              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-                <Link href="/search">Directory</Link>
-              </Button>
-              {whatsappUrl && (
+              {navbarItems.slice(0, 3).map((item, index) =>
+                item.label && item.link ? (
+                  <Button
+                    key={`${item.label}-${index}`}
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="hidden md:inline-flex"
+                  >
+                    <a href={safeCompanyLink(item.link)}>{item.label}</a>
+                  </Button>
+                ) : null,
+              )}
+              {navbarButtonLink && (
                 <Button
                   asChild
                   size="sm"
                   className="rounded-full text-white"
                   style={{ backgroundColor: company.theme?.primaryColor || '#6366f1' }}
                 >
-                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={navbarButtonLink}
+                    target={navbarButtonLink.startsWith('https://') ? '_blank' : undefined}
+                    rel={navbarButtonLink.startsWith('https://') ? 'noopener noreferrer' : undefined}
+                  >
                     <MessageCircle className="h-4 w-4" />
-                    Enquire now
+                    {navbarSection?.buttonText || 'Enquire now'}
                   </a>
                 </Button>
               )}
             </div>
           </div>
-        </header>
+          </header>
+        )}
         <CompanyLanding
           sections={enrichedSections}
           companyId={company._id}

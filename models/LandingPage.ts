@@ -12,6 +12,9 @@ export interface ILandingPageDocument extends Document {
     images?: string[];
     buttonText?: string;
     buttonLink?: string;
+    eyebrow?: string;
+    note?: string;
+    placeholder?: string;
     items?: Record<string, unknown>[];
     isVisible: boolean;
     order: number;
@@ -36,6 +39,9 @@ const LandingPageSchema = new Schema<ILandingPageDocument>(
         images: [String],
         buttonText: String,
         buttonLink: String,
+        eyebrow: String,
+        note: String,
+        placeholder: String,
         items: [Schema.Types.Mixed],
         isVisible: { type: Boolean, default: true },
         order: Number,

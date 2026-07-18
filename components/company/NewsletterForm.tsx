@@ -6,10 +6,12 @@ import { CheckCircle2, Loader2, Mail } from 'lucide-react';
 export function NewsletterForm({
   companyId,
   buttonText = 'Subscribe',
+  placeholder = 'Enter your email address',
   primaryColor,
 }: {
   companyId: string;
   buttonText?: string;
+  placeholder?: string;
   primaryColor: string;
 }) {
   const [email, setEmail] = useState('');
@@ -54,7 +56,7 @@ export function NewsletterForm({
             maxLength={254}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="Enter your email address"
+            placeholder={placeholder}
             className="h-12 min-w-0 flex-1 bg-transparent text-sm outline-none"
           />
         </label>
