@@ -1,85 +1,115 @@
 'use client';
 
-import { MessageSquare } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { MessageSquare, Mail, Phone, ExternalLink } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { EmptyState } from '@/components/dashboard/EmptyState';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-
-const PLACEHOLDER_MESSAGES = [
-  {
-    _id: '1',
-    senderName: 'Sarah Johnson',
-    subject: 'Partnership Inquiry',
-    content: 'Hi, I am interested in partnering with your company for an upcoming project.',
-    isRead: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    _id: '2',
-    senderName: 'Mike Chen',
-    subject: 'Product Question',
-    content: 'Could you provide more details about your premium service package?',
-    isRead: true,
-    createdAt: new Date(Date.now() - 172800000).toISOString(),
-  },
-  {
-    _id: '3',
-    senderName: 'Emily Davis',
-    subject: 'Follow Up',
-    content: 'Thank you for the quick response on my previous enquiry. I would like to schedule a call.',
-    isRead: true,
-    createdAt: new Date(Date.now() - 604800000).toISOString(),
-  },
-];
+import { Skeleton } from '@/components/ui/skeleton';
+import type { ILead } from '@/types';
 
 export default function MessagesPage() {
+  const [messages, setMessages] = useState<ILead[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMessages() {
+      try {
+        const { data } = await axios.get('/api/leads');
+        if (data.success) {
+          setMessages(data.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch messages:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMessages();
+  }, []);
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Messages"
-        description="Customer messages and inquiries"
+        description="Customer messages and inquiries from your Contact Form."
       />
 
       <Card>
         <CardContent className="p-6">
-          {PLACEHOLDER_MESSAGES.length ? (
-            <div className="space-y-3">
-              {PLACEHOLDER_MESSAGES.map((message) => (
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-28 w-full rounded-xl" />
+              ))}
+            </div>
+          ) : messages.length ? (
+            <div className="space-y-4">
+              {messages.map((message) => (
                 <div
                   key={message._id}
                   className={cn(
-                    'rounded-lg border p-4',
-                    message.isRead
-                      ? 'border-gray-100 dark:border-gray-800'
-                      : 'border-indigo-100 bg-indigo-50/50 dark:border-indigo-900 dark:bg-indigo-950/30',
+                    'rounded-xl border p-5 transition-shadow hover:shadow-md',
+                    message.status === 'new'
+                      ? 'border-indigo-100 bg-indigo-50/40 dark:border-indigo-900/40 dark:bg-indigo-900/10'
+                      : 'border-gray-100 bg-white dark:border-gray-800 dark:bg-gray-950',
                   )}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="font-medium">{message.subject}</p>
-                      <p className="text-sm text-gray-500">From {message.senderName}</p>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {message.customerName}
+                        </h3>
+                        {message.status === 'new' && (
+                          <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200">
+                            New
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                        {message.email && (
+                          <a href={`mailto:${message.email}`} className="flex items-center gap-1.5 hover:text-indigo-600">
+                            <Mail className="h-4 w-4" />
+                            {message.email}
+                          </a>
+                        )}
+                        {message.phone && (
+                          <a href={`tel:${message.phone}`} className="flex items-center gap-1.5 hover:text-indigo-600">
+                            <Phone className="h-4 w-4" />
+                            {message.phone}
+                          </a>
+                        )}
+                      </div>
+                      
+                      {message.interestedService && (
+                        <p className="mt-3 text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                          Interested in: {message.interestedService}
+                        </p>
+                      )}
+                      
+                      {message.message && (
+                        <div className="mt-3 rounded-lg bg-gray-50 p-4 text-sm text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                          {message.message}
+                        </div>
+                      )}
                     </div>
-                    {!message.isRead && (
-                      <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-xs text-white">
-                        New
-                      </span>
-                    )}
+                    
+                    <span className="whitespace-nowrap text-xs font-medium text-gray-400">
+                      {formatDate(message.createdAt)}
+                    </span>
                   </div>
-                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{message.content}</p>
-                  <p className="mt-2 text-xs text-gray-400">{formatDate(message.createdAt)}</p>
                 </div>
               ))}
-              <p className="pt-4 text-center text-xs text-gray-400">
-                Placeholder messages — messaging API integration coming soon
-              </p>
             </div>
           ) : (
             <EmptyState
               icon={MessageSquare}
               title="No messages yet"
-              description="Customer messages will appear here."
+              description="When customers fill out your website's contact form, their messages will appear here."
             />
           )}
         </CardContent>

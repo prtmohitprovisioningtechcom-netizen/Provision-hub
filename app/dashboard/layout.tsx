@@ -37,8 +37,6 @@ const sidebarLinks = [
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/website', label: 'Website Builder', icon: Globe },
   { href: '/dashboard/products', label: 'Products', icon: Package },
-  { href: '/dashboard/services', label: 'Services', icon: Wrench },
-  { href: '/dashboard/gallery', label: 'Gallery', icon: Image },
   { href: '/dashboard/blogs', label: 'Blogs', icon: FileText },
   { href: '/dashboard/leads', label: 'Leads', icon: Users },
   { href: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
