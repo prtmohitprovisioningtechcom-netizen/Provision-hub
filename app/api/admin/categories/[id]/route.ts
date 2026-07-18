@@ -5,7 +5,7 @@ import { requireAuth } from '@/server/middleware/auth';
 
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await requireAuth(request, ['super_admin']);
@@ -37,7 +37,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await requireAuth(request, ['super_admin']);
