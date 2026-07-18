@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   Shield,
   Tags,
+  ClipboardList,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn, getInitials } from '@/lib/utils';
@@ -23,6 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/companies', label: 'Companies', icon: Building2 },
+  { href: '/admin/requirements', label: 'Requirements', icon: ClipboardList },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/categories', label: 'Categories', icon: Tags },
   { href: '/admin/customize', label: 'Customize Site', icon: Shield },

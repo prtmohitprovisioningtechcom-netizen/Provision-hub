@@ -91,6 +91,13 @@ export function Navbar({ config }: { config?: any }) {
             </>
           )}
 
+          {/* Prominent Post Requirement Button */}
+          <Link href="/post-requirement" className="hidden lg:block">
+            <Button variant="default" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-[0_0_15px_rgba(79,70,229,0.5)]">
+              Post Requirement
+            </Button>
+          </Link>
+
           {/* New Quick Links Dropdown */}
           <div className="relative">
             <Button
@@ -110,7 +117,7 @@ export function Navbar({ config }: { config?: any }) {
                   className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950 py-1 z-50"
                 >
                   <Link href="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Home</Link>
-                  <Link href="/leads/new" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Post Your Requirements</Link>
+                  <Link href="/post-requirement" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Post Your Requirements</Link>
                   <Link href="/search" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Product/ Service Directory</Link>
                   <Link href="/search?verified=true" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Verified Business</Link>
                   <Link href={isAuthenticated ? "/dashboard/settings" : "/login"} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Settings</Link>
@@ -160,6 +167,13 @@ export function Navbar({ config }: { config?: any }) {
               >
                 <Shield className="h-4 w-4" />
                 Admin
+              </Link>
+              <Link
+                href="/post-requirement"
+                className="px-4 py-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+                onClick={() => setIsOpen(false)}
+              >
+                Post Requirement
               </Link>
               {isAuthenticated ? (
                 <Link

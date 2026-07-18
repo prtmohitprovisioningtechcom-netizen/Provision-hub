@@ -138,7 +138,12 @@ export function CompanyProfileView({
                   {company.name.charAt(0)}
                 </span>
               )}
-              <span className="truncate text-base font-bold sm:text-lg">{company.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="truncate text-base font-bold sm:text-lg">{company.name}</span>
+                {company.isVerified && (
+                  <BadgeCheck className="h-5 w-5 text-blue-500 shrink-0" aria-label="Verified" />
+                )}
+              </div>
             </Link>
             <div className="flex items-center gap-2">
               <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
