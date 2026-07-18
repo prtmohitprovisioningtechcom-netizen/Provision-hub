@@ -120,14 +120,66 @@ export function CompanyProfileView({
       })
     : [];
 
+  if (hasLanding) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-950">
+        <header className="sticky top-0 z-50 border-b border-gray-200/80 bg-white/90 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/90">
+          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+            <Link href={`/company/${company.slug}`} className="flex min-w-0 items-center gap-3">
+              {company.logo ? (
+                <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border bg-white">
+                  <Image src={company.logo} alt="" fill sizes="40px" className="object-cover" />
+                </span>
+              ) : (
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white"
+                  style={{ backgroundColor: company.theme?.primaryColor || '#6366f1' }}
+                >
+                  {company.name.charAt(0)}
+                </span>
+              )}
+              <span className="truncate text-base font-bold sm:text-lg">{company.name}</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+                <Link href="/search">Directory</Link>
+              </Button>
+              {whatsappUrl && (
+                <Button
+                  asChild
+                  size="sm"
+                  className="rounded-full text-white"
+                  style={{ backgroundColor: company.theme?.primaryColor || '#6366f1' }}
+                >
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="h-4 w-4" />
+                    Enquire now
+                  </a>
+                </Button>
+              )}
+            </div>
+          </div>
+        </header>
+        <CompanyLanding
+          sections={enrichedSections}
+          companyId={company._id}
+          companyName={company.name}
+          products={products}
+          services={services}
+          primaryColor={company.theme?.primaryColor}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Banner */}
-      <div className="relative h-72 sm:h-96 md:h-[28rem] bg-gray-900 overflow-hidden">
+      <div className="relative h-72 overflow-hidden bg-gray-900 sm:h-96 md:h-112">
         {company.banner && (
           <Image src={company.banner} alt={company.name} fill className="object-cover opacity-60" priority />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-50 dark:from-gray-950 via-transparent to-black/60" />
+        <div className="absolute inset-0 bg-linear-to-t from-gray-50 via-transparent to-black/60 dark:from-gray-950" />
         <div className="absolute top-6 left-6 z-10">
           <Link href="/search" className="flex items-center gap-2 text-sm font-medium text-white/90 hover:text-white bg-black/30 hover:bg-black/50 px-5 py-2.5 rounded-full backdrop-blur-md transition-all shadow-lg border border-white/10">
             ← Back to search
@@ -147,7 +199,7 @@ export function CompanyProfileView({
             {company.logo ? (
               <Image src={company.logo} alt={company.name} fill className="object-cover" />
             ) : (
-              <div className="flex h-full items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-100 text-5xl font-black text-indigo-600">
+              <div className="flex h-full items-center justify-center bg-linear-to-br from-indigo-100 to-purple-100 text-5xl font-black text-indigo-600">
                 {company.name.charAt(0)}
               </div>
             )}

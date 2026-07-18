@@ -7,9 +7,13 @@ import { Button } from '@/components/ui/button';
 
 export function Hero({ config }: { config?: any }) {
   const defaultTitle = 'Build Stunning Company Landing Pages';
-  const defaultSubtitle = 'Create, beautiful SEO-optimized landing pages for your business. Manage products, services, leads, and reviews — all from one powerful dashboard.';
+  const defaultSubtitle = 'Create beautiful, SEO-optimized landing pages for your business. Manage products, services, leads, and reviews — all from one powerful dashboard.';
   const titleText = config?.title || defaultTitle;
   const subtitleText = config?.subtitle || defaultSubtitle;
+  const secondaryLink =
+    !config?.secondaryCtaLink || config.secondaryCtaLink === '#demo'
+      ? '#templates'
+      : config.secondaryCtaLink;
   
   // Split title for styling (first two words highlighted)
   const titleWords = titleText.split(' ');
@@ -58,7 +62,7 @@ export function Hero({ config }: { config?: any }) {
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
-            <Link href={config?.secondaryCtaLink || "/search"}>
+            <Link href={secondaryLink}>
               <Button variant="outline" size="lg">
                 {config?.secondaryCtaText || "Explore Companies"}
               </Button>
@@ -67,9 +71,9 @@ export function Hero({ config }: { config?: any }) {
 
           <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto">
             {[
-              { value: '10K+', label: 'Companies' },
-              { value: '50K+', label: 'Landing Pages' },
-              { value: '99.9%', label: 'Uptime' },
+              { value: 'No-code', label: 'Easy builder' },
+              { value: 'SEO-ready', label: 'Built to rank' },
+              { value: 'Responsive', label: 'Every screen' },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}

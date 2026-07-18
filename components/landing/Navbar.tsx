@@ -44,7 +44,12 @@ export function Navbar({ config }: { config?: any }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={toggle}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggle}
+            aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
+          >
             {mode === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
 
@@ -77,7 +82,7 @@ export function Navbar({ config }: { config?: any }) {
                   Login
                 </Button>
               </Link>
-              <Link href="/register">
+              <Link href="/register/company">
                 <Button variant="gradient" size="sm">
                   Get Started
                 </Button>
@@ -90,6 +95,9 @@ export function Navbar({ config }: { config?: any }) {
             size="icon"
             className="md:hidden"
             onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={isOpen}
+            aria-controls="mobile-navigation"
           >
             {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
@@ -99,6 +107,7 @@ export function Navbar({ config }: { config?: any }) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="mobile-navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -123,13 +132,21 @@ export function Navbar({ config }: { config?: any }) {
                 <Shield className="h-4 w-4" />
                 Admin
               </Link>
-              {isAuthenticated && (
+              {isAuthenticated ? (
                 <Link
                   href={dashboardLink}
                   className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
                   onClick={() => setIsOpen(false)}
                 >
                   Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Sign in
                 </Link>
               )}
             </div>

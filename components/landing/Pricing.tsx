@@ -86,7 +86,7 @@ export function Pricing({ config }: { config?: PricingConfig }) {
               transition={{ delay: i * 0.1 }}
             >
               <Card
-                className={`h-full relative ${plan.popular ? 'border-indigo-500 shadow-xl shadow-indigo-500/10 scale-105' : ''}`}
+                className={`relative h-full ${plan.popular ? 'border-indigo-500 shadow-xl shadow-indigo-500/10' : ''}`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-linear-to-r from-indigo-600 to-purple-600 px-4 py-1 text-xs font-semibold text-white">
@@ -112,7 +112,10 @@ export function Pricing({ config }: { config?: PricingConfig }) {
                       </li>
                     ))}
                   </ul>
-                  <Link href="/register/company" className="block mt-6">
+                  <Link
+                    href={(plan.ctaText || '').toLowerCase().includes('contact') ? '#contact' : '/register/company'}
+                    className="mt-6 block"
+                  >
                     <Button
                       variant={plan.popular ? 'gradient' : 'outline'}
                       className="w-full"

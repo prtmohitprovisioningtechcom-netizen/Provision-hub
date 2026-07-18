@@ -76,7 +76,7 @@ const PlatformSettingsSchema = new Schema<IPlatformSettingsDocument>(
       primaryCtaText: { type: String, default: 'Get Started' },
       primaryCtaLink: { type: String, default: '/register/company' },
       secondaryCtaText: { type: String, default: 'View Demo' },
-      secondaryCtaLink: { type: String, default: '#demo' },
+      secondaryCtaLink: { type: String, default: '#templates' },
     },
     themeConfig: {
       logoText: { type: String, default: 'TenantHub' },

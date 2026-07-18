@@ -63,18 +63,17 @@ export function Footer({ config }: { config?: any }) {
             {
               title: 'Company',
               links: [
-                { href: '#about', label: 'About' },
                 { href: '#contact', label: 'Contact' },
-                { href: '/blog', label: 'Blog' },
-                { href: '/careers', label: 'Careers' },
+                { href: '/search', label: 'Company Directory' },
+                { href: '/admin/login', label: 'Admin Portal' },
               ],
             },
             {
-              title: 'Legal',
+              title: 'Account',
               links: [
-                { href: '/privacy', label: 'Privacy Policy' },
-                { href: '/terms', label: 'Terms of Service' },
-                { href: '/cookies', label: 'Cookie Policy' },
+                { href: '/login', label: 'Sign In' },
+                { href: '/register/company', label: 'Register Company' },
+                { href: '/forgot-password', label: 'Reset Password' },
               ],
             },
           ].map((section) => (

@@ -46,10 +46,11 @@ export function Templates() {
                 <div className={`h-48 bg-linear-to-br ${template.color} relative`}>
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                     <Button
+                      asChild
                       variant="secondary"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
                     >
-                      Preview
+                      <Link href="/search">View live pages</Link>
                     </Button>
                   </div>
                 </div>

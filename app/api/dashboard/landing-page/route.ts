@@ -1,8 +1,10 @@
 import { NextRequest } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { requireAuth } from '@/server/middleware/auth';
 import { apiSuccess, apiError, parseBody } from '@/server/utils/api-response';
 import { connectDB } from '@/lib/mongodb';
 import LandingPage from '@/models/LandingPage';
+import Company from '@/models/Company';
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,6 +34,9 @@ export async function POST(request: NextRequest) {
     if (!Array.isArray(sections)) {
       return apiError('Invalid sections data', 400);
     }
+    if (sections.length > 20) {
+      return apiError('A landing page can contain up to 20 sections', 400);
+    }
 
     await connectDB();
     const landingPage = await LandingPage.findOneAndUpdate(
@@ -39,6 +44,11 @@ export async function POST(request: NextRequest) {
       { sections, isPublished: true },
       { new: true, upsert: true }
     ).lean();
+
+    const company = await Company.findById(auth.companyId).select('slug').lean();
+    if (company?.slug) {
+      revalidatePath(`/company/${company.slug}`);
+    }
 
     return apiSuccess(landingPage);
   } catch (error) {

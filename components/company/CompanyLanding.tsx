@@ -66,6 +66,7 @@ export function CompanyLanding({
   if (!visibleSections.length) return null;
 
   const serviceNames = services.map((s) => s.name);
+  const hasContactSection = visibleSections.some((section) => section.type === 'contact');
 
   return (
     <div className="space-y-0">
@@ -78,7 +79,7 @@ export function CompanyLanding({
               <motion.section
                 key={section.id}
                 {...fadeUp}
-                className="relative overflow-hidden min-h-[600px] flex items-center bg-gray-900"
+                className="relative min-h-150 overflow-hidden bg-gray-900 flex items-center"
               >
                 {/* Background image or gradient */}
                 {section.image ? (
@@ -90,7 +91,7 @@ export function CompanyLanding({
                       className="object-cover opacity-40"
                       priority={index === 0}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/60 to-transparent" />
                   </div>
                 ) : (
                   <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${primaryColor}, #1e1b4b)` }} />
@@ -102,7 +103,7 @@ export function CompanyLanding({
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.6, delay: 0.2 }}
                   >
-                    <h2 className="text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
+                    <h2 className="mb-6 bg-linear-to-r from-white to-gray-300 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent sm:text-6xl lg:text-7xl">
                       {section.title}
                     </h2>
                   </motion.div>
@@ -125,6 +126,21 @@ export function CompanyLanding({
                     >
                       {section.content}
                     </motion.p>
+                  )}
+                  {hasContactSection && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.75 }}
+                      className="mt-9"
+                    >
+                      <a
+                        href="#contact"
+                        className="inline-flex items-center rounded-full bg-white px-7 py-3.5 text-sm font-bold text-gray-900 shadow-xl transition hover:-translate-y-0.5 hover:bg-gray-100"
+                      >
+                        Get in touch
+                      </a>
+                    </motion.div>
                   )}
                 </div>
               </motion.section>
@@ -150,7 +166,7 @@ export function CompanyLanding({
                     </p>
                   </div>
                   {section.image && (
-                    <div className="relative aspect-[4/5] md:aspect-square overflow-hidden rounded-3xl shadow-2xl group">
+                    <div className="group relative aspect-4/5 overflow-hidden rounded-3xl shadow-2xl md:aspect-square">
                       <Image
                         src={section.image}
                         alt={section.title}
@@ -256,7 +272,7 @@ export function CompanyLanding({
                           transition={{ delay: i * 0.08 }}
                           className="group flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                         >
-                          <div className="relative aspect-[4/5] bg-gray-100 dark:bg-gray-900 overflow-hidden">
+                          <div className="relative aspect-4/5 overflow-hidden bg-gray-100 dark:bg-gray-900">
                             {product.images?.[0] ? (
                               <Image
                                 src={product.images[0]}
@@ -270,7 +286,7 @@ export function CompanyLanding({
                                 No image
                               </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                           </div>
                           <div className="p-6 flex-1 flex flex-col justify-between">
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">{product.name}</h3>
@@ -356,7 +372,7 @@ export function CompanyLanding({
                           {item.quote || item.comment}
                         </p>
                         <footer className="mt-8 flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-indigo-400 to-purple-500 font-bold text-white">
                             {(item.name || item.author || 'A').charAt(0)}
                           </div>
                           <div>
@@ -395,7 +411,7 @@ export function CompanyLanding({
 
           case 'contact':
             return (
-              <motion.section key={section.id} {...fadeUp} className="py-16 px-4">
+              <motion.section id="contact" key={section.id} {...fadeUp} className="scroll-mt-20 py-16 px-4">
                 <div className="mx-auto max-w-2xl">
                   <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold">{section.title}</h2>
