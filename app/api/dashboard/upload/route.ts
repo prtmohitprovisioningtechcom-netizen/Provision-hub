@@ -60,10 +60,8 @@ export async function POST(request: NextRequest) {
     return apiSuccess(uploaded);
   } catch (error) {
     console.error('Landing page image upload failed:', error);
-    const message =
-      error instanceof Error && error.message.includes('Cloudinary is not configured')
-        ? error.message
-        : 'Failed to upload image';
-    return apiError(message, 500);
+    const isConfigError = error instanceof Error && error.message.includes('Cloudinary is not configured');
+    const message = isConfigError ? error.message : 'Failed to upload image';
+    return apiError(message, isConfigError ? 400 : 500);
   }
 }
