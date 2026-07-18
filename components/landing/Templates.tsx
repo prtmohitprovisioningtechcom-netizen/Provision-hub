@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 const templates = [
-  { name: 'Modern Business', category: 'Corporate', color: 'from-blue-500 to-cyan-500' },
-  { name: 'Creative Agency', category: 'Agency', color: 'from-purple-500 to-pink-500' },
-  { name: 'Restaurant', category: 'Food', color: 'from-orange-500 to-red-500' },
-  { name: 'Tech Startup', category: 'Technology', color: 'from-indigo-500 to-violet-500' },
-  { name: 'Healthcare', category: 'Medical', color: 'from-green-500 to-teal-500' },
-  { name: 'Real Estate', category: 'Property', color: 'from-amber-500 to-orange-500' },
+  { name: 'Modern Business', style: 'Professional layout', color: 'from-blue-500 to-cyan-500' },
+  { name: 'Creative Studio', style: 'Creative layout', color: 'from-purple-500 to-pink-500' },
+  { name: 'Warm Showcase', style: 'Elegant layout', color: 'from-orange-500 to-red-500' },
+  { name: 'Bold Launch', style: 'Modern layout', color: 'from-indigo-500 to-violet-500' },
+  { name: 'Clean Presence', style: 'Clean layout', color: 'from-green-500 to-teal-500' },
+  { name: 'Premium Showcase', style: 'Premium layout', color: 'from-amber-500 to-orange-500' },
 ];
 
 export function Templates() {
@@ -56,7 +56,7 @@ export function Templates() {
                 </div>
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-gray-900 dark:text-white">{template.name}</h3>
-                  <p className="text-sm text-gray-500">{template.category}</p>
+                  <p className="text-sm text-gray-500">{template.style}</p>
                 </CardContent>
               </Card>
             </motion.div>

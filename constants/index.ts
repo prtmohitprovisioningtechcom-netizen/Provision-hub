@@ -50,25 +50,6 @@ export const SUBSCRIPTION_PLANS: Record<
   },
 };
 
-export const BUSINESS_CATEGORIES = [
-  'Technology',
-  'Healthcare',
-  'Education',
-  'Finance',
-  'Real Estate',
-  'Retail',
-  'Food & Beverage',
-  'Manufacturing',
-  'Consulting',
-  'Marketing',
-  'Legal',
-  'Travel',
-  'Fitness',
-  'Beauty',
-  'Automotive',
-  'Other',
-];
-
 export const DAYS_OF_WEEK = [
   'Monday',
   'Tuesday',
