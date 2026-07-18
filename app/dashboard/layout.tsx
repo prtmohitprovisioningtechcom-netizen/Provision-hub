@@ -171,7 +171,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </span>
           </Button>
         </header>
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="min-h-0 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );
