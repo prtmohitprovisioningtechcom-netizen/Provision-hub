@@ -26,7 +26,7 @@ const LandingPageSchema = new Schema<ILandingPageDocument>(
     sections: [
       {
         id: String,
-        type: String,
+        type: { type: String },
         title: String,
         subtitle: String,
         content: String,
@@ -43,8 +43,9 @@ const LandingPageSchema = new Schema<ILandingPageDocument>(
   { timestamps: true },
 );
 
+delete mongoose.models.LandingPage;
+
 const LandingPage: Model<ILandingPageDocument> =
-  mongoose.models.LandingPage ||
   mongoose.model<ILandingPageDocument>('LandingPage', LandingPageSchema);
 
 export default LandingPage;
