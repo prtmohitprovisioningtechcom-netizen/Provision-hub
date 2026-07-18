@@ -3,6 +3,7 @@ import { requireAuth } from '@/server/middleware/auth';
 import { ProductService } from '@/server/services/product.service';
 import { productSchema } from '@/lib/validators';
 import { apiSuccess, apiError, apiPaginated, parseBody } from '@/server/utils/api-response';
+import { revalidateCompanyPage } from '@/lib/revalidate-company';
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
     const body = await parseBody(request);
     const data = productSchema.parse(body);
     const product = await ProductService.create(auth.companyId, data);
+    await revalidateCompanyPage(auth.companyId);
     return apiSuccess(product, 'Product created', 201);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to create product';

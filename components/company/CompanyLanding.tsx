@@ -60,7 +60,20 @@ export function CompanyLanding({
   primaryColor = '#6366f1',
 }: CompanyLandingProps) {
   const visibleSections = [...sections]
-    .filter((s) => s.isVisible)
+    .filter((section) => {
+      if (!section.isVisible) return false;
+      if (section.type === 'services') {
+        return Boolean(section.items?.length || services.length);
+      }
+      if (section.type === 'products') {
+        return Boolean(section.items?.length || products.length);
+      }
+      if (section.type === 'gallery') return Boolean(section.images?.length);
+      if (section.type === 'faq' || section.type === 'testimonials') {
+        return Boolean(section.items?.length);
+      }
+      return true;
+    })
     .sort((a, b) => a.order - b.order);
 
   if (!visibleSections.length) return null;

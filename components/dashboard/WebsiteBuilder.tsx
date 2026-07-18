@@ -62,6 +62,19 @@ function createDefaultSections(): ILandingPageSection[] {
   }));
 }
 
+function mergeMissingSections(
+  savedSections: ILandingPageSection[],
+): ILandingPageSection[] {
+  const defaults = createDefaultSections();
+  const savedTypes = new Set(savedSections.map((section) => section.type));
+  return [
+    ...savedSections,
+    ...defaults.filter((section) => !savedTypes.has(section.type)),
+  ]
+    .sort((a, b) => a.order - b.order)
+    .map((section, order) => ({ ...section, order }));
+}
+
 function readFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -79,6 +92,8 @@ export default function WebsiteBuilder() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [saved, setSaved] = useState(true);
+  const [companyName, setCompanyName] = useState('');
+  const [companyLogo, setCompanyLogo] = useState('');
 
   useEffect(() => {
     if (!companyId) {
@@ -88,14 +103,23 @@ export default function WebsiteBuilder() {
 
     const load = async () => {
       try {
-        const { data } = await api.get('/api/dashboard/landing-page');
-        const loaded =
-          data.success && data.data?.sections?.length
-            ? (data.data.sections as ILandingPageSection[])
-            : createDefaultSections();
+        const [{ data }, { data: brandingResponse }] = await Promise.all([
+          api.get('/api/dashboard/landing-page'),
+          api.get('/api/dashboard/company-branding'),
+        ]);
+        const rawSections =
+          (data.data?.sections as ILandingPageSection[] | undefined) || [];
+        const loaded = data.success
+          ? mergeMissingSections(rawSections)
+          : createDefaultSections();
         const ordered = [...loaded].sort((a, b) => a.order - b.order);
         setSections(ordered);
         setSelectedId(ordered[0]?.id ?? null);
+        setSaved(rawSections.length === loaded.length);
+        if (brandingResponse.success) {
+          setCompanyName(brandingResponse.data?.name || '');
+          setCompanyLogo(brandingResponse.data?.logo || '');
+        }
       } catch {
         toast.error('Could not load your website');
       } finally {
@@ -195,6 +219,23 @@ export default function WebsiteBuilder() {
     if (!file) return;
     const url = await uploadImage(file, section.id);
     if (url) updateSection(section.id, { image: url });
+  };
+
+  const handleNavbarLogo = async (file?: File) => {
+    if (!file) return;
+    const url = await uploadImage(file, 'navbar-logo');
+    if (!url) return;
+
+    try {
+      const { data } = await api.put('/api/dashboard/company-branding', {
+        logo: url,
+      });
+      if (!data.success) throw new Error('Update failed');
+      setCompanyLogo(data.data.logo);
+      toast.success('Navbar logo updated');
+    } catch {
+      toast.error('Could not update navbar logo');
+    }
   };
 
   const handleGalleryImages = async (
@@ -297,6 +338,46 @@ export default function WebsiteBuilder() {
           </div>
         </div>
       </div>
+
+      <Card>
+        <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-100 text-xl font-bold text-indigo-600 dark:bg-gray-900">
+              {companyLogo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={companyLogo} alt="" className="h-full w-full object-cover" />
+              ) : (
+                companyName.charAt(0) || 'C'
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold">Navbar branding</p>
+              <p className="truncate text-sm text-gray-500">
+                {companyName || 'Your company'} · Upload the logo shown on your public website.
+              </p>
+            </div>
+          </div>
+          <Label
+            htmlFor="navbar-logo-upload"
+            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+          >
+            {uploading === 'navbar-logo' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ImagePlus className="h-4 w-4" />
+            )}
+            {companyLogo ? 'Replace logo' : 'Upload logo'}
+            <Input
+              id="navbar-logo-upload"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className="sr-only"
+              disabled={uploading !== null}
+              onChange={(event) => handleNavbarLogo(event.target.files?.[0])}
+            />
+          </Label>
+        </CardContent>
+      </Card>
 
       <div className="grid items-start gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
         <Card className="overflow-hidden lg:sticky lg:top-20">

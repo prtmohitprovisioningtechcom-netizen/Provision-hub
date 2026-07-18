@@ -128,7 +128,7 @@ export function CompanyProfileView({
             <Link href={`/company/${company.slug}`} className="flex min-w-0 items-center gap-3">
               {company.logo ? (
                 <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border bg-white">
-                  <Image src={company.logo} alt="" fill sizes="40px" className="object-cover" />
+                  <Image src={company.logo} alt="" fill sizes="40px" className="object-contain p-1" />
                 </span>
               ) : (
                 <span

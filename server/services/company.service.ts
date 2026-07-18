@@ -8,6 +8,7 @@ import Gallery from '@/models/Gallery';
 import { connectDB } from '@/lib/mongodb';
 import { getPaginationMeta } from '@/lib/utils';
 import { SearchFilters, CompanyStatus } from '@/types';
+import { LANDING_SECTIONS } from '@/constants';
 
 function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').slice(0, 80);
@@ -82,7 +83,39 @@ export class CompanyService {
       Gallery.findOne({ companyId: company._id }).lean(),
     ]);
 
-    return { company, products, services, reviews, landingPage, gallery };
+    const savedSections = landingPage?.sections || [];
+    const savedTypes = new Set(savedSections.map((section) => section.type));
+    const sections = [
+      ...savedSections,
+      ...LANDING_SECTIONS.filter((section) => !savedTypes.has(section.type)).map(
+        (section, index) => ({
+          id: `section-${section.type}-${index}`,
+          type: section.type,
+          title: section.title,
+          subtitle: '',
+          content: '',
+          isVisible: true,
+          order: section.order,
+          items: [],
+          images: [],
+        }),
+      ),
+    ]
+      .sort((a, b) => a.order - b.order)
+      .map((section, order) => ({ ...section, order }));
+
+    const completeLandingPage = landingPage
+      ? { ...landingPage, sections }
+      : { sections, isPublished: true };
+
+    return {
+      company,
+      products,
+      services,
+      reviews,
+      landingPage: completeLandingPage,
+      gallery,
+    };
   }
 
   static async getById(id: string) {

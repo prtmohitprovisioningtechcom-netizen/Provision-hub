@@ -21,6 +21,13 @@ export class ServiceService {
     return { services, pagination: getPaginationMeta(page, limit, total) };
   }
 
+  static async getById(id: string) {
+    await connectDB();
+    const service = await Service.findById(id).lean();
+    if (!service) throw new Error('Service not found');
+    return service;
+  }
+
   static async update(id: string, data: Partial<ServiceInput>) {
     await connectDB();
     if (data.name) {
