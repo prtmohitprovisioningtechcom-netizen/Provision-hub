@@ -13,6 +13,7 @@ import {
   Shield,
   Tags,
   ClipboardList,
+  Layers,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn, getInitials } from '@/lib/utils';
@@ -27,6 +28,7 @@ const sidebarLinks = [
   { href: '/admin/requirements', label: 'Requirements', icon: ClipboardList },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/categories', label: 'Categories', icon: Tags },
+  { href: '/admin/landing-sections', label: 'Landing Sections', icon: Layers },
   { href: '/admin/customize', label: 'Customize Site', icon: Shield },
 ];
 

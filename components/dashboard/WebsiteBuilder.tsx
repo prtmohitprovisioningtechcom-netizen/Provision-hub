@@ -2,28 +2,30 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import {
-  ArrowDown,
-  ArrowUp,
-  Check,
-  ChevronRight,
-  Eye,
-  EyeOff,
-  Globe,
-  ImagePlus,
-  LayoutTemplate,
-  Loader2,
-  Plus,
-  Save,
-  Sparkles,
-  Trash2,
-  UploadCloud,
+import { 
+  ArrowDown, 
+  ArrowUp, 
+  Check, 
+  ChevronRight, 
+  Eye, 
+  EyeOff, 
+  Globe, 
+  ImagePlus, 
+  LayoutTemplate, 
+  Loader2, 
+  Plus, 
+  Save, 
+  Sparkles, 
+  Trash2, 
+  UploadCloud, 
+  MonitorPlay, 
+  Code 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/services/api';
-import { LANDING_SECTIONS } from '@/constants';
 import { ILandingPageSection } from '@/types';
 import { useCompany } from '@/hooks/useCompany';
+import { CompanyLanding } from '@/components/company/CompanyLanding';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -48,11 +50,16 @@ const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
 
 const IMAGE_SECTIONS: ILandingPageSection['type'][] = ['hero', 'about'];
 
-function createDefaultSections(): ILandingPageSection[] {
-  return LANDING_SECTIONS.map((section, index) => ({
-    id: `section-${section.type}-${index}`,
-    type: section.type,
-    title: section.title,
+function mergeMissingSections(
+  savedSections: ILandingPageSection[],
+  availableCategories: any[]
+): ILandingPageSection[] {
+  const savedTypes = new Set(savedSections.map((section) => section.type));
+  
+  const defaults = availableCategories.map((cat, index) => ({
+    id: `section-${cat.slug}-${index}`,
+    type: cat.slug,
+    title: cat.name,
     subtitle: '',
     content: '',
     isVisible: true,
@@ -60,13 +67,7 @@ function createDefaultSections(): ILandingPageSection[] {
     items: [],
     images: [],
   }));
-}
 
-function mergeMissingSections(
-  savedSections: ILandingPageSection[],
-): ILandingPageSection[] {
-  const defaults = createDefaultSections();
-  const savedTypes = new Set(savedSections.map((section) => section.type));
   return [
     ...savedSections,
     ...defaults.filter((section) => !savedTypes.has(section.type)),
@@ -94,6 +95,8 @@ export default function WebsiteBuilder() {
   const [saved, setSaved] = useState(true);
   const [companyName, setCompanyName] = useState('');
   const [companyLogo, setCompanyLogo] = useState('');
+  const [viewMode, setViewMode] = useState<'editor' | 'preview'>('editor');
+  const [availableCategories, setAvailableCategories] = useState<any[]>([]);
 
   useEffect(() => {
     if (!companyId) {
@@ -103,15 +106,18 @@ export default function WebsiteBuilder() {
 
     const load = async () => {
       try {
-        const [{ data }, { data: brandingResponse }] = await Promise.all([
+        const [{ data }, { data: brandingResponse }, { data: catsData }] = await Promise.all([
           api.get('/api/dashboard/landing-page'),
           api.get('/api/dashboard/company-branding'),
+          api.get('/api/categories?type=landing_section')
         ]);
+        
+        const cats = catsData.data || [];
+        setAvailableCategories(cats);
+
         const rawSections =
           (data.data?.sections as ILandingPageSection[] | undefined) || [];
-        const loaded = data.success
-          ? mergeMissingSections(rawSections)
-          : createDefaultSections();
+        const loaded = mergeMissingSections(rawSections, cats);
         const ordered = [...loaded].sort((a, b) => a.order - b.order);
         setSections(ordered);
         setSelectedId(ordered[0]?.id ?? null);
@@ -366,15 +372,19 @@ export default function WebsiteBuilder() {
               ) : (
                 <Save className="h-4 w-4" />
               )}
+              <MonitorPlay className="h-4 w-4" />
               {saving ? 'Publishing...' : saved ? 'Published' : 'Publish changes'}
             </Button>
           </div>
         </div>
       </div>
 
-      <Card>
-        <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
+      <div className="grid h-[calc(100vh-140px)] gap-5 lg:grid-cols-[400px_minmax(0,1fr)]">
+        {/* Left Side: Editor */}
+        <div className="flex h-full flex-col gap-5 overflow-y-auto pr-2 pb-10">
+          <Card>
+            <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-4">
             <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-100 text-xl font-bold text-indigo-600 dark:bg-gray-900">
               {companyLogo ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -412,53 +422,54 @@ export default function WebsiteBuilder() {
         </CardContent>
       </Card>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <Card className="overflow-hidden lg:sticky lg:top-20">
-          <div className="border-b bg-gray-50 px-4 py-3 dark:bg-gray-900">
-            <div className="flex items-center gap-2 font-semibold">
-              <LayoutTemplate className="h-4 w-4 text-indigo-600" />
-              Page sections
+          <Card className="overflow-hidden">
+            <div className="border-b bg-gray-50 px-4 py-3 dark:bg-gray-900">
+              <div className="flex items-center gap-2 font-semibold">
+                <LayoutTemplate className="h-4 w-4 text-indigo-600" />
+                Page sections
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Select a section to edit.</p>
             </div>
-            <p className="mt-1 text-xs text-gray-500">Select, reorder, or hide sections.</p>
-          </div>
-          <CardContent className="space-y-1 p-2">
-            {[...sections]
-              .sort((a, b) => a.order - b.order)
-              .map((section, index) => (
-                <button
-                  key={section.id}
-                  type="button"
-                  onClick={() => setSelectedId(section.id)}
-                  className={cn(
-                    'group flex w-full items-center gap-2 rounded-xl border px-3 py-3 text-left transition',
-                    selectedId === section.id
-                      ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-300'
-                      : 'border-transparent hover:border-gray-200 hover:bg-gray-50 dark:hover:border-gray-800 dark:hover:bg-gray-900',
-                  )}
-                >
-                  <span
+            <CardContent className="space-y-1 p-2">
+              {[...sections]
+                .sort((a, b) => a.order - b.order)
+                .map((section, index) => (
+                  <button
+                    key={section.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedId(section.id);
+                    }}
                     className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
-                      section.isVisible
-                        ? 'bg-white text-indigo-600 shadow-sm dark:bg-gray-800'
-                        : 'bg-gray-100 text-gray-400 dark:bg-gray-800',
+                      'group flex w-full items-center gap-2 rounded-xl border px-3 py-3 text-left transition',
+                      selectedId === section.id
+                        ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-300'
+                        : 'border-transparent hover:border-gray-200 hover:bg-gray-50 dark:hover:border-gray-800 dark:hover:bg-gray-900',
                     )}
                   >
-                    {index + 1}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">{section.title}</span>
-                    <span className="block text-xs capitalize text-gray-500">{section.type}</span>
-                  </span>
-                  {!section.isVisible && <EyeOff className="h-4 w-4 text-gray-400" />}
-                  <ChevronRight className="h-4 w-4 opacity-40" />
-                </button>
-              ))}
-          </CardContent>
-        </Card>
+                    <span
+                      className={cn(
+                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
+                        section.isVisible
+                          ? 'bg-white text-indigo-600 shadow-sm dark:bg-gray-800'
+                          : 'bg-gray-100 text-gray-400 dark:bg-gray-800',
+                      )}
+                    >
+                      {index + 1}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">{section.title}</span>
+                      <span className="block text-xs capitalize text-gray-500">{section.type}</span>
+                    </span>
+                    {!section.isVisible && <EyeOff className="h-4 w-4 text-gray-400" />}
+                    <ChevronRight className="h-4 w-4 opacity-40" />
+                  </button>
+                ))}
+            </CardContent>
+          </Card>
 
-        {selected ? (
-          <Card className="overflow-hidden">
+          {selected ? (
+            <Card className="overflow-hidden">
             <div className="flex flex-col gap-3 border-b bg-gray-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:bg-gray-900">
               <div>
                 <div className="flex items-center gap-2">
@@ -984,6 +995,31 @@ export default function WebsiteBuilder() {
             </CardContent>
           </Card>
         )}
+        </div>
+
+        {/* Right Side: Live Preview */}
+        <div className="hidden lg:block h-full overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950 shadow-inner">
+          <div className="flex h-12 items-center gap-2 border-b bg-white px-4 dark:bg-gray-900">
+            <div className="flex gap-1.5">
+              <div className="h-3 w-3 rounded-full bg-red-400" />
+              <div className="h-3 w-3 rounded-full bg-amber-400" />
+              <div className="h-3 w-3 rounded-full bg-emerald-400" />
+            </div>
+            <div className="mx-auto flex h-7 items-center rounded-md bg-gray-100 px-3 text-xs text-gray-500 dark:bg-gray-800">
+              <Globe className="mr-1.5 h-3 w-3" />
+              {companySlug ? `${companySlug}.tenant.hub` : 'Live Preview'}
+            </div>
+          </div>
+          <div className="h-[calc(100%-48px)] overflow-y-auto">
+            <div className="bg-white">
+              <CompanyLanding 
+                sections={sections} 
+                companyId={companyId || ''} 
+                companyName={companyName} 
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
