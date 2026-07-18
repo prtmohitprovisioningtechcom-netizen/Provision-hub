@@ -112,17 +112,17 @@ export function Pricing({ config }: { config?: PricingConfig }) {
                       </li>
                     ))}
                   </ul>
-                  <Link
-                    href={(plan.ctaText || '').toLowerCase().includes('contact') ? '#contact' : '/register/company'}
-                    className="mt-6 block"
+                  <Button
+                    asChild
+                    variant={plan.popular ? 'gradient' : 'outline'}
+                    className="mt-6 w-full"
                   >
-                    <Button
-                      variant={plan.popular ? 'gradient' : 'outline'}
-                      className="w-full"
+                    <Link
+                      href={(plan.ctaText || '').toLowerCase().includes('contact') ? '#contact' : '/register/company'}
                     >
                       {plan.ctaText || 'Get Started'}
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>

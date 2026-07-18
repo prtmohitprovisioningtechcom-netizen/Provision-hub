@@ -12,6 +12,7 @@ import {
   FileText,
   Users,
   MessageSquare,
+  Mail,
   Star,
   Settings,
   CreditCard,
@@ -41,6 +42,7 @@ const sidebarLinks = [
   { href: '/dashboard/blogs', label: 'Blogs', icon: FileText },
   { href: '/dashboard/leads', label: 'Leads', icon: Users },
   { href: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
+  { href: '/dashboard/subscribers', label: 'Subscribers', icon: Mail },
   { href: '/dashboard/reviews', label: 'Reviews', icon: Star },
   { href: '/dashboard/subscription', label: 'Subscription', icon: CreditCard },
   { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
@@ -75,7 +77,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform lg:translate-x-0',
+          'fixed top-0 left-0 z-50 flex h-full w-64 flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -93,7 +95,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {sidebarLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive =
+              link.href === '/dashboard'
+                ? pathname === '/dashboard'
+                : pathname.startsWith(link.href);
             return (
               <Link
                 key={link.href}
@@ -146,22 +151,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
           <div className="flex-1" />
           {companySlug && (
-            <Button asChild variant="outline" size="sm" className="hidden sm:flex">
+            <Button asChild variant="outline" size="sm">
               <Link href={`/company/${companySlug}`} target="_blank">
                 <Globe className="mr-2 h-4 w-4" />
-                View Live Page
+                <span className="hidden sm:inline">View Live Page</span>
               </Link>
             </Button>
           )}
           <Button
             variant="ghost"
             size="sm"
-            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 lg:hidden dark:hover:bg-red-950/50"
             onClick={handleLogout}
             disabled={isLoggingOut}
           >
-            <LogOut className="h-4 w-4 mr-2" />
-            {isLoggingOut ? 'Logging out...' : 'Logout'}
+            <LogOut className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">
+              {isLoggingOut ? 'Logging out...' : 'Logout'}
+            </span>
           </Button>
         </header>
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>

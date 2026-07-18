@@ -50,9 +50,14 @@ export default function CompanyRegisterPage() {
     try {
       const { data: res } = await axios.post('/api/auth', { action: 'register-company', ...data });
       if (res.success) {
-        dispatch(setUser({ user: res.data.user, token: res.data.token }));
+        const { data: me } = await axios.get('/api/auth/me');
+        dispatch(setUser({
+          user: me.success ? me.data : res.data.user,
+          token: res.data.token,
+        }));
         toast.success('Company registered successfully!');
-        router.push('/dashboard');
+        router.replace('/dashboard');
+        router.refresh();
       }
     } catch (error) {
       const message = axios.isAxiosError(error)
@@ -169,6 +174,9 @@ export default function CompanyRegisterPage() {
               Already have an account?{' '}
               <Link href="/login" className="text-indigo-600 hover:underline font-medium">Sign in</Link>
             </p>
+            <Link href="/" className="mt-3 block text-center text-sm text-gray-500 hover:text-indigo-600">
+              ← Back to website
+            </Link>
           </CardContent>
         </Card>
       </div>

@@ -2,10 +2,17 @@
 
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ILandingPageSection, IProduct, IService } from '@/types';
+import { IBlog, ILandingPageSection, IProduct, IService } from '@/types';
 import { ContactForm } from './ContactForm';
+import { NewsletterForm } from './NewsletterForm';
 import { cn, formatCurrency } from '@/lib/utils';
-import { ChevronDown, Eye } from 'lucide-react';
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  ChevronDown,
+  Eye,
+  Star,
+} from 'lucide-react';
 import { useState } from 'react';
 
 interface CompanyLandingProps {
@@ -14,7 +21,10 @@ interface CompanyLandingProps {
   companyName: string;
   products?: IProduct[];
   services?: IService[];
+  blogs?: IBlog[];
   primaryColor?: string;
+  rating?: number;
+  reviewCount?: number;
 }
 
 const fadeUp = {
@@ -65,7 +75,10 @@ export function CompanyLanding({
   companyName,
   products = [],
   services = [],
+  blogs = [],
   primaryColor = '#6366f1',
+  rating = 0,
+  reviewCount = 0,
 }: CompanyLandingProps) {
   const visibleSections = [...sections]
     .filter((section) => {
@@ -76,7 +89,13 @@ export function CompanyLanding({
       if (section.type === 'products') {
         return Boolean(section.items?.length || products.length);
       }
-      if (section.type === 'gallery') return Boolean(section.images?.length);
+      if (section.type === 'gallery') {
+        return Boolean(section.items?.length || section.images?.length);
+      }
+      if (section.type === 'why-choose-us') {
+        return Boolean(section.items?.length);
+      }
+      if (section.type === 'blogs') return Boolean(section.items?.length || blogs.length);
       if (section.type === 'faq' || section.type === 'testimonials') {
         return Boolean(section.items?.length);
       }
@@ -158,7 +177,7 @@ export function CompanyLanding({
                       <a
                         href={safeLandingLink(
                           section.buttonLink,
-                          hasContactSection ? '#contact' : '/',
+                          hasContactSection ? '#contact' : '/search',
                         )}
                         className="inline-flex items-center rounded-full bg-white px-7 py-3.5 text-sm font-bold text-gray-900 shadow-xl transition hover:-translate-y-0.5 hover:bg-gray-100"
                       >
@@ -169,6 +188,56 @@ export function CompanyLanding({
                 </div>
               </motion.section>
             );
+
+          case 'rating': {
+            const roundedRating = Math.round(rating);
+            return (
+              <motion.section
+                key={section.id}
+                {...fadeUp}
+                className="relative overflow-hidden border-y border-gray-200 bg-white px-4 py-14 dark:border-gray-800 dark:bg-gray-950"
+              >
+                <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at center, ${primaryColor}, transparent 60%)` }} />
+                <div className="relative mx-auto grid max-w-6xl items-center gap-8 text-center md:grid-cols-[1fr_auto_1fr] md:text-left">
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: primaryColor }}>
+                      Customer rating
+                    </p>
+                    <h2 className="mt-3 text-3xl font-extrabold text-gray-900 sm:text-4xl dark:text-white">
+                      {section.title}
+                    </h2>
+                    {section.subtitle && (
+                      <p className="mt-3 text-gray-500 dark:text-gray-400">{section.subtitle}</p>
+                    )}
+                  </div>
+                  <div className="mx-auto flex h-36 w-36 flex-col items-center justify-center rounded-full border-8 border-white bg-gray-950 text-white shadow-2xl dark:border-gray-900">
+                    <span className="text-5xl font-black">{rating > 0 ? rating.toFixed(1) : 'New'}</span>
+                    {rating > 0 && <span className="text-xs uppercase tracking-widest text-gray-400">out of 5</span>}
+                  </div>
+                  <div className="md:text-right">
+                    <div className="flex justify-center gap-1 md:justify-end">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={cn(
+                            'h-7 w-7',
+                            star <= roundedRating
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'text-gray-300 dark:text-gray-700',
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <p className="mt-3 text-lg font-semibold text-gray-900 dark:text-white">
+                      {reviewCount > 0
+                        ? `Based on ${reviewCount} verified review${reviewCount === 1 ? '' : 's'}`
+                        : 'Be the first to share your experience'}
+                    </p>
+                  </div>
+                </div>
+              </motion.section>
+            );
+          }
 
           case 'about':
             return (
@@ -201,6 +270,48 @@ export function CompanyLanding({
                       <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/10 dark:ring-white/10" />
                     </div>
                   )}
+                </div>
+              </motion.section>
+            );
+
+          case 'why-choose-us':
+            return (
+              <motion.section
+                key={section.id}
+                {...fadeUp}
+                className="bg-gray-950 px-4 py-24 text-white"
+              >
+                <div className="mx-auto max-w-7xl">
+                  <div className="mx-auto max-w-3xl text-center">
+                    <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: primaryColor }}>
+                      Our advantage
+                    </p>
+                    <h2 className="mt-4 text-4xl font-extrabold sm:text-5xl">{section.title}</h2>
+                    {section.subtitle && <p className="mt-5 text-lg text-gray-400">{section.subtitle}</p>}
+                  </div>
+                  <div className="mt-14 grid gap-5 md:grid-cols-3">
+                    {items.map((item, itemIndex) => (
+                      <motion.article
+                        key={itemIndex}
+                        initial={{ opacity: 0, y: 24 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: itemIndex * 0.08 }}
+                        className="group rounded-3xl border border-white/10 bg-white/5 p-7 transition hover:-translate-y-1 hover:bg-white/10"
+                      >
+                        <div
+                          className="flex h-12 w-12 items-center justify-center rounded-2xl"
+                          style={{ backgroundColor: `${primaryColor}25`, color: primaryColor }}
+                        >
+                          <CheckCircle2 className="h-6 w-6" />
+                        </div>
+                        <h3 className="mt-6 text-xl font-bold">{readField(item, 'title')}</h3>
+                        <p className="mt-3 leading-relaxed text-gray-400">
+                          {readField(item, 'description')}
+                        </p>
+                      </motion.article>
+                    ))}
+                  </div>
                 </div>
               </motion.section>
             );
@@ -358,41 +469,155 @@ export function CompanyLanding({
               </motion.section>
             );
 
-          case 'gallery':
+          case 'gallery': {
+            const galleryItems = section.items?.length
+              ? (section.items as Array<Record<string, unknown>>)
+              : (section.images || []).map((image, imageIndex) => ({
+                  image,
+                  title: `Gallery image ${imageIndex + 1}`,
+                  description: '',
+                }));
             return (
               <motion.section
                 key={section.id}
                 {...fadeUp}
-                className="py-24 px-4 bg-gray-950 text-white relative"
+                className="relative bg-gray-950 px-4 py-24 text-white"
               >
                 <div className="mx-auto max-w-7xl">
-                  <h2 className="text-4xl font-extrabold text-center mb-16">{section.title}</h2>
-                  <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-                    {(section.images || []).map((img, i) => (
-                      <motion.div
+                  <div className="mx-auto max-w-3xl text-center">
+                    <h2 className="text-4xl font-extrabold sm:text-5xl">{section.title}</h2>
+                    {section.subtitle && <p className="mt-4 text-lg text-gray-400">{section.subtitle}</p>}
+                  </div>
+                  <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {galleryItems.map((item, i) => {
+                      const image = readField(item, 'image');
+                      const title = readField(item, 'title');
+                      const description = readField(item, 'description');
+                      return (
+                        <motion.a
                         key={i}
+                        href={image}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Open gallery image ${i + 1}`}
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: i * 0.05 }}
-                        className="relative overflow-hidden rounded-2xl break-inside-avoid group cursor-pointer"
+                        className="group overflow-hidden rounded-3xl border border-white/10 bg-white/5 transition hover:-translate-y-1 hover:bg-white/10"
                       >
-                        {/* Using standard img for masonry to natural aspect ratio */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img 
-                          src={img} 
-                          alt={`Gallery ${i + 1}`} 
-                          className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1" 
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                          <Eye className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transform scale-50 group-hover:scale-100 transition-all duration-300 delay-100" />
+                        <div className="relative aspect-4/3 overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={image}
+                            alt={title || `Gallery ${i + 1}`}
+                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
+                            <Eye className="h-8 w-8 text-white" />
+                          </div>
                         </div>
-                      </motion.div>
-                    ))}
+                        <div className="p-6">
+                          <h3 className="text-xl font-bold">{title}</h3>
+                          {description && <p className="mt-2 leading-relaxed text-gray-400">{description}</p>}
+                        </div>
+                        </motion.a>
+                      );
+                    })}
                   </div>
                 </div>
               </motion.section>
             );
+          }
+
+          case 'blogs': {
+            const blogItems = section.items?.length
+              ? items
+              : blogs.map((blog) => ({
+                  title: blog.title,
+                  description:
+                    blog.excerpt ||
+                    `${blog.content.replace(/<[^>]*>/g, '').slice(0, 180)}${
+                      blog.content.length > 180 ? '…' : ''
+                    }`,
+                  image: blog.featuredImage || '',
+                  link: '',
+                }));
+            return (
+              <motion.section
+                key={section.id}
+                {...fadeUp}
+                className="bg-white px-4 py-24 dark:bg-gray-950"
+              >
+                <div className="mx-auto max-w-7xl">
+                  <div className="mx-auto max-w-3xl text-center">
+                    <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-white">
+                      {section.title}
+                    </h2>
+                    {section.subtitle && (
+                      <p className="mt-4 text-lg text-gray-500 dark:text-gray-400">
+                        {section.subtitle}
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-14 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
+                    {blogItems.map((item, itemIndex) => {
+                      const link = safeLandingLink(readField(item, 'link'), '#');
+                      const card = (
+                        <>
+                          {item.image && (
+                            <div className="relative aspect-16/10 overflow-hidden">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={readField(item, 'image')}
+                                alt={readField(item, 'title')}
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            </div>
+                          )}
+                          <div className="p-7">
+                            <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition group-hover:text-white dark:bg-gray-800" style={{ color: primaryColor }}>
+                              <ArrowUpRight className="h-5 w-5" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                              {readField(item, 'title')}
+                            </h3>
+                            <p className="mt-3 leading-relaxed text-gray-500 dark:text-gray-400">
+                              {readField(item, 'description')}
+                            </p>
+                          </div>
+                        </>
+                      );
+                      return link === '#' ? (
+                        <motion.article
+                          key={itemIndex}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          className="group overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
+                        >
+                          {card}
+                        </motion.article>
+                      ) : (
+                        <motion.a
+                          key={itemIndex}
+                          href={link}
+                          target={link.startsWith('http') ? '_blank' : undefined}
+                          rel={link.startsWith('http') ? 'noopener noreferrer' : undefined}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          className="group overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
+                        >
+                          {card}
+                        </motion.a>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.section>
+            );
+          }
 
           case 'testimonials':
             return (
@@ -470,6 +695,36 @@ export function CompanyLanding({
                       />
                     ))}
                   </div>
+                </div>
+              </motion.section>
+            );
+
+          case 'subscribe':
+            return (
+              <motion.section
+                key={section.id}
+                {...fadeUp}
+                className="relative overflow-hidden bg-gray-950 px-4 py-24 text-center text-white"
+              >
+                <div
+                  className="absolute inset-0 opacity-30"
+                  style={{
+                    background: `radial-gradient(circle at 20% 20%, ${primaryColor}, transparent 35%), radial-gradient(circle at 80% 80%, ${primaryColor}, transparent 35%)`,
+                  }}
+                />
+                <div className="relative mx-auto max-w-4xl">
+                  <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: primaryColor }}>
+                    Stay connected
+                  </p>
+                  <h2 className="mt-4 text-4xl font-extrabold sm:text-5xl">{section.title}</h2>
+                  {section.subtitle && <p className="mx-auto mt-5 max-w-2xl text-lg text-gray-300">{section.subtitle}</p>}
+                  {section.content && <p className="mx-auto mt-3 max-w-2xl text-sm text-gray-400">{section.content}</p>}
+                  <NewsletterForm
+                    companyId={companyId}
+                    buttonText={section.buttonText || 'Subscribe'}
+                    primaryColor={primaryColor}
+                  />
+                  <p className="mt-4 text-xs text-gray-500">No spam. Unsubscribe whenever you want.</p>
                 </div>
               </motion.section>
             );

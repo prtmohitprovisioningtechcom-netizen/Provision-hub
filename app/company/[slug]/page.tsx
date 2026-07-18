@@ -3,7 +3,14 @@ import { notFound } from 'next/navigation';
 import { CompanyProfileView } from '@/components/company/CompanyProfileView';
 import { siteConfig } from '@/config/site';
 import { getCompanyBySlug } from '@/lib/company';
-import { ICompany, IProduct, IService, IReview, ILandingPageSection } from '@/types';
+import {
+  IBlog,
+  ICompany,
+  IProduct,
+  IService,
+  IReview,
+  ILandingPageSection,
+} from '@/types';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -62,6 +69,7 @@ export default async function CompanyPage({ params }: PageProps) {
     const products = serialize<IProduct[]>(result.products);
     const services = serialize<IService[]>(result.services);
     const reviews = serialize<IReview[]>(result.reviews);
+    const blogs = serialize<IBlog[]>(result.blogs || []);
     const landingPage = result.landingPage
       ? serialize<{ sections?: ILandingPageSection[]; isPublished?: boolean }>({
           sections: (result.landingPage as { sections?: ILandingPageSection[] }).sections,
@@ -78,6 +86,7 @@ export default async function CompanyPage({ params }: PageProps) {
         products={products}
         services={services}
         reviews={reviews}
+        blogs={blogs}
         landingPage={landingPage}
         gallery={gallery}
       />

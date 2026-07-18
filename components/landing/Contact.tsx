@@ -28,11 +28,19 @@ export function Contact({ config }: { config?: any }) {
   const onSubmit = async (data: ContactForm) => {
     setIsSubmitting(true);
     try {
-      await new Promise((r) => setTimeout(r, 1000));
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to send message');
+      }
       toast.success('Message sent successfully! We will get back to you soon.');
       reset();
-    } catch {
-      toast.error('Failed to send message');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to send message');
     } finally {
       setIsSubmitting(false);
     }

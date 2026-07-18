@@ -24,9 +24,9 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/companies', label: 'Companies', icon: Building2 },
   { href: '/admin/requirements', label: 'Requirements', icon: ClipboardList },
-  { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/categories', label: 'Categories', icon: Tags },
   { href: '/admin/landing-sections', label: 'Landing Sections', icon: Layers },
   { href: '/admin/customize', label: 'Customize Site', icon: Shield },
@@ -58,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform lg:translate-x-0',
+          'fixed top-0 left-0 z-50 flex h-full w-64 flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >

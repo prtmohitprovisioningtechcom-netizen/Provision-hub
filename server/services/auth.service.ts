@@ -102,14 +102,13 @@ export class AuthService {
     await user.save();
 
     const sections = LANDING_SECTIONS.map((section, index) => ({
+      ...section,
       id: `section-${index}`,
-      type: section.type,
-      title: section.title,
-      subtitle: '',
       content: '',
       isVisible: true,
-      order: section.order,
-      items: [],
+      items: 'items' in section
+        ? section.items.map((item) => ({ ...item }))
+        : [],
     }));
 
     await LandingPage.create({ companyId: company._id, sections });
@@ -281,7 +280,7 @@ export class AuthService {
   static async getMe(userId: string) {
     await connectDB();
     const user = await User.findById(userId)
-      .populate('companyId', 'name slug logo status')
+      .populate('companyId', 'name slug logo status subscription')
       .lean();
     if (!user) throw new Error('User not found');
 

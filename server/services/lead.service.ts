@@ -47,16 +47,21 @@ export class LeadService {
     return { leads, pagination: getPaginationMeta(page, limit, total) };
   }
 
-  static async updateStatus(id: string, status: string) {
+  static async updateStatus(id: string, companyId: string, status: string) {
     await connectDB();
-    const lead = await Lead.findByIdAndUpdate(id, { status }, { new: true });
+    const lead = await Lead.findOneAndUpdate(
+      { _id: id, companyId },
+      { status },
+      { new: true },
+    );
     if (!lead) throw new Error('Lead not found');
     return lead;
   }
 
-  static async delete(id: string) {
+  static async delete(id: string, companyId: string) {
     await connectDB();
-    await Lead.findByIdAndDelete(id);
+    const lead = await Lead.findOneAndDelete({ _id: id, companyId });
+    if (!lead) throw new Error('Lead not found');
     return { message: 'Lead deleted' };
   }
 

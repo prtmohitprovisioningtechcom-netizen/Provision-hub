@@ -5,6 +5,7 @@ import Review from '@/models/Review';
 import Lead from '@/models/Lead';
 import LandingPage from '@/models/LandingPage';
 import Gallery from '@/models/Gallery';
+import Blog from '@/models/Blog';
 import { connectDB } from '@/lib/mongodb';
 import { getPaginationMeta } from '@/lib/utils';
 import { SearchFilters, CompanyStatus } from '@/types';
@@ -72,7 +73,7 @@ export class CompanyService {
     const company = await Company.findOne({ slug, status: 'approved' }).lean();
     if (!company) throw new Error('Company not found');
 
-    const [products, services, reviews, landingPage, gallery] = await Promise.all([
+    const [products, services, reviews, landingPage, gallery, blogs] = await Promise.all([
       Product.find({ companyId: company._id, status: 'active' }).limit(12).lean(),
       Service.find({ companyId: company._id }).limit(12).lean(),
       Review.find({ companyId: company._id, status: 'approved' })
@@ -81,22 +82,32 @@ export class CompanyService {
         .lean(),
       LandingPage.findOne({ companyId: company._id }).lean(),
       Gallery.findOne({ companyId: company._id }).lean(),
+      Blog.find({ companyId: company._id, status: 'published' })
+        .select('title slug content excerpt category featuredImage status createdAt updatedAt companyId')
+        .sort({ createdAt: -1 })
+        .limit(6)
+        .lean(),
     ]);
 
-    const savedSections = landingPage?.sections || [];
+    const allowedTypes = new Set<string>(
+      LANDING_SECTIONS.map((section) => section.type),
+    );
+    const seenTypes = new Set<string>();
+    const savedSections = (landingPage?.sections || []).filter((section) => {
+      if (!allowedTypes.has(section.type) || seenTypes.has(section.type)) return false;
+      seenTypes.add(section.type);
+      return true;
+    });
     const savedTypes = new Set(savedSections.map((section) => section.type));
     const sections = [
       ...savedSections,
       ...LANDING_SECTIONS.filter((section) => !savedTypes.has(section.type)).map(
         (section, index) => ({
+          ...section,
           id: `section-${section.type}-${index}`,
-          type: section.type,
-          title: section.title,
-          subtitle: '',
           content: '',
           isVisible: true,
-          order: section.order,
-          items: [],
+          items: 'items' in section ? section.items : [],
           images: [],
         }),
       ),
@@ -115,6 +126,7 @@ export class CompanyService {
       reviews,
       landingPage: completeLandingPage,
       gallery,
+      blogs,
     };
   }
 

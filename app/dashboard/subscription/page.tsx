@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { PRICING_PLANS } from '@/constants';
 import { useCompany } from '@/hooks/useCompany';
@@ -7,7 +8,6 @@ import { PageHeader } from '@/components/dashboard/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import toast from 'react-hot-toast';
 
 export default function SubscriptionPage() {
   const { user } = useCompany();
@@ -15,10 +15,6 @@ export default function SubscriptionPage() {
     typeof user?.companyId === 'object' && user.companyId && 'subscription' in user.companyId
       ? (user.companyId as { subscription?: string }).subscription
       : 'free';
-
-  const handleUpgrade = (planName: string) => {
-    toast.success(`Upgrade to ${planName} — payment integration coming soon`);
-  };
 
   return (
     <div className="space-y-6">
@@ -64,14 +60,23 @@ export default function SubscriptionPage() {
                     </li>
                   ))}
                 </ul>
-                <Button
-                  className="mt-6 w-full"
-                  variant={isCurrent ? 'secondary' : isPopular ? 'gradient' : 'outline'}
-                  disabled={isCurrent}
-                  onClick={() => handleUpgrade(plan.name)}
-                >
-                  {isCurrent ? 'Current Plan' : 'Upgrade'}
-                </Button>
+                {isCurrent ? (
+                  <Button className="mt-6 w-full" variant="secondary" disabled>
+                    Current Plan
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    className="mt-6 w-full"
+                    variant={isPopular ? 'gradient' : 'outline'}
+                  >
+                    <Link
+                      href={`/post-requirement?type=subscription&plan=${encodeURIComponent(plan.name)}`}
+                    >
+                      Request Upgrade
+                    </Link>
+                  </Button>
+                )}
               </CardContent>
             </Card>
           );

@@ -106,7 +106,20 @@ export interface ICompany {
 
 export interface ILandingPageSection {
   id: string;
-  type: 'hero' | 'about' | 'services' | 'products' | 'gallery' | 'faq' | 'testimonials' | 'contact' | 'footer';
+  type:
+    | 'hero'
+    | 'rating'
+    | 'about'
+    | 'why-choose-us'
+    | 'services'
+    | 'products'
+    | 'gallery'
+    | 'blogs'
+    | 'testimonials'
+    | 'faq'
+    | 'subscribe'
+    | 'contact'
+    | 'footer';
   title: string;
   subtitle?: string;
   content?: string;
@@ -145,6 +158,20 @@ export interface IService {
   duration: string;
   category: string;
   gallery: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IBlog {
+  _id: string;
+  companyId: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  category: string;
+  featuredImage?: string;
+  status: 'draft' | 'published';
   createdAt: Date;
   updatedAt: Date;
 }

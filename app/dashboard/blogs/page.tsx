@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
-import { FileText, Plus, Trash2 } from 'lucide-react';
+import { FileText, Pencil, Plus, Trash2 } from 'lucide-react';
 import { blogSchema, type BlogInput } from '@/lib/validators';
 import { formatDate } from '@/lib/utils';
 import { useCompany } from '@/hooks/useCompany';
@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import axios from 'axios';
+import axios from '@/services/api';
 import {
   Select,
   SelectContent,
@@ -35,6 +35,7 @@ export default function BlogsPage() {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const {
     register,
@@ -68,16 +69,46 @@ export default function BlogsPage() {
 
   const onSubmit = async (data: BlogInput & { status: BlogInput['status'] }) => {
     try {
-      const res = await axios.post('/api/dashboard/blogs', data);
+      const res = editingId
+        ? await axios.put(`/api/dashboard/blogs/${editingId}`, data)
+        : await axios.post('/api/dashboard/blogs', data);
       if (res.data.success) {
-        setBlogs([res.data.data, ...blogs]);
+        setBlogs(
+          editingId
+            ? blogs.map((blog) => (blog._id === editingId ? res.data.data : blog))
+            : [res.data.data, ...blogs],
+        );
         reset({ title: '', content: '', category: '', status: 'draft' });
+        setEditingId(null);
         setShowForm(false);
-        toast.success('Blog post created');
+        toast.success(editingId ? 'Blog post updated' : 'Blog post created');
       }
     } catch (err) {
-      toast.error('Failed to create blog post');
+      toast.error('Failed to save blog post');
     }
+  };
+
+  const openCreate = () => {
+    setEditingId(null);
+    reset({ title: '', content: '', category: '', status: 'draft' });
+    setShowForm(true);
+  };
+
+  const openEdit = (blog: BlogPost) => {
+    setEditingId(blog._id);
+    reset({
+      title: blog.title,
+      content: blog.content,
+      category: blog.category,
+      status: blog.status,
+    });
+    setShowForm(true);
+  };
+
+  const closeForm = () => {
+    setEditingId(null);
+    reset({ title: '', content: '', category: '', status: 'draft' });
+    setShowForm(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -97,7 +128,7 @@ export default function BlogsPage() {
         title="Blogs"
         description="Create and manage blog posts"
         action={
-          <Button onClick={() => setShowForm(!showForm)}>
+          <Button onClick={showForm ? closeForm : openCreate}>
             <Plus className="h-4 w-4" />
             New Post
           </Button>
@@ -107,7 +138,7 @@ export default function BlogsPage() {
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Create Blog Post</CardTitle>
+            <CardTitle>{editingId ? 'Edit Blog Post' : 'Create Blog Post'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -145,8 +176,8 @@ export default function BlogsPage() {
                 )}
               </div>
               <div className="flex gap-2">
-                <Button type="submit">Create Post</Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="submit">{editingId ? 'Save Changes' : 'Create Post'}</Button>
+                <Button type="button" variant="outline" onClick={closeForm}>
                   Cancel
                 </Button>
               </div>
@@ -183,9 +214,14 @@ export default function BlogsPage() {
                     </p>
                     <p className="mt-1 text-xs text-gray-400">{formatDate(blog.createdAt)}</p>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(blog._id)}>
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
+                  <div className="flex items-center">
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(blog)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(blog._id)}>
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -195,7 +231,7 @@ export default function BlogsPage() {
               title="No blog posts yet"
               description="Create your first blog post to engage your audience."
               action={
-                <Button onClick={() => setShowForm(true)}>
+                <Button onClick={openCreate}>
                   <Plus className="h-4 w-4" />
                   New Post
                 </Button>

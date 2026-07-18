@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/services/api';
-import { ILandingPageSection } from '@/types';
+import { IBlog, ILandingPageSection } from '@/types';
 import { useCompany } from '@/hooks/useCompany';
 import { CompanyLanding } from '@/components/company/CompanyLanding';
 import { Button } from '@/components/ui/button';
@@ -33,17 +33,22 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { LANDING_SECTIONS } from '@/constants';
 
 type BuilderItem = Record<string, unknown>;
 
 const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
   hero: 'Create a strong first impression with a headline and cover image.',
+  rating: 'Show your real customer rating in a bold trust-building block.',
   about: 'Tell your story with an engaging image and company introduction.',
+  'why-choose-us': 'Explain the strongest reasons customers should choose your company.',
   services: 'Automatically displays services added from your dashboard.',
   products: 'Automatically displays products added from your dashboard.',
-  gallery: 'Upload multiple images to create a visual portfolio.',
+  gallery: 'Create a visual portfolio with a title and description for every image.',
+  blogs: 'Publish professional insight and news cards.',
   testimonials: 'Add customer quotes that build trust.',
   faq: 'Answer common customer questions.',
+  subscribe: 'Invite visitors to subscribe for company updates and offers.',
   contact: 'Show an enquiry form so visitors can contact you.',
   footer: 'Close the page with your company name and copyright.',
 };
@@ -52,28 +57,62 @@ const IMAGE_SECTIONS: ILandingPageSection['type'][] = ['hero', 'about'];
 
 function mergeMissingSections(
   savedSections: ILandingPageSection[],
-  availableCategories: any[]
 ): ILandingPageSection[] {
-  const savedTypes = new Set(savedSections.map((section) => section.type));
-  
-  const defaults = availableCategories.map((cat, index) => ({
-    id: `section-${cat.slug}-${index}`,
-    type: cat.slug,
-    title: cat.name,
-    subtitle: '',
-    content: '',
-    isVisible: true,
-    order: index,
-    items: [],
-    images: [],
-  }));
-
-  return [
-    ...savedSections,
-    ...defaults.filter((section) => !savedTypes.has(section.type)),
-  ]
+  const allowedTypes = new Set<string>(
+    LANDING_SECTIONS.map((section) => section.type),
+  );
+  const seenTypes = new Set<string>();
+  const ordered = [...savedSections]
     .sort((a, b) => a.order - b.order)
-    .map((section, order) => ({ ...section, order }));
+    .filter((section) => {
+      if (!allowedTypes.has(section.type) || seenTypes.has(section.type)) return false;
+      seenTypes.add(section.type);
+      return true;
+    })
+    .map((section) => {
+      if (
+        section.type === 'gallery' &&
+        !section.items?.length &&
+        section.images?.length
+      ) {
+        return {
+          ...section,
+          items: section.images.map((image, index) => ({
+            image,
+            title: `Gallery image ${index + 1}`,
+            description: '',
+          })),
+        };
+      }
+      return section;
+    });
+
+  LANDING_SECTIONS.forEach((defaultSection, defaultIndex) => {
+    if (ordered.some((section) => section.type === defaultSection.type)) return;
+    const previousTypes = LANDING_SECTIONS.slice(0, defaultIndex).map(
+      (section) => section.type,
+    );
+    let insertAt = 0;
+    for (let index = ordered.length - 1; index >= 0; index -= 1) {
+      if (previousTypes.includes(ordered[index].type as never)) {
+        insertAt = index + 1;
+        break;
+      }
+    }
+    ordered.splice(insertAt, 0, {
+      ...defaultSection,
+      id: `section-${defaultSection.type}`,
+      type: defaultSection.type,
+      content: '',
+      isVisible: true,
+      items: 'items' in defaultSection
+        ? defaultSection.items.map((item) => ({ ...item }))
+        : [],
+      images: [],
+    } as ILandingPageSection);
+  });
+
+  return ordered.map((section, order) => ({ ...section, order }));
 }
 
 function readFile(file: File): Promise<string> {
@@ -95,10 +134,9 @@ export default function WebsiteBuilder() {
   const [saved, setSaved] = useState(true);
   const [companyName, setCompanyName] = useState('');
   const [companyLogo, setCompanyLogo] = useState('');
-  // availableCategories is fetched but only used locally to create defaults
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [availableCategories, setAvailableCategories] = useState<unknown[]>([]);
-
+  const [companyRating, setCompanyRating] = useState(0);
+  const [companyReviewCount, setCompanyReviewCount] = useState(0);
+  const [publishedBlogs, setPublishedBlogs] = useState<IBlog[]>([]);
   useEffect(() => {
     if (!companyId) {
       // Avoid synchronous setState during render
@@ -108,18 +146,15 @@ export default function WebsiteBuilder() {
 
     const load = async () => {
       try {
-        const [{ data }, { data: brandingResponse }, { data: catsData }] = await Promise.all([
+        const [{ data }, { data: brandingResponse }, { data: blogsResponse }] = await Promise.all([
           api.get('/api/dashboard/landing-page'),
           api.get('/api/dashboard/company-branding'),
-          api.get('/api/categories?type=landing_section')
+          api.get('/api/dashboard/blogs'),
         ]);
-        
-        const cats = catsData.data || [];
-        setAvailableCategories(cats);
 
         const rawSections =
           (data.data?.sections as ILandingPageSection[] | undefined) || [];
-        const loaded = mergeMissingSections(rawSections, cats);
+        const loaded = mergeMissingSections(rawSections);
         const ordered = [...loaded].sort((a, b) => a.order - b.order);
         setSections(ordered);
         setSelectedId(ordered[0]?.id ?? null);
@@ -127,6 +162,15 @@ export default function WebsiteBuilder() {
         if (brandingResponse.success) {
           setCompanyName(brandingResponse.data?.name || '');
           setCompanyLogo(brandingResponse.data?.logo || '');
+          setCompanyRating(Number(brandingResponse.data?.rating || 0));
+          setCompanyReviewCount(Number(brandingResponse.data?.reviewCount || 0));
+        }
+        if (blogsResponse.success) {
+          setPublishedBlogs(
+            ((blogsResponse.data || []) as IBlog[]).filter(
+              (blog) => blog.status === 'published',
+            ),
+          );
         }
       } catch {
         toast.error('Could not load your website');
@@ -181,6 +225,18 @@ export default function WebsiteBuilder() {
       };
     } else if (section.type === 'services') {
       item = { name: 'New service', description: '', price: 0, image: '' };
+    } else if (section.type === 'why-choose-us') {
+      item = {
+        title: 'New benefit',
+        description: 'Explain why this matters to your customers.',
+      };
+    } else if (section.type === 'blogs') {
+      item = {
+        title: 'New article',
+        description: 'Add a short article summary.',
+        image: '',
+        link: '',
+      };
     } else {
       item = {
         name: 'New product',
@@ -284,21 +340,27 @@ export default function WebsiteBuilder() {
     files: FileList | null,
   ) => {
     if (!files?.length) return;
-    const available = Math.max(0, 12 - (section.images?.length || 0));
+    const available = Math.max(0, 12 - (section.items?.length || 0));
     const chosen = Array.from(files).slice(0, available);
     if (!available) {
       toast.error('A gallery can contain up to 12 images');
       return;
     }
 
-    const uploaded: string[] = [];
+    const uploaded: BuilderItem[] = [];
     for (const [index, file] of chosen.entries()) {
       const url = await uploadImage(file, `${section.id}-${index}`);
-      if (url) uploaded.push(url);
+      if (url) {
+        uploaded.push({
+          image: url,
+          title: file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '),
+          description: '',
+        });
+      }
     }
     if (uploaded.length) {
       updateSection(section.id, {
-        images: [...(section.images || []), ...uploaded],
+        items: [...(section.items || []), ...uploaded],
       });
     }
   };
@@ -546,7 +608,7 @@ export default function WebsiteBuilder() {
                     placeholder="A short line that supports the heading"
                   />
                 </div>
-                {['hero', 'about', 'footer'].includes(selected.type) && (
+                {['hero', 'about', 'subscribe', 'footer'].includes(selected.type) && (
                   <div className="space-y-2 sm:col-span-2">
                     <Label htmlFor="section-content">Description</Label>
                     <Textarea
@@ -590,6 +652,22 @@ export default function WebsiteBuilder() {
                       />
                     </div>
                   </>
+                )}
+                {selected.type === 'subscribe' && (
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="subscribe-button-text">Button text</Label>
+                    <Input
+                      id="subscribe-button-text"
+                      value={selected.buttonText || ''}
+                      maxLength={40}
+                      onChange={(event) =>
+                        updateSection(selected.id, {
+                          buttonText: event.target.value,
+                        })
+                      }
+                      placeholder="Subscribe"
+                    />
+                  </div>
                 )}
               </div>
 
@@ -690,32 +768,58 @@ export default function WebsiteBuilder() {
                       />
                     </Label>
                   </div>
-                  {selected.images?.length ? (
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-                      {selected.images.map((image, index) => (
-                        <div
+                  {selected.items?.length ? (
+                    <div className="space-y-3">
+                      {selected.items.map((rawItem, index) => {
+                        const item = rawItem as BuilderItem;
+                        const image = String(item.image || '');
+                        return (
+                          <div
                           key={`${image}-${index}`}
-                          className="group relative aspect-square overflow-hidden rounded-xl bg-gray-100"
+                          className="relative grid gap-3 rounded-xl border bg-gray-50 p-3 sm:grid-cols-[120px_1fr] dark:bg-gray-900"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={image} alt="" className="h-full w-full object-cover" />
+                          <img src={image} alt="" className="aspect-square h-full w-full rounded-lg object-cover" />
+                          <div className="space-y-3 pr-10">
+                            <div className="space-y-1">
+                              <Label>Image title</Label>
+                              <Input
+                                value={String(item.title || '')}
+                                onChange={(event) =>
+                                  updateItem(selected.id, index, 'title', event.target.value)
+                                }
+                                placeholder="Project or image title"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label>Description</Label>
+                              <Textarea
+                                rows={2}
+                                value={String(item.description || '')}
+                                onChange={(event) =>
+                                  updateItem(
+                                    selected.id,
+                                    index,
+                                    'description',
+                                    event.target.value,
+                                  )
+                                }
+                                placeholder="Explain what visitors are seeing"
+                              />
+                            </div>
+                          </div>
                           <Button
                             type="button"
                             variant="destructive"
                             size="icon"
-                            className="absolute right-2 top-2 h-8 w-8 opacity-0 transition group-hover:opacity-100"
-                            onClick={() =>
-                              updateSection(selected.id, {
-                                images: selected.images?.filter(
-                                  (_, imageIndex) => imageIndex !== index,
-                                ),
-                              })
-                            }
+                            className="absolute right-2 top-2 h-8 w-8"
+                            onClick={() => removeItem(selected.id, index)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
-                        </div>
-                      ))}
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="rounded-xl border border-dashed p-8 text-center text-sm text-gray-500">
@@ -858,6 +962,117 @@ export default function WebsiteBuilder() {
                       Dashboard catalog items will be displayed automatically.
                     </div>
                   )}
+                </div>
+              )}
+
+              {['why-choose-us', 'blogs'].includes(selected.type) && (
+                <div className="space-y-4 border-t pt-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <Label>
+                        {selected.type === 'blogs' ? 'Blog cards' : 'Reasons to choose you'}
+                      </Label>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {selected.type === 'blogs'
+                          ? 'Add custom cards, or leave empty to show published posts from Dashboard → Blogs.'
+                          : 'Highlight the benefits that make your company stand out.'}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => addItem(selected)}>
+                      <Plus className="h-4 w-4" />
+                      Add item
+                    </Button>
+                  </div>
+                  {(selected.items || []).map((rawItem, index) => {
+                    const item = rawItem as BuilderItem;
+                    const isBlog = selected.type === 'blogs';
+                    return (
+                      <div
+                        key={index}
+                        className="relative grid gap-4 rounded-2xl border bg-gray-50 p-4 sm:grid-cols-[120px_1fr] dark:bg-gray-900"
+                      >
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 z-10 text-red-500"
+                          onClick={() => removeItem(selected.id, index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        {isBlog && (
+                          <Label
+                            htmlFor={`${selected.id}-blog-image-${index}`}
+                            className="flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed bg-white dark:bg-gray-950"
+                          >
+                            {item.image ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={String(item.image)}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                            ) : uploading === `${selected.id}-item-${index}` ? (
+                              <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+                            ) : (
+                              <span className="flex flex-col items-center gap-1 text-xs text-gray-500">
+                                <ImagePlus className="h-6 w-6" />
+                                Add image
+                              </span>
+                            )}
+                            <Input
+                              id={`${selected.id}-blog-image-${index}`}
+                              type="file"
+                              accept="image/png,image/jpeg,image/webp"
+                              className="sr-only"
+                              disabled={uploading !== null}
+                              onChange={(event) =>
+                                handleItemImage(selected, index, event.target.files?.[0])
+                              }
+                            />
+                          </Label>
+                        )}
+                        <div className={cn('space-y-3 pr-10', !isBlog && 'sm:col-span-2')}>
+                          <div className="space-y-1">
+                            <Label>Title</Label>
+                            <Input
+                              value={String(item.title || '')}
+                              onChange={(event) =>
+                                updateItem(selected.id, index, 'title', event.target.value)
+                              }
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label>Description</Label>
+                            <Textarea
+                              rows={3}
+                              value={String(item.description || '')}
+                              onChange={(event) =>
+                                updateItem(
+                                  selected.id,
+                                  index,
+                                  'description',
+                                  event.target.value,
+                                )
+                              }
+                            />
+                          </div>
+                          {isBlog && (
+                            <div className="space-y-1">
+                              <Label>Article link (optional)</Label>
+                              <Input
+                                value={String(item.link || '')}
+                                onChange={(event) =>
+                                  updateItem(selected.id, index, 'link', event.target.value)
+                                }
+                                placeholder="https://example.com/article"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -1018,6 +1233,9 @@ export default function WebsiteBuilder() {
                 sections={sections} 
                 companyId={companyId || ''} 
                 companyName={companyName} 
+                blogs={publishedBlogs}
+                rating={companyRating}
+                reviewCount={companyReviewCount}
               />
             </div>
           </div>

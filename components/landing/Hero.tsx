@@ -5,15 +5,33 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function Hero({ config }: { config?: any }) {
+export function Hero({
+  config,
+  showTemplates = true,
+}: {
+  config?: any;
+  showTemplates?: boolean;
+}) {
   const defaultTitle = 'Build Stunning Company Landing Pages';
   const defaultSubtitle = 'Create beautiful, SEO-optimized landing pages for your business. Manage products, services, leads, and reviews — all from one powerful dashboard.';
   const titleText = config?.title || defaultTitle;
   const subtitleText = config?.subtitle || defaultSubtitle;
-  const secondaryLink =
+  const primaryLink =
+    !config?.primaryCtaLink || config.primaryCtaLink === '/register'
+      ? '/register/company'
+      : config.primaryCtaLink;
+  const configuredSecondaryLink =
     !config?.secondaryCtaLink || config.secondaryCtaLink === '#demo'
       ? '#templates'
       : config.secondaryCtaLink;
+  const secondaryLink =
+    configuredSecondaryLink === '#templates' && !showTemplates
+      ? '/search'
+      : configuredSecondaryLink;
+  const secondaryText =
+    secondaryLink === '/search' && config?.secondaryCtaText === 'View Demo'
+      ? 'Browse Companies'
+      : config?.secondaryCtaText || 'Explore Companies';
   
   // Split title for styling (first two words highlighted)
   const titleWords = titleText.split(' ');
@@ -56,17 +74,17 @@ export function Hero({ config }: { config?: any }) {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href={config?.primaryCtaLink || "/register/company"}>
-              <Button variant="gradient" size="lg" className="gap-2">
+            <Button asChild variant="gradient" size="lg" className="gap-2">
+              <Link href={primaryLink}>
                 {config?.primaryCtaText || "Start Free Trial"}
                 <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href={secondaryLink}>
-              <Button variant="outline" size="lg">
-                {config?.secondaryCtaText || "Explore Companies"}
-              </Button>
-            </Link>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href={secondaryLink}>
+                {secondaryText}
+              </Link>
+            </Button>
           </div>
 
           <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto">

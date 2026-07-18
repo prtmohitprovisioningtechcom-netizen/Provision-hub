@@ -10,7 +10,7 @@ interface AuthContextType {
   user: IUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<IUser>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -19,7 +19,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
   isLoading: true,
-  login: async () => {},
+  login: async () => {
+    throw new Error('Auth provider is unavailable');
+  },
   logout: async () => {},
   refreshUser: async () => {},
 });
@@ -49,7 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data } = await axios.post('/api/auth', { action: 'login', email, password });
       if (data.success) {
-        dispatch(setUser({ user: data.data.user, token: data.data.token }));
+        const { data: me } = await axios.get('/api/auth/me');
+        const user = (me.success ? me.data : data.data.user) as IUser;
+        dispatch(setUser({ user, token: data.data.token }));
+        return user;
       } else {
         throw new Error(data.message);
       }

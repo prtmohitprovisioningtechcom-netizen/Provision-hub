@@ -5,6 +5,7 @@ import { apiSuccess, apiError, parseBody } from '@/server/utils/api-response';
 import { connectDB } from '@/lib/mongodb';
 import LandingPage from '@/models/LandingPage';
 import Company from '@/models/Company';
+import { LANDING_SECTIONS } from '@/constants';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,11 +38,24 @@ export async function POST(request: NextRequest) {
     if (sections.length > 20) {
       return apiError('A landing page can contain up to 20 sections', 400);
     }
+    const allowedTypes = new Set(
+      LANDING_SECTIONS.map((section) => section.type),
+    );
+    const sectionTypes = sections.map((section) => section?.type);
+    if (sectionTypes.some((type) => !allowedTypes.has(type))) {
+      return apiError('Landing page contains an unsupported section', 400);
+    }
+    if (new Set(sectionTypes).size !== sectionTypes.length) {
+      return apiError('Each landing page section can only be added once', 400);
+    }
+    const normalizedSections = [...sections]
+      .sort((a, b) => Number(a.order || 0) - Number(b.order || 0))
+      .map((section, order) => ({ ...section, order }));
 
     await connectDB();
     const landingPage = await LandingPage.findOneAndUpdate(
       { companyId: auth.companyId },
-      { sections, isPublished: true },
+      { sections: normalizedSections, isPublished: true },
       { new: true, upsert: true }
     ).lean();
 

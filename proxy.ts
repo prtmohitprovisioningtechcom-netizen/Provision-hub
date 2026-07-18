@@ -4,7 +4,6 @@ import { verifyToken } from '@/lib/auth';
 
 const regularAuthRoutes = [
   '/login',
-  '/register',
   '/register/company',
   '/forgot-password',
   '/reset-password',
@@ -17,7 +16,7 @@ export async function proxy(request: NextRequest) {
   const user = token ? await verifyToken(token) : null;
 
   const isAdminAuthRoute = adminAuthRoutes.includes(pathname);
-  const isRegularAuthRoute = regularAuthRoutes.some((route) => pathname.startsWith(route));
+  const isRegularAuthRoute = regularAuthRoutes.includes(pathname);
   const isAdminPanel = pathname.startsWith('/admin') && !isAdminAuthRoute;
   const isDashboard = pathname.startsWith('/dashboard');
 
@@ -43,12 +42,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if (isDashboard && user && user.role !== 'company_admin' && user.role !== 'super_admin') {
-    return NextResponse.redirect(new URL('/search', request.url));
+  if (isDashboard && user && user.role !== 'company_admin') {
+    return NextResponse.redirect(
+      new URL(user.role === 'super_admin' ? '/admin' : '/search', request.url),
+    );
   }
 
   if (isAdminPanel && user && user.role !== 'super_admin') {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(
+      new URL(user.role === 'company_admin' ? '/dashboard' : '/search', request.url),
+    );
   }
 
   const response = NextResponse.next();

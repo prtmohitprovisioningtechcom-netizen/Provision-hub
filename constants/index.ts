@@ -68,15 +68,41 @@ export const DEFAULT_BUSINESS_HOURS = DAYS_OF_WEEK.map((day) => ({
 }));
 
 export const LANDING_SECTIONS = [
-  { type: 'hero', title: 'Hero', order: 0 },
-  { type: 'about', title: 'About Us', order: 1 },
-  { type: 'services', title: 'Our Services', order: 2 },
-  { type: 'products', title: 'Our Products', order: 3 },
-  { type: 'gallery', title: 'Gallery', order: 4 },
-  { type: 'testimonials', title: 'Testimonials', order: 5 },
-  { type: 'faq', title: 'FAQ', order: 6 },
-  { type: 'contact', title: 'Contact Us', order: 7 },
-  { type: 'footer', title: 'Footer', order: 8 },
+  { type: 'hero', title: 'Grow Your Business With Us', subtitle: 'Professional solutions designed around your goals.', order: 0 },
+  { type: 'rating', title: 'Trusted by Our Customers', subtitle: 'Real experiences. Proven quality.', order: 1 },
+  { type: 'about', title: 'About Us', subtitle: 'Get to know our company and what drives us.', order: 2 },
+  {
+    type: 'why-choose-us',
+    title: 'Why Choose Us',
+    subtitle: 'The values that make us the right partner for your business.',
+    order: 3,
+    items: [
+      { title: 'Experienced Team', description: 'Skilled professionals focused on excellent results.' },
+      { title: 'Quality First', description: 'Reliable work with attention to every detail.' },
+      { title: 'Customer Support', description: 'Clear communication and support when you need it.' },
+    ],
+  },
+  { type: 'services', title: 'Our Services', subtitle: 'Solutions tailored to your needs.', order: 4 },
+  { type: 'products', title: 'Our Products', subtitle: 'Explore our latest products.', order: 5 },
+  { type: 'gallery', title: 'Our Work', subtitle: 'A closer look at what we create.', order: 6 },
+  {
+    type: 'blogs',
+    title: 'Latest Insights',
+    subtitle: 'News, ideas, and useful updates from our team.',
+    order: 7,
+    items: [],
+  },
+  { type: 'testimonials', title: 'Customer Stories', subtitle: 'What our customers say about us.', order: 8 },
+  { type: 'faq', title: 'Frequently Asked Questions', subtitle: 'Helpful answers to common questions.', order: 9 },
+  {
+    type: 'subscribe',
+    title: 'Subscribe to Our Newsletter',
+    subtitle: 'Get useful updates, offers, and company news delivered to your inbox.',
+    order: 10,
+    buttonText: 'Subscribe',
+  },
+  { type: 'contact', title: 'Contact Us', subtitle: 'Tell us what you need and our team will get back to you.', order: 11 },
+  { type: 'footer', title: 'Footer', order: 12 },
 ] as const;
 
 export const PRICING_PLANS = Object.entries(SUBSCRIPTION_PLANS).map(([key, plan]) => ({

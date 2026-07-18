@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { Bell, CheckCheck } from 'lucide-react';
 import { INotification, NotificationType } from '@/types';
@@ -12,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import axios from 'axios';
+import axios from '@/services/api';
 
 const typeIcons: Record<NotificationType, string> = {
   new_lead: 'bg-blue-100 text-blue-600',
@@ -24,7 +25,7 @@ const typeIcons: Record<NotificationType, string> = {
 };
 
 export default function NotificationsPage() {
-  const { user, companyId } = useCompany();
+  const { user } = useCompany();
   const [notifications, setNotifications] = useState<INotification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -118,6 +119,18 @@ export default function NotificationsPage() {
                   {!notification.isRead && (
                     <Button variant="ghost" size="sm" onClick={() => markAsRead(notification._id)}>
                       Mark read
+                    </Button>
+                  )}
+                  {notification.link && (
+                    <Button asChild variant="outline" size="sm">
+                      <Link
+                        href={notification.link}
+                        onClick={() => {
+                          if (!notification.isRead) void markAsRead(notification._id);
+                        }}
+                      >
+                        View
+                      </Link>
                     </Button>
                   )}
                 </div>

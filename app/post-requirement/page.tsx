@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Send, User, Mail, Phone, FileText, CheckCircle, IndianRupee } from 'lucide-react';
+import { BrandLogo } from '@/components/BrandLogo';
 
 interface RequirementForm {
   customerName: string;
@@ -58,6 +60,12 @@ export default function PostRequirementPage() {
           >
             Post Another Requirement
           </button>
+          <Link
+            href="/"
+            className="mt-3 block w-full rounded-xl py-3 font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950"
+          >
+            Back to website
+          </Link>
         </motion.div>
       </div>
     );
@@ -65,6 +73,14 @@ export default function PostRequirementPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-white dark:bg-gray-950 flex items-center justify-center py-20 px-4">
+      <header className="absolute inset-x-0 top-0 z-20 border-b border-gray-200/70 bg-white/80 px-4 py-3 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/80">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <BrandLogo imageClassName="h-8" iconClassName="h-8 w-8" />
+          <Link href="/search" className="text-sm font-medium text-indigo-600 hover:underline">
+            Company Directory
+          </Link>
+        </div>
+      </header>
       {/* Background Orbs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/20 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-500/20 blur-[120px] pointer-events-none" />
@@ -95,7 +111,7 @@ export default function PostRequirementPage() {
                   </div>
                   <input
                     {...register('customerName', { required: 'Name is required' })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                     placeholder="John Doe"
                   />
                   {errors.customerName && <p className="text-red-500 text-xs mt-1 ml-1">{errors.customerName.message}</p>}
@@ -111,7 +127,7 @@ export default function PostRequirementPage() {
                   <input
                     type="email"
                     {...register('email', { required: 'Email is required' })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                     placeholder="john@example.com"
                   />
                   {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email.message}</p>}
@@ -129,7 +145,7 @@ export default function PostRequirementPage() {
                   <input
                     type="tel"
                     {...register('phone', { required: 'Phone is required' })}
-                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                     placeholder="+91 9876543210"
                   />
                   {errors.phone && <p className="text-red-500 text-xs mt-1 ml-1">{errors.phone.message}</p>}
@@ -144,7 +160,7 @@ export default function PostRequirementPage() {
                   </div>
                   <input
                     {...register('budget')}
-                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                     placeholder="e.g. 50,000 - 1,00,000"
                   />
                 </div>
@@ -159,7 +175,7 @@ export default function PostRequirementPage() {
                 </div>
                 <input
                   {...register('title', { required: 'Title is required' })}
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
                   placeholder="E.g. Need a Web Developer for E-commerce site"
                 />
                 {errors.title && <p className="text-red-500 text-xs mt-1 ml-1">{errors.title.message}</p>}
@@ -171,7 +187,7 @@ export default function PostRequirementPage() {
               <textarea
                 {...register('description', { required: 'Description is required' })}
                 rows={5}
-                className="w-full p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none resize-none"
+                className="w-full p-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all outline-none resize-none"
                 placeholder="Please describe your requirements in detail. What specific features or services do you need?"
               />
               {errors.description && <p className="text-red-500 text-xs mt-1 ml-1">{errors.description.message}</p>}

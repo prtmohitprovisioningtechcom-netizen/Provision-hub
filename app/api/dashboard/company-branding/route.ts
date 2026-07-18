@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
     const company = await Company.findById(auth.companyId)
-      .select('name slug logo theme')
+      .select('name slug logo theme rating reviewCount')
       .lean();
     if (!company) return apiError('Company not found', 404);
     return apiSuccess(company);

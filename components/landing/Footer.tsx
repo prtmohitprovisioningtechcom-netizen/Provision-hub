@@ -1,17 +1,75 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { BrandLogo } from '@/components/BrandLogo';
 import { siteConfig } from '@/config/site';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function Footer({ config }: { config?: any }) {
+  const router = useRouter();
+  const { isAuthenticated, user, logout } = useAuth();
   const footerConfig = config?.footerConfig || {};
   const themeConfig = config?.themeConfig || {};
+  const featureToggles = config?.featureToggles || {};
   const brandName = themeConfig.logoText || siteConfig.name;
   
   const copyrightText = (
     footerConfig.copyrightText ||
     `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`
   ).replaceAll('TenantHub', brandName);
-  
+
+  const productLinks = [
+    featureToggles.showFeatures !== false && { href: '#features', label: 'Features' },
+    featureToggles.showPricing !== false && { href: '#pricing', label: 'Pricing' },
+    featureToggles.showTemplates !== false && { href: '#templates', label: 'Templates' },
+    { href: '/search', label: 'Directory' },
+  ].filter((link): link is { href: string; label: string } => Boolean(link));
+
+  const accountLink =
+    user?.role === 'super_admin'
+      ? '/admin'
+      : user?.role === 'company_admin'
+        ? '/dashboard'
+        : '/search';
+  const accountLabel =
+    user?.role === 'super_admin'
+      ? 'Admin Dashboard'
+      : user?.role === 'company_admin'
+        ? 'Dashboard'
+        : 'Browse Companies';
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/');
+    router.refresh();
+  };
+
+  const footerSections = [
+    { title: 'Product', links: productLinks },
+    {
+      title: 'Company',
+      links: [
+        { href: '#contact', label: 'Contact' },
+        { href: '/search', label: 'Company Directory' },
+        {
+          href: user?.role === 'super_admin' ? '/admin' : '/admin/login',
+          label: 'Admin Portal',
+        },
+      ],
+    },
+    {
+      title: 'Account',
+      links: isAuthenticated
+        ? [{ href: accountLink, label: accountLabel }]
+        : [
+            { href: '/login', label: 'Sign In' },
+            { href: '/register/company', label: 'Register Company' },
+            { href: '/forgot-password', label: 'Reset Password' },
+          ],
+    },
+  ];
+
   return (
     <footer className="border-t border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
@@ -50,33 +108,7 @@ export function Footer({ config }: { config?: any }) {
             </div>
           </div>
 
-          {[
-            {
-              title: 'Product',
-              links: [
-                { href: '#features', label: 'Features' },
-                { href: '#pricing', label: 'Pricing' },
-                { href: '#templates', label: 'Templates' },
-                { href: '/search', label: 'Directory' },
-              ],
-            },
-            {
-              title: 'Company',
-              links: [
-                { href: '#contact', label: 'Contact' },
-                { href: '/search', label: 'Company Directory' },
-                { href: '/admin/login', label: 'Admin Portal' },
-              ],
-            },
-            {
-              title: 'Account',
-              links: [
-                { href: '/login', label: 'Sign In' },
-                { href: '/register/company', label: 'Register Company' },
-                { href: '/forgot-password', label: 'Reset Password' },
-              ],
-            },
-          ].map((section) => (
+          {footerSections.map((section) => (
             <div key={section.title}>
               <h3 className="font-semibold text-gray-900 dark:text-white">{section.title}</h3>
               <ul className="mt-4 space-y-2">
@@ -90,6 +122,17 @@ export function Footer({ config }: { config?: any }) {
                     </Link>
                   </li>
                 ))}
+                {section.title === 'Account' && isAuthenticated && (
+                  <li>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="text-sm text-red-600 hover:text-red-700"
+                    >
+                      Sign out
+                    </button>
+                  </li>
+                )}
               </ul>
             </div>
           ))}

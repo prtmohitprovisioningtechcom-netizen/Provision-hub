@@ -35,7 +35,8 @@ export default function AdminLoginPage() {
       if (res.success) {
         dispatch(setUser({ user: res.data.user, token: res.data.token }));
         toast.success('Welcome Admin!');
-        router.push('/admin');
+        router.replace('/admin');
+        router.refresh();
       }
     } catch (error) {
       const message = axios.isAxiosError(error)

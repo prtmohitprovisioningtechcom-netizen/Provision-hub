@@ -30,9 +30,16 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true);
     try {
-      await login(data.email, data.password);
+      const user = await login(data.email, data.password);
       toast.success('Welcome back!');
-      router.push('/dashboard');
+      const destination =
+        user.role === 'super_admin'
+          ? '/admin'
+          : user.role === 'company_admin'
+            ? '/dashboard'
+            : '/search';
+      router.replace(destination);
+      router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed');
     } finally {
@@ -94,6 +101,9 @@ export default function LoginPage() {
               Register your company
             </Link>
           </p>
+          <Link href="/" className="mt-3 block text-center text-sm text-gray-500 hover:text-indigo-600">
+            ← Back to website
+          </Link>
         </CardContent>
       </Card>
     </div>

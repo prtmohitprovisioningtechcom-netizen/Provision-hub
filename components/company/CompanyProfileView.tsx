@@ -26,6 +26,7 @@ import {
   IProduct,
   IService,
   IReview,
+  IBlog,
   ILandingPageSection,
   BusinessHours,
   SocialLinks,
@@ -45,6 +46,7 @@ interface CompanyProfileViewProps {
   products: IProduct[];
   services: IService[];
   reviews: IReview[];
+  blogs: IBlog[];
   landingPage: LandingPageData | null;
   gallery: GalleryData | null;
 }
@@ -95,6 +97,7 @@ export function CompanyProfileView({
   products,
   services,
   reviews,
+  blogs,
   landingPage,
   gallery,
 }: CompanyProfileViewProps) {
@@ -105,7 +108,13 @@ export function CompanyProfileView({
     ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${company.name}, I found you on ${platformName} and would like to enquire.`)}`
     : null;
 
-  const galleryImages = gallery?.images?.map((img) => img.url) || [];
+  const galleryItems =
+    gallery?.images?.map((image, index) => ({
+      image: image.url,
+      title: image.caption || `Gallery image ${index + 1}`,
+      description: image.caption || '',
+    })) || [];
+  const galleryImages = galleryItems.map((item) => item.image);
   const hasLanding =
     landingPage?.isPublished !== false &&
     landingPage?.sections &&
@@ -113,8 +122,13 @@ export function CompanyProfileView({
 
   const enrichedSections = hasLanding
     ? landingPage!.sections!.map((section) => {
-        if (section.type === 'gallery' && !section.images?.length && galleryImages.length) {
-          return { ...section, images: galleryImages };
+        if (
+          section.type === 'gallery' &&
+          !section.items?.length &&
+          !section.images?.length &&
+          galleryItems.length
+        ) {
+          return { ...section, items: galleryItems };
         }
         return section;
       })
@@ -171,7 +185,10 @@ export function CompanyProfileView({
           companyName={company.name}
           products={products}
           services={services}
+          blogs={blogs}
           primaryColor={company.theme?.primaryColor}
+          rating={company.rating}
+          reviewCount={company.reviewCount}
         />
       </div>
     );
@@ -249,7 +266,10 @@ export function CompanyProfileView({
             companyName={company.name}
             products={products}
             services={services}
+            blogs={blogs}
             primaryColor={company.theme?.primaryColor}
+            rating={company.rating}
+            reviewCount={company.reviewCount}
           />
         ) : (
           <div className="grid gap-8 lg:grid-cols-3 pb-16">

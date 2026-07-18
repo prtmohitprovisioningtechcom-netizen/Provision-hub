@@ -43,8 +43,11 @@ export default async function HomePage() {
 
   return (
     <main className="marketing-page">
-      <Navbar config={config.themeConfig} />
-      <Hero config={config.heroConfig} />
+      <Navbar config={config.themeConfig} featureToggles={config.featureToggles} />
+      <Hero
+        config={config.heroConfig}
+        showTemplates={config.featureToggles?.showTemplates !== false}
+      />
       {config.featureToggles?.showFeatures && <Features config={config.featuresConfig} />}
       {config.featureToggles?.showHowItWorks && <HowItWorks config={config.howItWorksConfig} />}
       {config.featureToggles?.showTemplates && <Templates />}

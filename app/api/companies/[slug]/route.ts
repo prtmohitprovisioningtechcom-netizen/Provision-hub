@@ -27,6 +27,12 @@ export async function PUT(
 
     const { slug } = await params;
     const company = await CompanyService.getBySlug(slug);
+    if (
+      auth.role === 'company_admin' &&
+      company.company._id.toString() !== auth.companyId
+    ) {
+      return apiError('You can only update your own company', 403);
+    }
     const body = await request.json();
     const updated = await CompanyService.update(company.company._id.toString(), body);
     return apiSuccess(updated, 'Company updated');

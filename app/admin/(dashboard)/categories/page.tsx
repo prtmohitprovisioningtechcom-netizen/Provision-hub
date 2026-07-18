@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '@/services/api';
 import { toast } from 'react-hot-toast';
 import { Plus, Edit2, Trash2, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -77,9 +77,28 @@ export default function AdminCategories() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name) {
+    const normalizedName = formData.name.trim().toLowerCase();
+    const normalizedSlug = (formData.slug || formData.name)
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+
+    if (!normalizedName) {
       toast.error('Name is required');
       return;
+    }
+
+    if (!isEditing) {
+      const duplicate = categories.find(
+        (category) =>
+          category.name.trim().toLowerCase() === normalizedName ||
+          category.slug === normalizedSlug,
+      );
+      if (duplicate) {
+        toast.error(`"${duplicate.name}" already exists. Use Edit to update it.`);
+        return;
+      }
     }
     
     setSaving(true);
@@ -94,7 +113,7 @@ export default function AdminCategories() {
       } else {
         const { data } = await axios.post('/api/admin/categories', formData);
         if (data.success) {
-          toast.success('Category created');
+          toast.success(data.alreadyExists ? 'Category already exists' : 'Category created');
           resetForm();
           fetchCategories();
         }
@@ -108,7 +127,7 @@ export default function AdminCategories() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-100 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );

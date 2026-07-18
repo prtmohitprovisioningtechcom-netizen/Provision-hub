@@ -64,11 +64,11 @@ export function Templates() {
         </div>
 
         <div className="text-center mt-10">
-          <Link href="/register/company">
-            <Button variant="gradient" size="lg">
+          <Button asChild variant="gradient" size="lg">
+            <Link href="/register/company">
               Start Building with Templates
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
     </section>

@@ -10,10 +10,11 @@ export async function PATCH(
   try {
     const auth = await requireAuth(request, ['company_admin']);
     if (auth instanceof Response) return auth;
+    if (!auth.companyId) return apiError('No company associated', 400);
 
     const { id } = await params;
     const { status } = await request.json();
-    const lead = await LeadService.updateStatus(id, status);
+    const lead = await LeadService.updateStatus(id, auth.companyId, status);
     return apiSuccess(lead, 'Lead updated');
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Update failed';
@@ -28,9 +29,10 @@ export async function DELETE(
   try {
     const auth = await requireAuth(request, ['company_admin']);
     if (auth instanceof Response) return auth;
+    if (!auth.companyId) return apiError('No company associated', 400);
 
     const { id } = await params;
-    const result = await LeadService.delete(id);
+    const result = await LeadService.delete(id, auth.companyId);
     return apiSuccess(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Delete failed';

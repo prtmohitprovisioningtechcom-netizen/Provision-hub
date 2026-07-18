@@ -2,132 +2,203 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Moon, Sun, Shield, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  BadgeCheck,
+  ChevronDown,
+  ClipboardPlus,
+  Home,
+  Menu,
+  Moon,
+  Search,
+  Settings,
+  Shield,
+  Sun,
+  X,
+} from 'lucide-react';
 import { BrandLogo } from '@/components/BrandLogo';
-import { useTheme } from '@/contexts/ThemeContext';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { NAV_LINKS } from '@/constants';
+import { useTheme } from '@/contexts/ThemeContext';
 
-export function Navbar({ config }: { config?: any }) {
+interface NavbarProps {
+  config?: {
+    logoText?: string;
+    logoImage?: string;
+  };
+  featureToggles?: {
+    showFeatures?: boolean;
+    showHowItWorks?: boolean;
+    showTemplates?: boolean;
+    showPricing?: boolean;
+    showTestimonials?: boolean;
+    showFAQ?: boolean;
+  };
+}
+
+const links = [
+  { href: '#features', label: 'Features', toggle: 'showFeatures' },
+  { href: '#how-it-works', label: 'How It Works', toggle: 'showHowItWorks' },
+  { href: '#templates', label: 'Templates', toggle: 'showTemplates' },
+  { href: '#pricing', label: 'Pricing', toggle: 'showPricing' },
+] as const;
+
+export function Navbar({ config, featureToggles }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { mode, toggle } = useTheme();
   const { isAuthenticated, user } = useAuth();
 
-  const dashboardLink =
+  const visibleLinks = links.filter(
+    (link) => featureToggles?.[link.toggle] !== false,
+  );
+  const accountLink =
     user?.role === 'super_admin'
       ? '/admin'
       : user?.role === 'company_admin'
         ? '/dashboard'
         : '/search';
+  const accountLabel =
+    user?.role === 'super_admin'
+      ? 'Admin Dashboard'
+      : user?.role === 'company_admin'
+        ? 'Dashboard'
+        : 'Browse Companies';
+  const settingsLink =
+    user?.role === 'super_admin'
+      ? '/admin/customize'
+      : user?.role === 'company_admin'
+        ? '/dashboard/settings'
+        : isAuthenticated
+          ? '/search'
+          : '/login';
+  const quickLinks = [
+    { href: '/', label: 'Home', icon: Home },
+    { href: '/post-requirement', label: 'Post Requirement', icon: ClipboardPlus },
+    { href: '/search', label: 'Company Directory', icon: Search },
+    { href: '/search?verified=true', label: 'Verified Businesses', icon: BadgeCheck },
+    ...(isAuthenticated 
+      ? [{ href: accountLink, label: accountLabel, icon: Settings }]
+      : [
+          { href: '/login', label: 'Sign in', icon: Shield },
+          { href: '/register/company', label: 'Get Started', icon: ClipboardPlus }
+        ])
+  ];
+
+  const closeMenu = () => setIsOpen(false);
 
   return (
     <motion.nav
-      initial={{ y: -100 }}
+      initial={{ y: -80 }}
       animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-white/80 backdrop-blur-xl dark:bg-gray-950/80"
+      className="fixed inset-x-0 top-0 z-50 border-b border-gray-200/70 bg-white/90 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/90"
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <BrandLogo branding={config} />
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <BrandLogo branding={config} className="min-w-0 shrink" />
 
-        <div className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map((link) => (
+        <div className="hidden flex-1 items-center justify-center gap-6 lg:flex">
+          {visibleLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors dark:text-gray-300 dark:hover:text-indigo-400"
+              className="text-sm font-medium text-gray-600 transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
             >
               {link.label}
             </a>
           ))}
+          <Link
+            href="/search"
+            className="text-sm font-medium text-gray-600 transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
+          >
+            Directory
+          </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={toggle}
             aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
           >
-            {mode === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {mode === 'dark' ? <Sun /> : <Moon />}
           </Button>
 
-          {isAuthenticated && user?.role === 'super_admin' ? (
-            <Link href="/admin" className="hidden sm:block">
-              <Button variant="outline" size="sm" className="gap-1.5 border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-400">
-                <Shield className="h-4 w-4" />
-                Admin
-              </Button>
-            </Link>
-          ) : (
-            <Link href="/admin/login" className="hidden sm:block">
-              <Button variant="outline" size="sm" className="gap-1.5 border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-400">
-                <Shield className="h-4 w-4" />
-                Admin
-              </Button>
-            </Link>
-          )}
-
-          {isAuthenticated ? (
-            <Link href={dashboardLink}>
-              <Button variant="gradient" size="sm">
-                Sign in
-              </Button>
-            </Link>
-          ) : (
-            <>
-              <Link href="/login" className="hidden sm:block">
-                <Button variant="ghost" size="sm">
-                  Sign in
-                </Button>
-              </Link>
-              <Link href="/register/company" className="hidden sm:block">
-                <Button variant="gradient" size="sm">
-                  Get Started
-                </Button>
-              </Link>
-            </>
-          )}
-
-          {/* New Quick Links Dropdown */}
           <div className="relative">
             <Button
               variant="outline"
-              size="icon"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              size="sm"
+              className="gap-1.5"
+              onClick={() => {
+                setIsDropdownOpen((open) => !open);
+                setIsOpen(false);
+              }}
+              aria-label="Open quick links"
+              aria-expanded={isDropdownOpen}
+              aria-controls="navbar-quick-links"
             >
-              <ChevronDown className="h-4 w-4" />
+              <span className="hidden xl:inline">Quick links</span>
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${
+                  isDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
             </Button>
             <AnimatePresence>
               {isDropdownOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute right-0 mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-950 py-1 z-50"
+                  id="navbar-quick-links"
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-2 w-60 overflow-hidden rounded-xl border border-gray-200 bg-white p-2 shadow-2xl dark:border-gray-800 dark:bg-gray-950"
                 >
-                  <Link href="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Home</Link>
-                  <Link href="/post-requirement" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Post Your Requirements</Link>
-                  <Link href="/search" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Product/ Service Directory</Link>
-                  <Link href="/search?verified=true" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Verified Business</Link>
-                  <Link href={isAuthenticated ? "/dashboard/settings" : "/login"} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900" onClick={() => setIsDropdownOpen(false)}>Settings</Link>
+                  {quickLinks.map((link) => (
+                    <Link
+                      key={`${link.href}-${link.label}`}
+                      href={link.href}
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-900 dark:hover:text-indigo-400"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      <link.icon className="h-4 w-4" />
+                      {link.label}
+                    </Link>
+                  ))}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
+          <div className="hidden items-center gap-2 lg:flex">
+            {!isAuthenticated && (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-400"
+              >
+                <Link href="/admin/login">
+                  <Shield />
+                  Admin
+                </Link>
+              </Button>
+            )}
+          </div>
+
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
-            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden"
+            onClick={() => {
+              setIsOpen((open) => !open);
+              setIsDropdownOpen(false);
+            }}
             aria-label="Toggle navigation menu"
             aria-expanded={isOpen}
             aria-controls="mobile-navigation"
           >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isOpen ? <X /> : <Menu />}
           </Button>
         </div>
       </div>
@@ -139,50 +210,69 @@ export function Navbar({ config }: { config?: any }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950"
+            className="overflow-hidden border-t border-gray-200 bg-white lg:hidden dark:border-gray-800 dark:bg-gray-950"
           >
-            <div className="flex flex-col gap-2 p-4">
-              {NAV_LINKS.map((link) => (
+            <div className="mx-auto flex max-w-7xl flex-col gap-1 p-4">
+              {visibleLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-300"
-                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900"
+                  onClick={closeMenu}
                 >
                   {link.label}
                 </a>
               ))}
               <Link
-                href={user?.role === 'super_admin' ? '/admin' : '/admin/login'}
-                className="px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 flex items-center gap-2"
-                onClick={() => setIsOpen(false)}
+                href="/search"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900"
+                onClick={closeMenu}
               >
-                <Shield className="h-4 w-4" />
-                Admin
+                Company Directory
               </Link>
               <Link
                 href="/post-requirement"
-                className="px-4 py-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
-                onClick={() => setIsOpen(false)}
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950"
+                onClick={closeMenu}
               >
                 Post Requirement
               </Link>
+
+              <div className="my-2 border-t border-gray-200 dark:border-gray-800" />
+
               {isAuthenticated ? (
                 <Link
-                  href={dashboardLink}
-                  className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-                  onClick={() => setIsOpen(false)}
+                  href={accountLink}
+                  className="rounded-lg bg-indigo-600 px-3 py-2.5 text-center text-sm font-semibold text-white"
+                  onClick={closeMenu}
                 >
-                  Dashboard
+                  {accountLabel}
                 </Link>
               ) : (
-                <Link
-                  href="/login"
-                  className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Sign in
-                </Link>
+                <>
+                  <Link
+                    href="/login"
+                    className="rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900"
+                    onClick={closeMenu}
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/register/company"
+                    className="rounded-lg bg-indigo-600 px-3 py-2.5 text-center text-sm font-semibold text-white"
+                    onClick={closeMenu}
+                  >
+                    Register Company
+                  </Link>
+                  <Link
+                    href="/admin/login"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950"
+                    onClick={closeMenu}
+                  >
+                    <Shield className="h-4 w-4" />
+                    Admin Sign in
+                  </Link>
+                </>
               )}
             </div>
           </motion.div>

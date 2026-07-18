@@ -134,7 +134,7 @@ export default function GalleryPage() {
                   <Button
                     variant="destructive"
                     size="icon"
-                    className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100"
+                    className="absolute right-2 top-2 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
                     onClick={() => removeImage(index)}
                   >
                     <Trash2 className="h-4 w-4" />

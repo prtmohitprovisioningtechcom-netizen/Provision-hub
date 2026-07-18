@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Wrench, Plus, Trash2 } from 'lucide-react';
+import { Wrench, Plus, Pencil, Trash2 } from 'lucide-react';
 import { serviceSchema, type ServiceInput } from '@/lib/validators';
 import { IService } from '@/types';
 import { formatCurrency } from '@/lib/utils';
@@ -25,6 +25,7 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const {
     register,
@@ -53,19 +54,46 @@ export default function ServicesPage() {
   const onSubmit = async (formData: ServiceInput) => {
     setSaving(true);
     try {
-      const { data } = await axios.post('/api/services', formData);
+      const { data } = editingId
+        ? await axios.put(`/api/services/${editingId}`, formData)
+        : await axios.post('/api/services', formData);
       if (data.success) {
-        toast.success('Service created');
+        toast.success(editingId ? 'Service updated' : 'Service created');
         reset();
+        setEditingId(null);
         setShowForm(false);
         fetchServices();
       }
     } catch (err) {
-      const message = axios.isAxiosError(err) ? err.response?.data?.message : 'Create failed';
-      toast.error(message || 'Create failed');
+      const message = axios.isAxiosError(err) ? err.response?.data?.message : 'Save failed';
+      toast.error(message || 'Save failed');
     } finally {
       setSaving(false);
     }
+  };
+
+  const openCreate = () => {
+    setEditingId(null);
+    reset();
+    setShowForm(true);
+  };
+
+  const openEdit = (service: IService) => {
+    setEditingId(service._id);
+    reset({
+      name: service.name,
+      category: service.category,
+      price: service.price,
+      duration: service.duration,
+      description: service.description,
+    });
+    setShowForm(true);
+  };
+
+  const closeForm = () => {
+    setEditingId(null);
+    reset();
+    setShowForm(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -87,7 +115,7 @@ export default function ServicesPage() {
         title="Services"
         description="Manage the services you offer"
         action={
-          <Button onClick={() => setShowForm(!showForm)}>
+          <Button onClick={showForm ? closeForm : openCreate}>
             <Plus className="h-4 w-4" />
             Add Service
           </Button>
@@ -97,7 +125,7 @@ export default function ServicesPage() {
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>New Service</CardTitle>
+            <CardTitle>{editingId ? 'Edit Service' : 'New Service'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -132,9 +160,9 @@ export default function ServicesPage() {
               </div>
               <div className="flex gap-2">
                 <Button type="submit" disabled={saving}>
-                  {saving ? 'Creating...' : 'Create Service'}
+                  {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Create Service'}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="button" variant="outline" onClick={closeForm}>
                   Cancel
                 </Button>
               </div>
@@ -163,9 +191,14 @@ export default function ServicesPage() {
                       <h3 className="font-semibold">{service.name}</h3>
                       <p className="text-sm text-gray-500">{service.category}</p>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(service._id)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
+                    <div className="flex items-center">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(service)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(service._id)}>
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
                   </div>
                   <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                     {service.description}
@@ -183,7 +216,7 @@ export default function ServicesPage() {
               title="No services yet"
               description="Add services to let customers know what you offer."
               action={
-                <Button onClick={() => setShowForm(true)}>
+                <Button onClick={openCreate}>
                   <Plus className="h-4 w-4" />
                   Add Service
                 </Button>

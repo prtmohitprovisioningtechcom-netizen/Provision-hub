@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { CompanyCard } from '@/components/company/CompanyCard';
 import { BrandLogo } from '@/components/BrandLogo';
+import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 
 interface SearchCompany {
@@ -42,6 +43,7 @@ interface Pagination {
 }
 
 export default function SearchContent() {
+  const { isAuthenticated, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -140,8 +142,25 @@ export default function SearchContent() {
       <header className="border-b bg-white/80 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900/80 sticky top-0 z-30">
         <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
           <BrandLogo imageClassName="h-8" iconClassName="h-8 w-8" />
-          <Link href="/login" className="text-sm text-gray-500 hover:text-indigo-600">
-            Sign in
+          <Link
+            href={
+              user?.role === 'super_admin'
+                ? '/admin'
+                : user?.role === 'company_admin'
+                  ? '/dashboard'
+                  : isAuthenticated
+                    ? '/search'
+                    : '/login'
+            }
+            className="text-sm font-medium text-gray-500 hover:text-indigo-600"
+          >
+            {user?.role === 'super_admin'
+              ? 'Admin Dashboard'
+              : user?.role === 'company_admin'
+                ? 'Dashboard'
+                : isAuthenticated
+                  ? 'Browse Companies'
+                  : 'Sign in'}
           </Link>
         </div>
       </header>

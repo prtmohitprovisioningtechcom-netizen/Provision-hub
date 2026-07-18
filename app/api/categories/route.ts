@@ -8,10 +8,14 @@ export async function GET(request: Request) {
     const type = searchParams.get('type') || 'business';
 
     await connectDB();
-    const categories = await Category.find({ 
-      isActive: true, 
-      type: type as 'business' | 'landing_section' 
-    }).sort({ name: 1 }).lean();
+    const query: any = { isActive: true };
+    if (type === 'business') {
+      query.$or = [{ type: 'business' }, { type: { $exists: false } }];
+    } else {
+      query.type = type;
+    }
+
+    const categories = await Category.find(query).sort({ name: 1 }).lean();
     return NextResponse.json({ success: true, data: categories });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
