@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, User, MessageSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { z } from 'zod';
 
@@ -74,39 +74,54 @@ export function Contact({ config }: { config?: any }) {
             ))}
           </div>
 
-          <Card>
-            <CardContent className="p-6">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <Card className="border-0 shadow-2xl bg-white/50 backdrop-blur-sm dark:bg-gray-900/50">
+            <CardContent className="p-8">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div>
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" {...register('name')} className="mt-1" />
+                  <Label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">Name</Label>
+                  <div className="relative mt-2">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input id="name" {...register('name')} className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus-visible:ring-indigo-500 h-12" placeholder="John Doe" />
+                  </div>
                   {errors.name && (
-                    <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+                    <p className="text-sm text-red-500 mt-1.5 font-medium">{errors.name.message}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" {...register('email')} className="mt-1" />
+                  <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</Label>
+                  <div className="relative mt-2">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input id="email" type="email" {...register('email')} className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus-visible:ring-indigo-500 h-12" placeholder="john@example.com" />
+                  </div>
                   {errors.email && (
-                    <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+                    <p className="text-sm text-red-500 mt-1.5 font-medium">{errors.email.message}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="subject">Subject</Label>
-                  <Input id="subject" {...register('subject')} className="mt-1" />
+                  <Label htmlFor="subject" className="text-sm font-medium text-gray-700 dark:text-gray-300">Subject</Label>
+                  <div className="relative mt-2">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <MessageSquare className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input id="subject" {...register('subject')} className="pl-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus-visible:ring-indigo-500 h-12" placeholder="How can we help?" />
+                  </div>
                   {errors.subject && (
-                    <p className="text-sm text-red-500 mt-1">{errors.subject.message}</p>
+                    <p className="text-sm text-red-500 mt-1.5 font-medium">{errors.subject.message}</p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea id="message" rows={4} {...register('message')} className="mt-1" />
+                  <Label htmlFor="message" className="text-sm font-medium text-gray-700 dark:text-gray-300">Message</Label>
+                  <Textarea id="message" rows={4} {...register('message')} className="mt-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus-visible:ring-indigo-500 resize-none" placeholder="Your message here..." />
                   {errors.message && (
-                    <p className="text-sm text-red-500 mt-1">{errors.message.message}</p>
+                    <p className="text-sm text-red-500 mt-1.5 font-medium">{errors.message.message}</p>
                   )}
                 </div>
-                <Button type="submit" variant="gradient" className="w-full gap-2" disabled={isSubmitting}>
-                  <Send className="h-4 w-4" />
+                <Button type="submit" variant="gradient" className="w-full h-12 text-base font-medium gap-2 mt-4" disabled={isSubmitting}>
+                  <Send className="h-5 w-5" />
                   {isSubmitting ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>

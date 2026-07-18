@@ -142,6 +142,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <ChevronLeft className="h-4 w-4" />
             Back to site
           </Link>
+          <div className="flex-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            {isLoggingOut ? 'Logging out...' : 'Logout'}
+          </Button>
         </header>
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>
       </div>

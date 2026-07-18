@@ -123,26 +123,27 @@ export function CompanyProfileView({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Banner */}
-      <div className="relative h-48 sm:h-64 md:h-80 bg-linear-to-r from-indigo-600 to-purple-700">
+      <div className="relative h-64 sm:h-80 md:h-96 bg-gradient-to-r from-indigo-900 via-purple-900 to-black overflow-hidden">
         {company.banner && (
-          <Image src={company.banner} alt={company.name} fill className="object-cover" priority />
+          <Image src={company.banner} alt={company.name} fill className="object-cover opacity-80 mix-blend-overlay" priority />
         )}
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute top-4 left-4">
-          <Link href="/search" className="text-sm text-white/80 hover:text-white">
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-50/100 dark:from-gray-950/100 to-transparent" />
+        <div className="absolute top-6 left-6 z-10">
+          <Link href="/search" className="flex items-center gap-2 text-sm font-medium text-white/90 hover:text-white bg-black/20 hover:bg-black/40 px-4 py-2 rounded-full backdrop-blur-md transition-all">
             ← Back to search
           </Link>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="mx-auto max-w-7xl px-4 relative z-10">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative -mt-16 mb-8 flex flex-col sm:flex-row gap-6 items-start sm:items-end"
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="relative -mt-32 mb-12 flex flex-col sm:flex-row gap-8 items-start sm:items-end bg-white/70 dark:bg-gray-900/70 p-6 sm:p-8 rounded-3xl shadow-2xl backdrop-blur-xl border border-white/20 dark:border-gray-800/50"
         >
-          <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-xl dark:border-gray-900 dark:bg-gray-900">
+          <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-2xl border-4 border-white/50 bg-white shadow-2xl dark:border-gray-800/50 dark:bg-gray-900">
             {company.logo ? (
               <Image src={company.logo} alt={company.name} fill className="object-cover" />
             ) : (

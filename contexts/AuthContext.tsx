@@ -46,11 +46,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser, dispatch]);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { data } = await axios.post('/api/auth', { action: 'login', email, password });
-    if (data.success) {
-      dispatch(setUser({ user: data.data.user, token: data.data.token }));
-    } else {
-      throw new Error(data.message);
+    try {
+      const { data } = await axios.post('/api/auth', { action: 'login', email, password });
+      if (data.success) {
+        dispatch(setUser({ user: data.data.user, token: data.data.token }));
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw error;
     }
   }, [dispatch]);
 

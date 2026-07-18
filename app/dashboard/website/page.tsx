@@ -14,8 +14,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 
+import Link from 'next/link';
+
 export default function WebsitePage() {
-  const { companyId } = useCompany();
+  const { companyId, companySlug } = useCompany();
   const [sections, setSections] = useState<ILandingPageSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -84,9 +86,19 @@ export default function WebsitePage() {
         title="Website Builder"
         description="Customize your landing page sections"
         action={
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
+          <div className="flex items-center gap-3">
+            {companySlug && (
+              <Button asChild variant="outline">
+                <Link href={`/company/${companySlug}`} target="_blank">
+                  <Globe className="mr-2 h-4 w-4" />
+                  View Landing Page
+                </Link>
+              </Button>
+            )}
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         }
       />
 
