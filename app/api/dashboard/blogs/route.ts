@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     if (auth instanceof Response) return auth;
     if (!auth.companyId) return apiError('No company associated', 400);
 
-    const body = await parseBody(request);
+    const body = (await parseBody(request)) as { title?: string; content?: string; category?: string; status?: 'draft' | 'published' };
     
     if (!body.title || !body.content || !body.category) {
       return apiError('Missing required fields', 400);

@@ -27,7 +27,7 @@ export async function PATCH(request: NextRequest) {
     const auth = await requireAuth(request);
     if (auth instanceof Response) return auth;
 
-    const body = await parseBody(request);
+    const body = (await parseBody(request)) as { id?: string };
     await connectDB();
 
     if (body.id) {
