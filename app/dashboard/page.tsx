@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Package, Wrench, Users, Star, TrendingUp } from 'lucide-react';
+import { Package, Wrench, Users, Star, TrendingUp, Globe } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { useCompany } from '@/hooks/useCompany';
 import axios from 'axios';
 
 interface DashboardStats {
@@ -27,6 +30,7 @@ interface DashboardStats {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const { companySlug } = useCompany();
 
   useEffect(() => {
     axios
@@ -46,9 +50,19 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-gray-500">Welcome back! Here&apos;s your business overview.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="text-gray-500">Welcome back! Here&apos;s your business overview.</p>
+        </div>
+        {companySlug && (
+          <Button asChild className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white">
+            <Link href={`/company/${companySlug}`} target="_blank">
+              <Globe className="mr-2 h-4 w-4" />
+              View Full Landing Page
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">

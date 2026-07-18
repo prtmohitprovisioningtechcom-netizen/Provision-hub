@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import axios from 'axios';
 
 interface GalleryImage {
   url: string;
@@ -29,15 +30,25 @@ export default function GalleryPage() {
       setLoading(false);
       return;
     }
-    const stored = localStorage.getItem(`gallery-${companyId}`);
-    if (stored) setImages(JSON.parse(stored));
-    setLoading(false);
+    
+    axios.get('/api/dashboard/gallery')
+      .then((res) => {
+        if (res.data.success && res.data.data.images) {
+          setImages(res.data.data.images);
+        }
+      })
+      .catch((err) => toast.error('Failed to load gallery'))
+      .finally(() => setLoading(false));
   }, [companyId]);
 
-  const saveImages = (updated: GalleryImage[]) => {
+  const saveImages = async (updated: GalleryImage[]) => {
     if (!companyId) return;
     setImages(updated);
-    localStorage.setItem(`gallery-${companyId}`, JSON.stringify(updated));
+    try {
+      await axios.post('/api/dashboard/gallery', { images: updated });
+    } catch (err) {
+      toast.error('Failed to save gallery changes');
+    }
   };
 
   const addImage = () => {

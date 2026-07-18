@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/button';
 import { BrandLogo } from '@/components/BrandLogo';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCompany } from '@/hooks/useCompany';
 import { getInitials } from '@/lib/utils';
 
 const sidebarLinks = [
@@ -53,6 +54,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { companySlug } = useCompany();
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -143,6 +145,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             Back to site
           </Link>
           <div className="flex-1" />
+          {companySlug && (
+            <Button asChild variant="outline" size="sm" className="hidden sm:flex">
+              <Link href={`/company/${companySlug}`} target="_blank">
+                <Globe className="mr-2 h-4 w-4" />
+                View Live Page
+              </Link>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"

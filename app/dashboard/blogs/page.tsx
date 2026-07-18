@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import axios from 'axios';
 import {
   Select,
   SelectContent,
@@ -54,33 +55,40 @@ export default function BlogsPage() {
       setLoading(false);
       return;
     }
-    const stored = localStorage.getItem(`blogs-${companyId}`);
-    if (stored) setBlogs(JSON.parse(stored));
-    setLoading(false);
+    
+    axios.get('/api/dashboard/blogs')
+      .then((res) => {
+        if (res.data.success && res.data.data) {
+          setBlogs(res.data.data);
+        }
+      })
+      .catch((err) => toast.error('Failed to load blogs'))
+      .finally(() => setLoading(false));
   }, [companyId]);
 
-  const saveBlogs = (updated: BlogPost[]) => {
-    if (!companyId) return;
-    setBlogs(updated);
-    localStorage.setItem(`blogs-${companyId}`, JSON.stringify(updated));
+  const onSubmit = async (data: BlogInput & { status: BlogInput['status'] }) => {
+    try {
+      const res = await axios.post('/api/dashboard/blogs', data);
+      if (res.data.success) {
+        setBlogs([res.data.data, ...blogs]);
+        reset({ title: '', content: '', category: '', status: 'draft' });
+        setShowForm(false);
+        toast.success('Blog post created');
+      }
+    } catch (err) {
+      toast.error('Failed to create blog post');
+    }
   };
 
-  const onSubmit = (data: BlogInput & { status: BlogInput['status'] }) => {
-    const post: BlogPost = {
-      ...data,
-      _id: `blog-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-    };
-    saveBlogs([post, ...blogs]);
-    reset({ title: '', content: '', category: '', status: 'draft' });
-    setShowForm(false);
-    toast.success('Blog post created');
-  };
-
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this blog post?')) return;
-    saveBlogs(blogs.filter((b) => b._id !== id));
-    toast.success('Blog deleted');
+    try {
+      await axios.delete(`/api/dashboard/blogs/${id}`);
+      setBlogs(blogs.filter((b) => b._id !== id));
+      toast.success('Blog deleted');
+    } catch (err) {
+      toast.error('Failed to delete blog');
+    }
   };
 
   return (

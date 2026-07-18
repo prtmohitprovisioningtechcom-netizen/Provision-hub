@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import axios from 'axios';
 
 const typeIcons: Record<NotificationType, string> = {
   new_lead: 'bg-blue-100 text-blue-600',
@@ -32,53 +33,36 @@ export default function NotificationsPage() {
       setLoading(false);
       return;
     }
-    const stored = localStorage.getItem(`notifications-${user._id}`);
-    if (stored) {
-      setNotifications(JSON.parse(stored));
-    } else {
-      setNotifications([
-        {
-          _id: '1',
-          userId: user._id,
-          companyId,
-          type: 'new_lead',
-          title: 'Welcome to our platform',
-          message: 'Your dashboard is ready. Start by adding products and services.',
-          isRead: false,
-          link: '/dashboard',
-          createdAt: new Date(),
-        },
-        {
-          _id: '2',
-          userId: user._id,
-          companyId,
-          type: 'system_update',
-          title: 'Getting Started',
-          message: 'Customize your landing page in the Website Builder section.',
-          isRead: false,
-          link: '/dashboard/website',
-          createdAt: new Date(Date.now() - 86400000),
-        },
-      ]);
+    
+    axios.get('/api/dashboard/notifications')
+      .then((res) => {
+        if (res.data.success && res.data.data) {
+          setNotifications(res.data.data);
+        }
+      })
+      .catch((err) => toast.error('Failed to load notifications'))
+      .finally(() => setLoading(false));
+  }, [user?._id]);
+
+  const markAsRead = async (id: string) => {
+    try {
+      await axios.patch('/api/dashboard/notifications', { id });
+      setNotifications(
+        notifications.map((n) => (n._id === id ? { ...n, isRead: true } : n)),
+      );
+    } catch (err) {
+      toast.error('Failed to update notification');
     }
-    setLoading(false);
-  }, [user?._id, companyId]);
-
-  const saveNotifications = (updated: INotification[]) => {
-    if (!user?._id) return;
-    setNotifications(updated);
-    localStorage.setItem(`notifications-${user._id}`, JSON.stringify(updated));
   };
 
-  const markAsRead = (id: string) => {
-    saveNotifications(
-      notifications.map((n) => (n._id === id ? { ...n, isRead: true } : n)),
-    );
-  };
-
-  const markAllRead = () => {
-    saveNotifications(notifications.map((n) => ({ ...n, isRead: true })));
-    toast.success('All notifications marked as read');
+  const markAllRead = async () => {
+    try {
+      await axios.patch('/api/dashboard/notifications', {});
+      setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
+      toast.success('All notifications marked as read');
+    } catch (err) {
+      toast.error('Failed to update notifications');
+    }
   };
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;

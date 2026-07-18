@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
+import axios from 'axios';
 
 interface ProfileForm {
   name: string;
@@ -41,9 +42,7 @@ export default function ProfilePage() {
   const onSubmit = async (data: ProfileForm) => {
     setSaving(true);
     try {
-      const stored = localStorage.getItem(`profile-${user?._id}`);
-      const profile = { ...data, updatedAt: new Date().toISOString() };
-      localStorage.setItem(`profile-${user?._id}`, JSON.stringify(profile));
+      await axios.put('/api/dashboard/profile', data);
       await refreshUser();
       toast.success('Profile updated');
     } catch {
