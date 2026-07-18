@@ -16,61 +16,44 @@ export async function POST(request: NextRequest) {
     if (!auth.companyId) return apiError('No company associated', 400);
 
     const contentType = request.headers.get('content-type') || '';
-    let buffer: Buffer;
-    let mimeType: string;
-
-    if (contentType.includes('multipart/form-data')) {
-      const form = await request.formData();
-      const file = form.get('file');
-      if (!file || typeof file === 'string' || !('arrayBuffer' in (file as any))) {
-        return apiError('Please upload an image file', 400);
-      }
-      const actualFile = file as File;
-      mimeType = actualFile.type || 'image/jpeg';
-      if (!ALLOWED_TYPES.has(mimeType.toLowerCase())) {
-        return apiError('Please upload a valid PNG, JPG, WebP, or GIF image', 400);
-      }
-      if (actualFile.size > MAX_IMAGE_BYTES) {
-        return apiError('Image must be smaller than 2.5MB after compression', 413);
-      }
-      buffer = Buffer.from(await actualFile.arrayBuffer());
-    } else {
-      // Legacy JSON base64 support (small images only)
-      const { image } = (await request.json()) as { image?: unknown };
-      if (
-        typeof image !== 'string' ||
-        !/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(image)
-      ) {
-        return apiError('Please upload a valid PNG, JPG, WebP, or GIF image', 400);
-      }
-      const base64 = image.slice(image.indexOf(',') + 1);
-      const estimatedBytes = Math.ceil((base64.length * 3) / 4);
-      if (estimatedBytes > MAX_IMAGE_BYTES) {
-        return apiError('Image must be smaller than 2.5MB', 413);
-      }
-      mimeType = image.slice(5, image.indexOf(';'));
-      buffer = Buffer.from(base64, 'base64');
+    if (!contentType.includes('multipart/form-data')) {
+      return apiError('Only multipart/form-data is supported', 400);
     }
 
-    let uploaded: { url: string; publicId?: string };
+    const form = await request.formData();
+    const file = form.get('file');
+
+    if (!file || typeof file === 'string' || !('arrayBuffer' in (file as any))) {
+      return apiError('Please upload an image file', 400);
+    }
+
+    const actualFile = file as File;
+    const mimeType = actualFile.type || 'image/jpeg';
     
-    // Check if Cloudinary is configured
-    if (
-      process.env.CLOUDINARY_CLOUD_NAME &&
-      process.env.CLOUDINARY_API_KEY &&
-      process.env.CLOUDINARY_API_SECRET
-    ) {
-      uploaded = await uploadBufferToCloudinary(
-        buffer,
-        mimeType,
-        `multi-tenant/landing-pages/${auth.companyId}`,
-      );
-    } else {
-      // Fallback: If Cloudinary is not configured, store as base64 Data URI
-      // This allows publishing to work immediately without setting up external storage
-      const dataUri = `data:${mimeType};base64,${buffer.toString('base64')}`;
-      uploaded = { url: dataUri };
+    if (!ALLOWED_TYPES.has(mimeType.toLowerCase())) {
+      return apiError('Please upload a valid PNG, JPG, WebP, or GIF image', 400);
     }
+    
+    if (actualFile.size > MAX_IMAGE_BYTES) {
+      return apiError('Image must be smaller than 2.5MB after compression', 413);
+    }
+
+    const buffer = Buffer.from(await actualFile.arrayBuffer());
+
+    // Strict Cloudinary check - prevents silent bloat of DB with base64 strings
+    if (
+      !process.env.CLOUDINARY_CLOUD_NAME ||
+      !process.env.CLOUDINARY_API_KEY ||
+      !process.env.CLOUDINARY_API_SECRET
+    ) {
+      return apiError('Cloudinary is not configured. Please add environment variables.', 400);
+    }
+
+    const uploaded = await uploadBufferToCloudinary(
+      buffer,
+      mimeType,
+      `multi-tenant/landing-pages/${auth.companyId}`,
+    );
 
     return apiSuccess(uploaded);
   } catch (error) {

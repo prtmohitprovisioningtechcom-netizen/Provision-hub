@@ -1,6 +1,6 @@
-const MAX_DIMENSION = 1600;
+const MAX_DIMENSION = 1200;
 const JPEG_QUALITY = 0.82;
-const MAX_OUTPUT_BYTES = 1.8 * 1024 * 1024;
+const MAX_OUTPUT_BYTES = 1 * 1024 * 1024;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {

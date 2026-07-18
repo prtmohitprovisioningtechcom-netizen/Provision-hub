@@ -124,12 +124,19 @@ function mergeMissingSections(
   return ordered.map((section, order) => ({ ...section, order }));
 }
 
-async function uploadImageFile(file: File) {
+async function uploadImageFile(file: File, onProgress?: (progress: number) => void) {
   const compressed = await compressImageFile(file);
   const formData = new FormData();
   formData.append('file', compressed);
   try {
-    const { data } = await api.post('/api/dashboard/upload', formData);
+    const { data } = await api.post('/api/dashboard/upload', formData, {
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress?.(percentCompleted);
+        }
+      },
+    });
     if (!data.success || !data.data?.url) {
       throw new Error(data.message || 'Upload failed');
     }
@@ -142,30 +149,6 @@ async function uploadImageFile(file: File) {
   }
 }
 
-async function replaceEmbeddedImages<T>(value: T): Promise<T> {
-  if (typeof value === 'string') {
-    if (!value.startsWith('data:image/')) return value;
-    const file = await compressDataUrl(value);
-    const url = await uploadImageFile(file);
-    return url as T;
-  }
-  if (Array.isArray(value)) {
-    const next = [];
-    for (const item of value) {
-      next.push(await replaceEmbeddedImages(item));
-    }
-    return next as T;
-  }
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {};
-    for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
-      out[key] = await replaceEmbeddedImages(nested);
-    }
-    return out as T;
-  }
-  return value;
-}
-
 export default function WebsiteBuilder() {
   const { companyId, companySlug } = useCompany();
   const [sections, setSections] = useState<ILandingPageSection[]>([]);
@@ -173,6 +156,7 @@ export default function WebsiteBuilder() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [saved, setSaved] = useState(true);
   const [companyName, setCompanyName] = useState('');
   const [companyLogo, setCompanyLogo] = useState('');
@@ -387,8 +371,12 @@ export default function WebsiteBuilder() {
     }
 
     setUploading(uploadKey);
+    setUploadProgress((prev) => ({ ...prev, [uploadKey]: 0 }));
     try {
-      return await uploadImageFile(file);
+      const url = await uploadImageFile(file, (progress) => {
+        setUploadProgress((prev) => ({ ...prev, [uploadKey]: progress }));
+      });
+      return url;
     } catch (error) {
       const message =
         error instanceof Error && error.message
@@ -402,6 +390,11 @@ export default function WebsiteBuilder() {
       return null;
     } finally {
       setUploading(null);
+      setUploadProgress((prev) => {
+        const next = { ...prev };
+        delete next[uploadKey];
+        return next;
+      });
     }
   };
 
@@ -496,9 +489,7 @@ export default function WebsiteBuilder() {
     }
     setSaving(true);
     try {
-      // Migrate any leftover base64 images to Cloudinary so publish stays under Vercel limits.
-      const migrated = await replaceEmbeddedImages(sections);
-      const normalized = [...migrated]
+      const normalized = [...sections]
         .sort((a, b) => a.order - b.order)
         .map((section, order) => ({ ...section, order }));
 
@@ -883,7 +874,9 @@ export default function WebsiteBuilder() {
                           ) : (
                             <ImagePlus className="h-4 w-4" />
                           )}
-                          {companyLogo ? 'Replace logo' : 'Upload logo'}
+                          {uploading === 'navbar-logo' 
+                            ? (uploadProgress['navbar-logo'] ? `Uploading ${uploadProgress['navbar-logo']}%` : 'Uploading...') 
+                            : companyLogo ? 'Replace logo' : 'Upload logo'}
                           <Input
                             id="navbar-editor-logo"
                             type="file"
@@ -988,12 +981,19 @@ export default function WebsiteBuilder() {
                       className="flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center transition hover:border-indigo-400 hover:bg-indigo-50/50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-indigo-700"
                     >
                       {uploading === selected.id ? (
-                        <Loader2 className="mb-3 h-9 w-9 animate-spin text-indigo-600" />
+                        <>
+                          <Loader2 className="mb-3 h-9 w-9 animate-spin text-indigo-600" />
+                          <span className="font-semibold text-indigo-600">
+                            Uploading {uploadProgress[selected.id] ? `${uploadProgress[selected.id]}%` : '...'}
+                          </span>
+                        </>
                       ) : (
-                        <UploadCloud className="mb-3 h-9 w-9 text-indigo-600" />
+                        <>
+                          <UploadCloud className="mb-3 h-9 w-9 text-indigo-600" />
+                          <span className="font-semibold">Click to upload an image</span>
+                          <span className="mt-1 text-xs text-gray-500">Your image is optimized in Cloudinary</span>
+                        </>
                       )}
-                      <span className="font-semibold">Click to upload an image</span>
-                      <span className="mt-1 text-xs text-gray-500">Your image is optimized in Cloudinary</span>
                       <Input
                         id={`upload-${selected.id}`}
                         type="file"
