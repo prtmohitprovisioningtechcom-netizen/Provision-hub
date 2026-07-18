@@ -6,10 +6,6 @@ import { connectDB } from '@/lib/mongodb';
 import LandingPage from '@/models/LandingPage';
 import Company from '@/models/Company';
 import { LANDING_SECTIONS } from '@/constants';
-import {
-  containsDataImage,
-  sanitizeLandingSections,
-} from '@/lib/sanitize-landing-sections';
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,19 +46,14 @@ export async function POST(request: NextRequest) {
     if (sections.length > 20) {
       return apiError('A landing page can contain up to 20 sections', 400);
     }
-    if (containsDataImage(sections)) {
+    if (JSON.stringify(sections).length > 3_500_000) {
       return apiError(
-        'Embedded images are not allowed. Upload each image again so it is stored on Cloudinary, then publish.',
+        'The total landing page data is too large. Please remove some images and try again.',
         413,
       );
     }
-    const { sections: sanitized, tooLarge } = sanitizeLandingSections(sections);
-    if (tooLarge) {
-      return apiError(
-        'Landing page content is too large to publish. Remove some gallery/media images and try again.',
-        413,
-      );
-    }
+    const sanitized = sections; // Base64 is now fully allowed and stored in Vercel DB
+
     const allowedTypes = new Set(
       LANDING_SECTIONS.map((section) => section.type),
     );
