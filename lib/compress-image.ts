@@ -1,6 +1,6 @@
-const MAX_DIMENSION = 1200;
-const JPEG_QUALITY = 0.82;
-const MAX_OUTPUT_BYTES = 1 * 1024 * 1024;
+const MAX_DIMENSION = 800;
+const JPEG_QUALITY = 0.8;
+const MAX_OUTPUT_BYTES = 200 * 1024;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -83,4 +83,13 @@ export async function compressDataUrl(dataUrl: string, name = 'image.jpg'): Prom
   const blob = await res.blob();
   const file = new File([blob], name, { type: blob.type || 'image/jpeg' });
   return compressImageFile(file);
+}
+
+export function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }

@@ -40,7 +40,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { compressDataUrl, compressImageFile } from '@/lib/compress-image';
+import { compressDataUrl, compressImageFile, fileToBase64 } from '@/lib/compress-image';
 import { LANDING_SECTIONS } from '@/constants';
 
 type BuilderItem = Record<string, unknown>;
@@ -125,30 +125,17 @@ function mergeMissingSections(
 }
 
 async function uploadImageFile(file: File, onProgress?: (progress: number) => void) {
-  const compressed = await compressImageFile(file);
-  const formData = new FormData();
-  formData.append('file', compressed);
   try {
-    const { data } = await api.post('/api/dashboard/upload', formData, {
-      onUploadProgress: (progressEvent) => {
-        if (progressEvent.total) {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          onProgress?.(percentCompleted);
-        }
-      },
-    });
-    if (!data.success || !data.data?.url) {
-      throw new Error(data.message || 'Upload failed');
-    }
-    return data.data.url as string;
+    onProgress?.(25);
+    const compressed = await compressImageFile(file);
+    onProgress?.(75);
+    const base64 = await fileToBase64(compressed);
+    onProgress?.(100);
+    return base64;
   } catch (error: unknown) {
-    const apiMessage = (error as { response?: { data?: { message?: string } } })?.response
-      ?.data?.message;
-    if (apiMessage) throw new Error(apiMessage);
     throw error instanceof Error ? error : new Error('Upload failed');
   }
 }
-
 export default function WebsiteBuilder() {
   const { companyId, companySlug } = useCompany();
   const [sections, setSections] = useState<ILandingPageSection[]>([]);
@@ -492,7 +479,8 @@ export default function WebsiteBuilder() {
       const cleanBase64 = (obj: any): any => {
         if (!obj) return obj;
         if (typeof obj === 'string') {
-          if (obj.startsWith('data:image/') && obj.length > 50000) {
+          // Allow up to ~300KB strings (since we explicitly compress to 200KB)
+          if (obj.startsWith('data:image/') && obj.length > 300000) {
             return ''; // Strip out large base64 images to prevent 413 error
           }
           return obj;
