@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Category from '@/models/Category';
 import { connectDB } from '@/lib/mongodb';
-import { requireAdmin } from '@/lib/auth-utils';
+import { requireAuth } from '@/server/middleware/auth';
 
 export async function PUT(
   request: NextRequest,
   context: { params: { id: string } }
 ) {
   try {
-    await requireAdmin(request);
+    const auth = await requireAuth(request, ['super_admin']);
+    if (auth instanceof Response) return auth;
     await connectDB();
     
     // Await params first to satisfy Next.js 15+ constraints if any, or just destructure safely
@@ -39,7 +40,8 @@ export async function DELETE(
   context: { params: { id: string } }
 ) {
   try {
-    await requireAdmin(request);
+    const auth = await requireAuth(request, ['super_admin']);
+    if (auth instanceof Response) return auth;
     await connectDB();
     
     const { id } = await context.params;

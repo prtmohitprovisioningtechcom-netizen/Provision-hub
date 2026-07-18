@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Category from '@/models/Category';
 import { connectDB } from '@/lib/mongodb';
-import { requireAdmin } from '@/lib/auth-utils';
+import { requireAuth } from '@/server/middleware/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    await requireAdmin(request);
+    const auth = await requireAuth(request, ['super_admin']);
+    if (auth instanceof Response) return auth;
     await connectDB();
     const categories = await Category.find().sort({ createdAt: -1 }).lean();
     return NextResponse.json({ success: true, data: categories });
@@ -16,7 +17,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await requireAdmin(request);
+    const auth = await requireAuth(request, ['super_admin']);
+    if (auth instanceof Response) return auth;
     await connectDB();
     const body = await request.json();
     
