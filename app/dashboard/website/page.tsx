@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import axios from 'axios';
 
 import Link from 'next/link';
 
@@ -28,23 +29,33 @@ export default function WebsitePage() {
       setLoading(false);
       return;
     }
-    const stored = localStorage.getItem(`landing-sections-${companyId}`);
-    if (stored) {
-      setSections(JSON.parse(stored));
-    } else {
-      setSections(
-        LANDING_SECTIONS.map((s, i) => ({
-          id: `section-${i}`,
-          type: s.type,
-          title: s.title,
-          subtitle: '',
-          content: '',
-          isVisible: true,
-          order: s.order,
-        })),
-      );
-    }
-    setLoading(false);
+    
+    const fetchSections = async () => {
+      try {
+        const { data } = await axios.get('/api/dashboard/landing-page');
+        if (data.success && data.data && data.data.sections && data.data.sections.length > 0) {
+          setSections(data.data.sections);
+        } else {
+          setSections(
+            LANDING_SECTIONS.map((s, i) => ({
+              id: `section-${i}`,
+              type: s.type,
+              title: s.title,
+              subtitle: '',
+              content: '',
+              isVisible: true,
+              order: s.order,
+            })),
+          );
+        }
+      } catch (error) {
+        toast.error('Failed to load landing page configuration');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSections();
   }, [companyId]);
 
   const updateSection = (id: string, field: keyof ILandingPageSection, value: string | boolean) => {
@@ -59,14 +70,21 @@ export default function WebsitePage() {
     );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!companyId) return;
     setSaving(true);
-    localStorage.setItem(`landing-sections-${companyId}`, JSON.stringify(sections));
-    setTimeout(() => {
+    try {
+      const { data } = await axios.post('/api/dashboard/landing-page', { sections });
+      if (data.success) {
+        toast.success('Landing page sections saved');
+      } else {
+        toast.error(data.message || 'Failed to save');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to save landing page');
+    } finally {
       setSaving(false);
-      toast.success('Landing page sections saved');
-    }, 500);
+    }
   };
 
   if (loading) {
