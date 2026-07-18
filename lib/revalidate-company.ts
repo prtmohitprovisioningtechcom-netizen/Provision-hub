@@ -7,6 +7,6 @@ export async function revalidateCompanyPage(companyId: string) {
   await connectDB();
   const company = await Company.findById(companyId).select('slug').lean();
   if (company?.slug) {
-    revalidatePath(`/company/${company.slug}`);
+    revalidatePath(`/${company.slug}`);
   }
 }

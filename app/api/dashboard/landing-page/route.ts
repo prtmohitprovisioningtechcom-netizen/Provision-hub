@@ -6,6 +6,10 @@ import { connectDB } from '@/lib/mongodb';
 import LandingPage from '@/models/LandingPage';
 import Company from '@/models/Company';
 import { LANDING_SECTIONS } from '@/constants';
+import {
+  containsDataImage,
+  sanitizeLandingSections,
+} from '@/lib/sanitize-landing-sections';
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,7 +33,15 @@ export async function POST(request: NextRequest) {
     if (auth instanceof Response) return auth;
     if (!auth.companyId) return apiError('No company associated', 400);
 
-    const body = await parseBody(request);
+    let body: unknown;
+    try {
+      body = await parseBody(request);
+    } catch {
+      return apiError(
+        'Request is too large. Re-upload images (they must use Cloudinary URLs, not embedded files) and try again.',
+        413,
+      );
+    }
     const { sections } = body as { sections: any[] };
 
     if (!Array.isArray(sections)) {
@@ -38,17 +50,30 @@ export async function POST(request: NextRequest) {
     if (sections.length > 20) {
       return apiError('A landing page can contain up to 20 sections', 400);
     }
+    if (containsDataImage(sections)) {
+      return apiError(
+        'Embedded images are not allowed. Upload each image again so it is stored on Cloudinary, then publish.',
+        413,
+      );
+    }
+    const { sections: sanitized, tooLarge } = sanitizeLandingSections(sections);
+    if (tooLarge) {
+      return apiError(
+        'Landing page content is too large to publish. Remove some gallery/media images and try again.',
+        413,
+      );
+    }
     const allowedTypes = new Set(
       LANDING_SECTIONS.map((section) => section.type),
     );
-    const sectionTypes = sections.map((section) => section?.type);
+    const sectionTypes = sanitized.map((section) => section?.type);
     if (sectionTypes.some((type) => !allowedTypes.has(type))) {
       return apiError('Landing page contains an unsupported section', 400);
     }
     if (new Set(sectionTypes).size !== sectionTypes.length) {
       return apiError('Each landing page section can only be added once', 400);
     }
-    const normalizedSections = [...sections]
+    const normalizedSections = [...sanitized]
       .sort((a, b) => {
         if (a.type === 'navbar') return -1;
         if (b.type === 'navbar') return 1;
@@ -65,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     const company = await Company.findById(auth.companyId).select('slug').lean();
     if (company?.slug) {
-      revalidatePath(`/company/${company.slug}`);
+      revalidatePath(`/${company.slug}`);
     }
 
     return apiSuccess(landingPage);

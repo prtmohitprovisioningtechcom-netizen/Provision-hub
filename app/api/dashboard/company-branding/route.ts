@@ -34,11 +34,8 @@ export async function PUT(request: NextRequest) {
     };
     const update: Record<string, string> = {};
     if (body.logo !== undefined) {
-      if (
-        typeof body.logo !== 'string' ||
-        (!body.logo.startsWith('https://') && !body.logo.startsWith('data:image/'))
-      ) {
-        return apiError('Invalid logo image', 400);
+      if (typeof body.logo !== 'string' || !body.logo.startsWith('https://')) {
+        return apiError('Logo must be an uploaded HTTPS image URL', 400);
       }
       update.logo = body.logo;
     }
@@ -65,7 +62,7 @@ export async function PUT(request: NextRequest) {
       .lean();
     if (!company) return apiError('Company not found', 404);
 
-    revalidatePath(`/company/${company.slug}`);
+    revalidatePath(`/${company.slug}`);
     return apiSuccess(company, 'Company branding updated');
   } catch {
     return apiError('Failed to update navbar logo', 500);

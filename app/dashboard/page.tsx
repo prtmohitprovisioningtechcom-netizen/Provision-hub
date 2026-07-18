@@ -57,7 +57,7 @@ export default function DashboardPage() {
         </div>
         {companySlug && (
           <Button asChild className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white">
-            <Link href={`/company/${companySlug}`} target="_blank">
+            <Link href={`/${companySlug}`} target="_blank">
               <Globe className="mr-2 h-4 w-4" />
               View Full Landing Page
             </Link>

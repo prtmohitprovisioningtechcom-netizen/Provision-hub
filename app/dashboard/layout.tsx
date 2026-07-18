@@ -152,7 +152,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex-1" />
           {companySlug && (
             <Button asChild variant="outline" size="sm">
-              <Link href={`/company/${companySlug}`} target="_blank">
+              <Link href={`/${companySlug}`} target="_blank">
                 <Globe className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">View Live Page</span>
               </Link>

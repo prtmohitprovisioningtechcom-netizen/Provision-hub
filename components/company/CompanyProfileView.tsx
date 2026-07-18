@@ -165,7 +165,7 @@ export function CompanyProfileView({
         {navbarSection?.isVisible !== false && (
           <header className="sticky top-0 z-50 border-b border-gray-200/80 bg-white/90 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/90">
           <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-            <Link href={`/company/${company.slug}`} className="flex min-w-0 items-center gap-3">
+            <Link href={`/${company.slug}`} className="flex min-w-0 items-center gap-3">
               {company.logo ? (
                 <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border bg-white">
                   <Image src={company.logo} alt="" fill sizes="40px" className="object-contain p-1" />

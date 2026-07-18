@@ -37,7 +37,7 @@ export function CompanyCard({ company, index = 0 }: CompanyCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
     >
-      <Link href={`/company/${company.slug}`}>
+      <Link href={`/${company.slug}`}>
         <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
           <div className="relative h-36 bg-linear-to-br from-indigo-100 to-purple-100 dark:from-indigo-950 dark:to-purple-950">
             {company.banner ? (

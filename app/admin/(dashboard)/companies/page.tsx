@@ -211,7 +211,7 @@ export default function AdminCompaniesPage() {
                         <div className="flex items-center justify-end gap-1">
                           {company.status === 'approved' && (
                             <Button variant="ghost" size="icon" asChild title="View profile">
-                              <Link href={`/company/${company.slug}`} target="_blank">
+                              <Link href={`/${company.slug}`} target="_blank">
                                 <ExternalLink className="h-4 w-4" />
                               </Link>
                             </Button>

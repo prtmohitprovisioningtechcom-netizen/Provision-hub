@@ -40,6 +40,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { compressDataUrl, compressImageFile } from '@/lib/compress-image';
 import { LANDING_SECTIONS } from '@/constants';
 
 type BuilderItem = Record<string, unknown>;
@@ -123,13 +124,46 @@ function mergeMissingSections(
   return ordered.map((section, order) => ({ ...section, order }));
 }
 
-function readFile(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error('Could not read image'));
-    reader.readAsDataURL(file);
-  });
+async function uploadImageFile(file: File) {
+  const compressed = await compressImageFile(file);
+  const formData = new FormData();
+  formData.append('file', compressed);
+  try {
+    const { data } = await api.post('/api/dashboard/upload', formData);
+    if (!data.success || !data.data?.url) {
+      throw new Error(data.message || 'Upload failed');
+    }
+    return data.data.url as string;
+  } catch (error: unknown) {
+    const apiMessage = (error as { response?: { data?: { message?: string } } })?.response
+      ?.data?.message;
+    if (apiMessage) throw new Error(apiMessage);
+    throw error instanceof Error ? error : new Error('Upload failed');
+  }
+}
+
+async function replaceEmbeddedImages<T>(value: T): Promise<T> {
+  if (typeof value === 'string') {
+    if (!value.startsWith('data:image/')) return value;
+    const file = await compressDataUrl(value);
+    const url = await uploadImageFile(file);
+    return url as T;
+  }
+  if (Array.isArray(value)) {
+    const next = [];
+    for (const item of value) {
+      next.push(await replaceEmbeddedImages(item));
+    }
+    return next as T;
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = await replaceEmbeddedImages(nested);
+    }
+    return out as T;
+  }
+  return value;
 }
 
 export default function WebsiteBuilder() {
@@ -347,19 +381,24 @@ export default function WebsiteBuilder() {
       toast.error('Please choose an image file');
       return null;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be smaller than 5MB');
+    if (file.size > 12 * 1024 * 1024) {
+      toast.error('Image must be smaller than 12MB');
       return null;
     }
 
     setUploading(uploadKey);
     try {
-      const image = await readFile(file);
-      const { data } = await api.post('/api/dashboard/upload', { image });
-      if (!data.success || !data.data?.url) throw new Error('Upload failed');
-      return data.data.url as string;
-    } catch {
-      toast.error('Image upload failed');
+      return await uploadImageFile(file);
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : 'Image upload failed';
+      toast.error(
+        message.includes('Cloudinary')
+          ? 'Image hosting is not configured. Add Cloudinary env vars on Vercel.'
+          : 'Image upload failed. Try a smaller image.',
+      );
       return null;
     } finally {
       setUploading(null);
@@ -457,18 +496,41 @@ export default function WebsiteBuilder() {
     }
     setSaving(true);
     try {
-      const normalized = [...sections]
+      // Migrate any leftover base64 images to Cloudinary so publish stays under Vercel limits.
+      const migrated = await replaceEmbeddedImages(sections);
+      const normalized = [...migrated]
         .sort((a, b) => a.order - b.order)
         .map((section, order) => ({ ...section, order }));
+
+      const payloadSize = JSON.stringify({ sections: normalized }).length;
+      if (payloadSize > 3_200_000) {
+        toast.error(
+          'Page content is too large to publish. Remove some gallery images and try again.',
+        );
+        setSections(normalized);
+        return;
+      }
+
       const { data } = await api.post('/api/dashboard/landing-page', {
         sections: normalized,
       });
-      if (!data.success) throw new Error(data.message);
+      if (!data.success) throw new Error(data.message || 'Publish failed');
       setSections(normalized);
       setSaved(true);
       toast.success('Website published successfully');
-    } catch {
-      toast.error('Could not publish your website');
+    } catch (error: unknown) {
+      const status = (error as { response?: { status?: number; data?: { message?: string } } })
+        ?.response?.status;
+      const apiMessage = (error as { response?: { data?: { message?: string } } })?.response
+        ?.data?.message;
+      if (status === 413) {
+        toast.error(
+          apiMessage ||
+            'Content too large. Re-upload large images, then publish again.',
+        );
+      } else {
+        toast.error(apiMessage || 'Could not publish your website');
+      }
     } finally {
       setSaving(false);
     }
@@ -503,7 +565,7 @@ export default function WebsiteBuilder() {
           <div className="flex flex-wrap gap-2">
             {companySlug && (
               <Button asChild variant="secondary">
-                <Link href={`/company/${companySlug}`} target="_blank">
+                <Link href={`/${companySlug}`} target="_blank">
                   <Globe className="h-4 w-4" />
                   Preview
                 </Link>
