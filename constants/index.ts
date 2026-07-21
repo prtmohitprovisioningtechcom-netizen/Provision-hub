@@ -91,10 +91,14 @@ export const LANDING_SECTIONS = [
   },
   {
     type: 'rating',
-    title: 'Trusted by Our Travelers',
-    subtitle: 'Real experiences from happy customers.',
-    eyebrow: 'Customer rating',
+    title: 'Your Brand',
+    subtitle: 'Explore packages, honest rates, and trusted service.',
+    note: '',
     order: 2,
+    items: [
+      { label: 'Google', link: '' },
+      { label: 'facebook', link: '' },
+    ],
   },
   {
     type: 'about',

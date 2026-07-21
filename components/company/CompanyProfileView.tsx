@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { ContactForm } from './ContactForm';
 import { ReviewForm } from './ReviewForm';
 import { CompanyLanding } from './CompanyLanding';
+import { SocialIcons } from './SocialIcons';
 import { formatCurrency, formatDate, cn } from '@/lib/utils';
 import { usePlatformBranding } from '@/hooks/usePlatformBranding';
 import {
@@ -135,7 +136,24 @@ export function CompanyProfileView({
     landingPage.sections.some((s) => s.isVisible);
 
   const enrichedSections = hasLanding
-    ? landingPage!.sections!
+    ? landingPage!.sections!.map((section) => {
+        if (section.type !== 'gallery') return section;
+        const fromSection =
+          section.items && section.items.length > 0
+            ? section.items
+            : (section.images || []).map((image, index) => ({
+                image,
+                title: `Gallery ${index + 1}`,
+                description: '',
+              }));
+        if (fromSection.length > 0) {
+          return { ...section, items: fromSection };
+        }
+        if (galleryItems.length > 0) {
+          return { ...section, items: galleryItems };
+        }
+        return section;
+      })
     : [];
   const navbarSection = enrichedSections.find(
     (section) => section.type === 'navbar',
@@ -186,39 +204,7 @@ export function CompanyProfileView({
               )}
             </div>
             <div className="flex items-center gap-3 text-white/80">
-              {company.socialLinks?.facebook && (
-                <a
-                  href={company.socialLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white"
-                  aria-label="Facebook"
-                >
-                  Facebook
-                </a>
-              )}
-              {company.socialLinks?.instagram && (
-                <a
-                  href={company.socialLinks.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white"
-                  aria-label="Instagram"
-                >
-                  Instagram
-                </a>
-              )}
-              {company.socialLinks?.youtube && (
-                <a
-                  href={company.socialLinks.youtube}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white"
-                  aria-label="YouTube"
-                >
-                  YouTube
-                </a>
-              )}
+              <SocialIcons links={company.socialLinks} tone="light" iconClassName="h-3.5 w-3.5" />
             </div>
           </div>
         </div>
@@ -254,6 +240,11 @@ export function CompanyProfileView({
                 )}
               </Link>
               <div className="flex items-center gap-1 sm:gap-2">
+                <SocialIcons
+                  links={company.socialLinks}
+                  className="mr-1 hidden sm:flex"
+                  iconClassName="h-4 w-4"
+                />
                 <nav className="hidden items-center gap-0.5 lg:flex">
                   {navbarItems.slice(0, 8).map((item, index) =>
                     item.label && item.link ? (
@@ -328,6 +319,7 @@ export function CompanyProfileView({
           email={company.email}
           addressLine={addressLine}
           whatsappUrl={whatsappUrl}
+          socialLinks={company.socialLinks}
         />
       </div>
     );
@@ -409,6 +401,11 @@ export function CompanyProfileView({
             primaryColor={company.theme?.primaryColor}
             rating={company.rating}
             reviewCount={company.reviewCount}
+            phone={company.phone}
+            email={company.email}
+            addressLine={addressLine}
+            whatsappUrl={whatsappUrl}
+            socialLinks={company.socialLinks}
           />
         ) : (
           <div className="grid gap-8 lg:grid-cols-3 pb-16">

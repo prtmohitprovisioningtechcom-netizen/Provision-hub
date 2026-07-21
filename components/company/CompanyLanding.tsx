@@ -2,18 +2,11 @@
 
 import { SafeImage as Image } from '@/components/SafeImage';
 import { motion, type Variants } from 'framer-motion';
-import { IBlog, ILandingPageSection, IProduct, IService } from '@/types';
+import { IBlog, ILandingPageSection, IProduct, IService, SocialLinks } from '@/types';
 import { ContactForm } from './ContactForm';
 import { NewsletterForm } from './NewsletterForm';
-import { ReviewForm } from './ReviewForm';
 import { FloatingContactButtons } from './FloatingContactButtons';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { SocialIcons } from './SocialIcons';
 import { cn, formatCurrency } from '@/lib/utils';
 import { toGoogleMapsEmbedUrl } from '@/lib/maps';
 import { filterNavFooterItems } from '@/lib/nav-links';
@@ -22,6 +15,7 @@ import {
   Headphones,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   Shield,
   Sparkles,
@@ -45,6 +39,7 @@ interface CompanyLandingProps {
   email?: string;
   addressLine?: string;
   whatsappUrl?: string | null;
+  socialLinks?: SocialLinks | null;
   showFloatingContact?: boolean;
 }
 
@@ -123,6 +118,7 @@ function SectionShell({
   className,
   withTopWave = false,
   withBottomWave = false,
+  compact = false,
 }: {
   id: string;
   tone?: 'white' | 'soft' | 'navy' | 'navySoft';
@@ -131,6 +127,7 @@ function SectionShell({
   className?: string;
   withTopWave?: boolean;
   withBottomWave?: boolean;
+  compact?: boolean;
 }) {
   const bg =
     tone === 'soft'
@@ -156,7 +153,14 @@ function SectionShell({
       }
     >
       {withTopWave && <WaveDivider fill={tone === 'soft' ? '#ffffff' : '#f4f7fb'} />}
-      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-24">{children}</div>
+      <div
+        className={cn(
+          'relative mx-auto max-w-7xl px-4 sm:px-6',
+          compact ? 'py-5 md:py-7' : 'py-16 md:py-24',
+        )}
+      >
+        {children}
+      </div>
       {withBottomWave && (
         <WaveDivider fill={tone === 'white' ? '#f4f7fb' : '#ffffff'} flip />
       )}
@@ -331,9 +335,9 @@ export function CompanyLanding({
   email,
   addressLine,
   whatsappUrl,
+  socialLinks,
   showFloatingContact = true,
 }: CompanyLandingProps) {
-  const [isReviewOpen, setIsReviewOpen] = useState(false);
   const visibleSections = [...sections]
     .filter((section) => {
       if (!section.isVisible) return false;
@@ -455,70 +459,132 @@ export function CompanyLanding({
           }
 
           case 'rating': {
-            const roundedRating = Math.round(rating);
+            const manualScore = Number.parseFloat(String(section.note || '').trim());
+            const displayRating =
+              Number.isFinite(manualScore) && manualScore > 0
+                ? Math.min(5, manualScore)
+                : rating > 0
+                  ? rating
+                  : 0;
+            const badges = (section.items || [])
+              .map((item) => ({
+                label: readField(item as Record<string, string>, 'label'),
+                link: readField(item as Record<string, string>, 'link'),
+              }))
+              .filter((item) => item.label);
+            const brandName = section.title?.trim() || companyName;
+            const fullStars = Math.floor(displayRating);
+            const partial = Math.max(0, Math.min(1, displayRating - fullStars));
+
             return (
-              <SectionShell id={sectionId} key={section.id} tone="soft" navy={navy} className="py-0!">
-                <div className="flex flex-col items-center justify-between gap-10 py-4 md:flex-row md:py-2">
-                  <div className="text-center md:text-left">
-                    {section.eyebrow?.trim() && (
-                      <p className="text-sm font-bold uppercase tracking-[0.2em]" style={{ color: gold }}>
-                        {section.eyebrow}
-                      </p>
-                    )}
-                    <h2 className="mt-2 text-3xl font-extrabold text-gray-950 sm:text-4xl">
-                      {section.title}
-                    </h2>
-                    {section.subtitle && <p className="mt-2 text-gray-500">{section.subtitle}</p>}
-                  </div>
-                  <motion.div
-                    variants={staggerGrid}
-                    initial="hidden"
-                    whileInView="show"
-                    viewport={{ once: true }}
-                    className="flex items-center gap-6"
-                  >
-                    <motion.div
-                      variants={cardReveal}
-                      className="flex h-28 w-28 flex-col items-center justify-center rounded-full text-white shadow-2xl"
-                      style={{
-                        background: `linear-gradient(145deg, ${navy}, #163b7a)`,
-                        boxShadow: `0 20px 50px ${navy}44`,
-                      }}
-                    >
-                      <span className="text-4xl font-black">
-                        {rating > 0 ? rating.toFixed(1) : '—'}
-                      </span>
-                      {rating > 0 && (
-                        <span className="text-[10px] uppercase tracking-widest text-white/70">
-                          / 5
-                        </span>
-                      )}
-                    </motion.div>
-                    <motion.div variants={cardReveal}>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={cn(
-                              'h-6 w-6',
-                              star <= roundedRating
-                                ? 'fill-current text-current'
-                                : 'text-gray-200',
+              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy} compact>
+                <motion.div
+                  variants={cardReveal}
+                  className="mx-auto max-w-3xl text-center"
+                >
+                  <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+                    {badges.length > 0 && (
+                      <div className="flex flex-wrap items-center justify-center gap-x-1.5">
+                        {badges.map((badge, index) => (
+                          <span key={`${badge.label}-${index}`} className="flex items-center gap-1.5">
+                            {index > 0 && (
+                              <span className="text-sm text-gray-300" aria-hidden>
+                                |
+                              </span>
                             )}
-                            style={
-                              star <= roundedRating ? { color: navy } : undefined
-                            }
-                          />
+                            {badge.link ? (
+                              <a
+                                href={safeLandingLink(badge.link, '#')}
+                                target={badge.link.startsWith('http') ? '_blank' : undefined}
+                                rel={
+                                  badge.link.startsWith('http')
+                                    ? 'noopener noreferrer'
+                                    : undefined
+                                }
+                                className={cn(
+                                  'text-xl font-bold tracking-tight sm:text-2xl',
+                                  /google/i.test(badge.label)
+                                    ? 'bg-linear-to-r from-[#4285F4] via-[#EA4335] to-[#34A853] bg-clip-text text-transparent'
+                                    : /facebook/i.test(badge.label)
+                                      ? 'text-[#1877F2]'
+                                      : 'text-gray-800',
+                                )}
+                                style={
+                                  !/google|facebook/i.test(badge.label)
+                                    ? { color: navy }
+                                    : undefined
+                                }
+                              >
+                                {badge.label}
+                              </a>
+                            ) : (
+                              <span
+                                className={cn(
+                                  'text-xl font-bold tracking-tight sm:text-2xl',
+                                  /google/i.test(badge.label)
+                                    ? 'bg-linear-to-r from-[#4285F4] via-[#EA4335] to-[#34A853] bg-clip-text text-transparent'
+                                    : /facebook/i.test(badge.label)
+                                      ? 'text-[#1877F2]'
+                                      : 'text-gray-800',
+                                )}
+                                style={
+                                  !/google|facebook/i.test(badge.label)
+                                    ? { color: navy }
+                                    : undefined
+                                }
+                              >
+                                {badge.label}
+                              </span>
+                            )}
+                          </span>
                         ))}
                       </div>
-                      <p className="mt-2 font-semibold text-gray-800">
-                        {reviewCount > 0
-                          ? `${reviewCount} verified review${reviewCount === 1 ? '' : 's'}`
-                          : 'Be the first to review'}
-                      </p>
-                    </motion.div>
-                  </motion.div>
-                </div>
+                    )}
+
+                    {displayRating > 0 && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl font-extrabold tracking-tight text-gray-950 sm:text-3xl">
+                          {displayRating.toFixed(1)}
+                          <span className="text-lg font-bold text-gray-500 sm:text-xl">/5</span>
+                        </span>
+                        <div className="flex items-center gap-0.5" aria-label={`${displayRating} out of 5`}>
+                          {[1, 2, 3, 4, 5].map((star) => {
+                            const fill =
+                              star <= fullStars ? 1 : star === fullStars + 1 ? partial : 0;
+                            return (
+                              <span key={star} className="relative inline-block h-5 w-5 sm:h-6 sm:w-6">
+                                <Star className="absolute inset-0 h-full w-full text-gray-200" />
+                                <span
+                                  className="absolute inset-0 overflow-hidden"
+                                  style={{ width: `${fill * 100}%` }}
+                                >
+                                  <Star className="h-full w-full fill-[#f5b301] text-[#f5b301]" />
+                                </span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <h2
+                    className="mt-3 text-3xl font-black uppercase tracking-wide sm:mt-4 sm:text-4xl md:text-5xl"
+                    style={{ color: navy }}
+                  >
+                    {brandName}
+                  </h2>
+                  {section.subtitle?.trim() && (
+                    <p className="mx-auto mt-1.5 max-w-2xl font-serif text-base text-gray-800 sm:mt-2 sm:text-lg">
+                      {section.subtitle}
+                    </p>
+                  )}
+                  {section.content?.trim() && (
+                    <p className="mx-auto mt-1 max-w-xl text-sm text-gray-500">
+                      {section.content}
+                    </p>
+                  )}
+                </motion.div>
               </SectionShell>
             );
           }
@@ -1058,6 +1124,8 @@ export function CompanyLanding({
 
           case 'contact': {
             const mapSrc = toGoogleMapsEmbedUrl(section.mapUrl || addressLine);
+            const leftHeading = section.note?.trim() || companyName;
+            const leftIntro = section.content?.trim() || '';
             return (
               <SectionShell id="contact" key={section.id} tone="soft" navy={navy}>
                 <SectionHead
@@ -1066,69 +1134,137 @@ export function CompanyLanding({
                   subtitle={section.subtitle}
                   accent={gold}
                 />
-                {section.content?.trim() && (
-                  <p className="mx-auto -mt-6 mb-10 max-w-2xl text-center text-base leading-relaxed text-gray-600">
-                    {section.content}
-                  </p>
-                )}
                 <motion.div
                   variants={staggerGrid}
                   initial="hidden"
                   whileInView="show"
                   viewport={{ once: true }}
-                  className="grid gap-6 lg:grid-cols-2"
+                  className="grid gap-6 lg:grid-cols-2 lg:gap-8"
                 >
                   <motion.div
                     variants={cardReveal}
-                    className="rounded-2xl bg-white p-8 shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
+                    className="flex flex-col rounded-2xl bg-white p-7 shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100 sm:p-8"
                   >
-                    <div className="space-y-5">
+                    <h3 className="text-xl font-extrabold text-gray-950 sm:text-2xl">
+                      {leftHeading}
+                    </h3>
+                    {leftIntro && (
+                      <p className="mt-2 text-sm leading-relaxed text-gray-500">{leftIntro}</p>
+                    )}
+
+                    <div className="mt-7 space-y-4">
                       {addressLine && (
-                        <div className="flex gap-3">
-                          <MapPin className="mt-0.5 h-5 w-5 shrink-0" style={{ color: gold }} />
-                          <p className="text-sm text-gray-600">{addressLine}</p>
+                        <div className="flex gap-3 rounded-xl bg-[#f4f7fb] p-3.5">
+                          <span
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white"
+                            style={{ backgroundColor: navy }}
+                          >
+                            <MapPin className="h-4 w-4" />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                              Address
+                            </p>
+                            <p className="mt-0.5 text-sm font-medium text-gray-800">{addressLine}</p>
+                          </div>
                         </div>
                       )}
                       {phone && (
-                        <div className="flex gap-3">
-                          <Phone className="mt-0.5 h-5 w-5 shrink-0" style={{ color: gold }} />
-                          <a
-                            href={callUrl || '#'}
-                            className="text-sm text-gray-600 hover:underline"
+                        <a
+                          href={callUrl || '#'}
+                          className="flex gap-3 rounded-xl bg-[#f4f7fb] p-3.5 transition hover:bg-gray-100"
+                        >
+                          <span
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white"
+                            style={{ backgroundColor: navy }}
                           >
-                            {phone}
-                          </a>
-                        </div>
+                            <Phone className="h-4 w-4" />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                              Phone
+                            </p>
+                            <p className="mt-0.5 text-sm font-medium text-gray-800">{phone}</p>
+                          </div>
+                        </a>
                       )}
                       {email && (
-                        <div className="flex gap-3">
-                          <Mail className="mt-0.5 h-5 w-5 shrink-0" style={{ color: gold }} />
-                          <a
-                            href={`mailto:${email}`}
-                            className="text-sm text-gray-600 hover:underline"
+                        <a
+                          href={`mailto:${email}`}
+                          className="flex gap-3 rounded-xl bg-[#f4f7fb] p-3.5 transition hover:bg-gray-100"
+                        >
+                          <span
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white"
+                            style={{ backgroundColor: navy }}
                           >
-                            {email}
-                          </a>
-                        </div>
+                            <Mail className="h-4 w-4" />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                              Email
+                            </p>
+                            <p className="mt-0.5 break-all text-sm font-medium text-gray-800">
+                              {email}
+                            </p>
+                          </div>
+                        </a>
                       )}
                     </div>
-                    {whatsappUrl && section.buttonText?.trim() && (
-                      <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-8 inline-flex rounded-full px-5 py-2.5 text-sm font-bold text-white transition hover:-translate-y-0.5"
-                        style={{ backgroundColor: gold }}
-                      >
-                        {section.buttonText}
-                      </a>
+
+                    <div className="mt-auto flex flex-wrap gap-2 pt-7">
+                      {callUrl && (
+                        <a
+                          href={callUrl}
+                          className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-white transition hover:-translate-y-0.5"
+                          style={{ backgroundColor: navy }}
+                        >
+                          <Phone className="h-3.5 w-3.5" />
+                          Call
+                        </a>
+                      )}
+                      {whatsappUrl && (
+                        <a
+                          href={whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-white transition hover:-translate-y-0.5"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          {section.buttonText?.trim() || 'WhatsApp'}
+                        </a>
+                      )}
+                      {email && (
+                        <a
+                          href={`mailto:${email}`}
+                          className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-gray-700 transition hover:-translate-y-0.5 hover:bg-gray-50"
+                        >
+                          <Mail className="h-3.5 w-3.5" />
+                          Email
+                        </a>
+                      )}
+                    </div>
+
+                    {socialLinks && (
+                      <div className="mt-6 border-t border-gray-100 pt-5">
+                        <SocialIcons links={socialLinks} />
+                      </div>
                     )}
                   </motion.div>
+
                   <motion.div
                     variants={cardReveal}
-                    className="rounded-2xl bg-white p-8 shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
+                    className="rounded-2xl bg-white p-7 shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100 sm:p-8"
                   >
-                    <ContactForm companyId={companyId} services={serviceNames} />
+                    {section.placeholder?.trim() && (
+                      <h3 className="mb-5 text-xl font-extrabold text-gray-950">
+                        {section.placeholder}
+                      </h3>
+                    )}
+                    <ContactForm
+                      companyId={companyId}
+                      services={serviceNames}
+                      primaryColor={navy}
+                    />
                   </motion.div>
                 </motion.div>
                 {mapSrc && (
@@ -1225,29 +1361,6 @@ export function CompanyLanding({
           accentColor={gold}
         />
       )}
-
-      <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-        <DialogTrigger asChild>
-          <button
-            type="button"
-            aria-label="Review"
-            className="fixed bottom-24 left-6 z-40 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-xl transition hover:-translate-y-0.5"
-            style={{ backgroundColor: navy }}
-          >
-            <Star className="h-5 w-5 fill-white" />
-          </button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-106.25">
-          <DialogHeader>
-            <DialogTitle>{companyName}</DialogTitle>
-          </DialogHeader>
-          <ReviewForm
-            companyId={companyId}
-            onSuccess={() => setIsReviewOpen(false)}
-            className="mt-4"
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

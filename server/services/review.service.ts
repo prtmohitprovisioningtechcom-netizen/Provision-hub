@@ -7,7 +7,7 @@ import { getPaginationMeta } from '@/lib/utils';
 export class ReviewService {
   static async create(data: {
     companyId: string;
-    userId: string;
+    userId?: string;
     customerName: string;
     rating: number;
     comment: string;
@@ -18,7 +18,17 @@ export class ReviewService {
     const company = await Company.findById(data.companyId);
     if (!company) throw new Error('Company not found');
 
-    const review = await Review.create({ ...data, status: 'pending' });
+    const payload: Record<string, unknown> = {
+      companyId: data.companyId,
+      customerName: data.customerName,
+      rating: data.rating,
+      comment: data.comment,
+      images: data.images || [],
+      status: 'pending',
+    };
+    if (data.userId) payload.userId = data.userId;
+
+    const review = await Review.create(payload);
 
     await Notification.create({
       userId: company.ownerId,

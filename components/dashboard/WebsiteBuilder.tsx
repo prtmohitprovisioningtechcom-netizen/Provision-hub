@@ -51,7 +51,7 @@ type BuilderItem = Record<string, unknown>;
 const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
   navbar: 'Customize logo, brand, nav pages/links, Call & enquire buttons.',
   hero: 'Add 3–5 cover images for an auto-sliding hero, plus headline and Book Now button.',
-  rating: 'Show your real customer rating in a bold trust-building block.',
+  rating: 'Google/Facebook trust bar with score, gold stars, brand name, and tagline — all editable.',
   about: 'Tell your story with an engaging image and company introduction.',
   'why-choose-us': 'Explain the strongest reasons customers should choose your company.',
   services: 'Shows as Popular Destinations — add services from Dashboard → Services.',
@@ -225,6 +225,13 @@ export default function WebsiteBuilder() {
   const [companyWhatsapp, setCompanyWhatsapp] = useState('');
   const [companyRating, setCompanyRating] = useState(0);
   const [companyReviewCount, setCompanyReviewCount] = useState(0);
+  const [socialLinks, setSocialLinks] = useState({
+    facebook: '',
+    instagram: '',
+    youtube: '',
+    twitter: '',
+    linkedin: '',
+  });
   const [publishedBlogs, setPublishedBlogs] = useState<IBlog[]>([]);
   const [primaryColor, setPrimaryColor] = useState('#6366f1');
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>(
@@ -232,9 +239,6 @@ export default function WebsiteBuilder() {
   );
   const [catalogProducts, setCatalogProducts] = useState<IProduct[]>([]);
   const [catalogServices, setCatalogServices] = useState<IService[]>([]);
-  const [catalogGalleryItems, setCatalogGalleryItems] = useState<
-    Record<string, unknown>[]
-  >([]);
   useEffect(() => {
     if (!companyId) {
       // Avoid synchronous setState during render
@@ -270,7 +274,27 @@ export default function WebsiteBuilder() {
           brandName,
         );
         const ordered = [...loaded].sort((a, b) => a.order - b.order);
-        setSections(ordered);
+        const catalogFromGallery = galleryResponse.success
+          ? (galleryResponse.data?.images || []).map(
+              (
+                image: { url?: string; caption?: string },
+                index: number,
+              ) => ({
+                image: image.url || '',
+                title: image.caption || `Gallery image ${index + 1}`,
+                description: image.caption || '',
+              }),
+            )
+          : [];
+        const sectionsWithGallery = ordered.map((section) => {
+          if (section.type !== 'gallery') return section;
+          if (section.items?.length) return section;
+          if (catalogFromGallery.length) {
+            return { ...section, items: catalogFromGallery };
+          }
+          return section;
+        });
+        setSections(sectionsWithGallery);
         setCustomPages(
           Array.isArray(data.data?.pages)
             ? (data.data.pages as ILandingCustomPage[]).filter((page) => {
@@ -284,7 +308,7 @@ export default function WebsiteBuilder() {
         );
         setSelectedId(null);
         setEditingPageId(null);
-        setSaved(JSON.stringify(rawSections) === JSON.stringify(loaded));
+        setSaved(JSON.stringify(rawSections) === JSON.stringify(sectionsWithGallery));
         if (brandingResponse.success) {
           setCompanyName(brandingResponse.data?.name || '');
           setCompanyLogo(brandingResponse.data?.logo || '');
@@ -299,6 +323,14 @@ export default function WebsiteBuilder() {
           setPrimaryColor(
             brandingResponse.data?.theme?.primaryColor || '#0ea5e9',
           );
+          const links = brandingResponse.data?.socialLinks || {};
+          setSocialLinks({
+            facebook: String(links.facebook || ''),
+            instagram: String(links.instagram || ''),
+            youtube: String(links.youtube || ''),
+            twitter: String(links.twitter || ''),
+            linkedin: String(links.linkedin || ''),
+          });
         }
         if (blogsResponse.success) {
           setPublishedBlogs(
@@ -312,20 +344,6 @@ export default function WebsiteBuilder() {
         }
         if (servicesResponse.success) {
           setCatalogServices(servicesResponse.data || []);
-        }
-        if (galleryResponse.success) {
-          setCatalogGalleryItems(
-            (galleryResponse.data?.images || []).map(
-              (
-                image: { url?: string; caption?: string },
-                index: number,
-              ) => ({
-                image: image.url || '',
-                title: image.caption || `Gallery image ${index + 1}`,
-                description: image.caption || '',
-              }),
-            ),
-          );
         }
       } catch {
         toast.error('Could not load your website');
@@ -345,17 +363,7 @@ export default function WebsiteBuilder() {
     () => sections.find((section) => section.type === 'navbar'),
     [sections],
   );
-  const previewSections = useMemo(
-    () =>
-      sections.map((section) =>
-        section.type === 'gallery' &&
-        !section.items?.length &&
-        catalogGalleryItems.length
-          ? { ...section, items: catalogGalleryItems }
-          : section,
-      ),
-    [sections, catalogGalleryItems],
-  );
+  const previewSections = useMemo(() => sections, [sections]);
 
   const updateSection = (
     id: string,
@@ -560,6 +568,20 @@ export default function WebsiteBuilder() {
       toast.success('Brand color updated');
     } catch {
       toast.error('Could not update brand color');
+    }
+  };
+
+  const handleSocialLinksSave = async () => {
+    try {
+      const { data } = await api.put('/api/dashboard/company-branding', {
+        socialLinks,
+      });
+      if (!data.success) throw new Error(data.message || 'Update failed');
+      toast.success('Social links saved — icons show on live navbar');
+    } catch (error: unknown) {
+      const apiMessage = (error as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
+      toast.error(apiMessage || 'Could not save social links');
     }
   };
 
@@ -1132,7 +1154,9 @@ export default function WebsiteBuilder() {
                       ? 'Brand name (logo text)'
                       : selected.type === 'footer'
                         ? 'Footer heading'
-                        : 'Heading'}
+                        : selected.type === 'rating'
+                          ? 'Brand name (e.g. INDIA TOURS)'
+                          : 'Heading'}
                   </Label>
                   <Input
                     id="section-title"
@@ -1144,7 +1168,9 @@ export default function WebsiteBuilder() {
                     placeholder={
                       selected.type === 'navbar'
                         ? companyName || 'Your brand name'
-                        : 'Add a clear section heading'
+                        : selected.type === 'rating'
+                          ? companyName || 'INDIA TOURS'
+                          : 'Add a clear section heading'
                     }
                   />
                   {selected.type === 'navbar' && (
@@ -1156,7 +1182,11 @@ export default function WebsiteBuilder() {
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="section-subtitle">
-                    {selected.type === 'navbar' ? 'Navbar tagline' : 'Supporting text'}
+                    {selected.type === 'navbar'
+                      ? 'Navbar tagline'
+                      : selected.type === 'rating'
+                        ? 'Tagline under brand name'
+                        : 'Supporting text'}
                   </Label>
                   <Input
                     id="section-subtitle"
@@ -1168,7 +1198,9 @@ export default function WebsiteBuilder() {
                     placeholder={
                       selected.type === 'contact'
                         ? "We'd love to hear from you"
-                        : 'A short line that supports the heading'
+                        : selected.type === 'rating'
+                          ? 'Explore packages, honest rates, and trusted service'
+                          : 'A short line that supports the heading'
                     }
                   />
                   {selected.type === 'contact' && (
@@ -1198,7 +1230,7 @@ export default function WebsiteBuilder() {
                     />
                   </div>
                 )}
-                {['rating', 'about', 'services', 'products', 'why-choose-us', 'gallery', 'contact', 'footer'].includes(
+                {['about', 'services', 'products', 'why-choose-us', 'gallery', 'contact', 'footer'].includes(
                   selected.type,
                 ) && (
                   <div className="space-y-2 sm:col-span-2">
@@ -1341,9 +1373,118 @@ export default function WebsiteBuilder() {
                   </>
                 )}
                 {selected.type === 'rating' && (
-                  <p className="text-xs text-gray-500 sm:col-span-2">
-                    Rating score and review count stay connected to approved customer reviews.
-                  </p>
+                  <div className="space-y-4 sm:col-span-2">
+                    <p className="text-xs text-gray-500">
+                      Image-style trust row: badges + score + stars + brand name + tagline. Sab
+                      fields change kar sakte ho.
+                    </p>
+                    <div className="space-y-2">
+                      <Label>Rating score (optional)</Label>
+                      <Input
+                        value={selected.note || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, { note: event.target.value })
+                        }
+                        placeholder="e.g. 4.9 — leave empty to use live reviews score"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Empty = live approved reviews. Fill = fixed score like 4.9
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Extra line (optional)</Label>
+                      <Textarea
+                        rows={2}
+                        value={selected.content || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, { content: event.target.value })
+                        }
+                        placeholder="Optional third line under the tagline"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <Label>Trust badges (Google, Facebook…)</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {['Google', 'facebook'].map((label) => (
+                            <Button
+                              key={label}
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {
+                                const exists = (selected.items || []).some(
+                                  (item) =>
+                                    String((item as BuilderItem).label || '').toLowerCase() ===
+                                    label.toLowerCase(),
+                                );
+                                if (exists) return;
+                                updateSection(selected.id, {
+                                  items: [...(selected.items || []), { label, link: '' }],
+                                });
+                              }}
+                            >
+                              + {label}
+                            </Button>
+                          ))}
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              updateSection(selected.id, {
+                                items: [
+                                  ...(selected.items || []),
+                                  { label: 'New badge', link: '' },
+                                ],
+                              })
+                            }
+                          >
+                            + Custom
+                          </Button>
+                        </div>
+                      </div>
+                      {(selected.items || []).map((rawItem, index) => {
+                        const item = rawItem as BuilderItem;
+                        return (
+                          <div
+                            key={index}
+                            className="relative grid gap-3 rounded-xl border bg-gray-50 p-4 pr-12 sm:grid-cols-2 dark:bg-gray-900"
+                          >
+                            <div className="space-y-1">
+                              <Label>Badge name</Label>
+                              <Input
+                                value={String(item.label || '')}
+                                onChange={(event) =>
+                                  updateItem(selected.id, index, 'label', event.target.value)
+                                }
+                                placeholder="Google"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label>Link (optional)</Label>
+                              <Input
+                                value={String(item.link || '')}
+                                onChange={(event) =>
+                                  updateItem(selected.id, index, 'link', event.target.value)
+                                }
+                                placeholder="https://..."
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="absolute right-2 top-6 text-red-500"
+                              onClick={() => removeItem(selected.id, index)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -1450,6 +1591,43 @@ export default function WebsiteBuilder() {
                       </div>
                     </div>
                   )}
+                  <div className="space-y-3 border-t pt-5">
+                    <div>
+                      <Label>Social links</Label>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Link paste karo — Facebook / Instagram / YouTube icons navbar pe automatic aa
+                        jayenge.
+                      </p>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {(
+                        [
+                          ['facebook', 'Facebook URL'],
+                          ['instagram', 'Instagram URL'],
+                          ['youtube', 'YouTube URL'],
+                          ['twitter', 'X / Twitter URL'],
+                          ['linkedin', 'LinkedIn URL'],
+                        ] as const
+                      ).map(([key, label]) => (
+                        <div key={key} className="space-y-1">
+                          <Label className="text-xs text-gray-500">{label}</Label>
+                          <Input
+                            value={socialLinks[key]}
+                            onChange={(event) =>
+                              setSocialLinks((current) => ({
+                                ...current,
+                                [key]: event.target.value,
+                              }))
+                            }
+                            placeholder={`https://${key}.com/...`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <Button type="button" variant="outline" onClick={handleSocialLinksSave}>
+                      Save social links
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -1599,7 +1777,39 @@ export default function WebsiteBuilder() {
               )}
 
               {selected.type === 'contact' && (
-                <div className="space-y-3 border-t pt-6">
+                <div className="space-y-4 border-t pt-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Left panel heading</Label>
+                      <Input
+                        value={selected.note || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, { note: event.target.value })
+                        }
+                        placeholder="Company name (default)"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Form heading (right side)</Label>
+                      <Input
+                        value={selected.placeholder || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, { placeholder: event.target.value })
+                        }
+                        placeholder="Send Us a Message"
+                      />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label>WhatsApp button text</Label>
+                      <Input
+                        value={selected.buttonText || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, { buttonText: event.target.value })
+                        }
+                        placeholder="WhatsApp"
+                      />
+                    </div>
+                  </div>
                   <div>
                     <Label htmlFor="contact-map-url">Google Map location</Label>
                     <p className="mt-1 text-xs text-gray-500">

@@ -18,13 +18,19 @@ interface ContactFormProps {
   companyId: string;
   services?: string[];
   className?: string;
+  primaryColor?: string;
 }
 
 /** Force readable light-theme fields on public company pages (even if OS is dark). */
 const fieldClass =
   'bg-white text-gray-900 border-gray-200 placeholder:text-gray-400 caret-gray-900 dark:bg-white dark:text-gray-900 dark:border-gray-200 dark:placeholder:text-gray-400';
 
-export function ContactForm({ companyId, services = [], className }: ContactFormProps) {
+export function ContactForm({
+  companyId,
+  services = [],
+  className,
+  primaryColor = '#0b2a5b',
+}: ContactFormProps) {
   const [submitting, setSubmitting] = useState(false);
 
   const {
@@ -144,7 +150,12 @@ export function ContactForm({ companyId, services = [], className }: ContactForm
         {errors.message && <p className="text-xs text-red-500">{errors.message.message}</p>}
       </div>
 
-      <Button type="submit" className="mt-6 w-full sm:w-auto" disabled={submitting}>
+      <Button
+        type="submit"
+        className="mt-6 w-full text-white sm:w-auto"
+        style={{ backgroundColor: primaryColor }}
+        disabled={submitting}
+      >
         {submitting ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />

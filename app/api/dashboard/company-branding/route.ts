@@ -31,8 +31,9 @@ export async function PUT(request: NextRequest) {
     const body = (await request.json()) as {
       logo?: unknown;
       primaryColor?: unknown;
+      socialLinks?: unknown;
     };
-    const update: Record<string, string> = {};
+    const update: Record<string, unknown> = {};
     if (body.logo !== undefined) {
       if (
         typeof body.logo !== 'string' ||
@@ -55,8 +56,24 @@ export async function PUT(request: NextRequest) {
       }
       update['theme.primaryColor'] = body.primaryColor;
     }
+    if (body.socialLinks !== undefined) {
+      if (!body.socialLinks || typeof body.socialLinks !== 'object') {
+        return apiError('Invalid social links', 400);
+      }
+      const incoming = body.socialLinks as Record<string, unknown>;
+      const allowed = ['facebook', 'instagram', 'youtube', 'twitter', 'linkedin', 'whatsapp'] as const;
+      for (const key of allowed) {
+        if (incoming[key] === undefined) continue;
+        const value = String(incoming[key] || '').trim();
+        if (value && !/^https?:\/\//i.test(value) && key !== 'whatsapp') {
+          update[`socialLinks.${key}`] = `https://${value}`;
+        } else {
+          update[`socialLinks.${key}`] = value;
+        }
+      }
+    }
     if (!Object.keys(update).length) {
-      return apiError('Invalid logo image', 400);
+      return apiError('Nothing to update', 400);
     }
 
     await connectDB();
@@ -65,11 +82,12 @@ export async function PUT(request: NextRequest) {
       { $set: update },
       { new: true },
     )
-      .select('name slug logo theme')
+      .select('name slug logo theme socialLinks')
       .lean();
     if (!company) return apiError('Company not found', 404);
 
     revalidatePath(`/${company.slug}`);
+    revalidatePath(`/${company.slug}`, 'layout');
     return apiSuccess(company, 'Company branding updated');
   } catch {
     return apiError('Failed to update navbar logo', 500);

@@ -1,8 +1,13 @@
 import { NextRequest } from 'next/server';
-import { requireAuth } from '@/server/middleware/auth';
+import { authenticateRequest } from '@/server/middleware/auth';
 import { ReviewService } from '@/server/services/review.service';
 import { reviewSchema } from '@/lib/validators';
 import { apiSuccess, apiError, apiPaginated, parseBody } from '@/server/utils/api-response';
+import { z } from 'zod';
+
+const publicReviewSchema = reviewSchema.extend({
+  customerName: z.string().min(2, 'Name is required').max(80),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,15 +27,17 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireAuth(request);
-    if (auth instanceof Response) return auth;
-
     const body = await parseBody(request);
-    const data = reviewSchema.parse(body);
+    const data = publicReviewSchema.parse(body);
+    const user = await authenticateRequest(request);
+
     const review = await ReviewService.create({
-      ...data,
-      userId: auth.userId,
-      customerName: (body as { customerName?: string }).customerName || 'Anonymous',
+      companyId: data.companyId,
+      rating: data.rating,
+      comment: data.comment,
+      images: data.images,
+      userId: user?.userId,
+      customerName: data.customerName.trim(),
     });
     return apiSuccess(review, 'Review submitted', 201);
   } catch (error) {

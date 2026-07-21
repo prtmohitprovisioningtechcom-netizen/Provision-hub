@@ -12,6 +12,9 @@ import {
   ILandingPageSection,
 } from '@/types';
 
+/** Always serve fresh landing content after Website Builder publish. */
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

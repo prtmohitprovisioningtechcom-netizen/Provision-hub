@@ -116,7 +116,34 @@ export class CompanyService {
       .map((section, order) => ({ ...section, order }));
 
     const completeLandingPage = landingPage
-      ? { ...landingPage, sections }
+      ? {
+          ...landingPage,
+          sections: sections.map((section) => {
+            if (section.type !== 'gallery') return section;
+            const fromLanding =
+              (section.items && section.items.length > 0
+                ? section.items
+                : (section.images || []).map((image: string, index: number) => ({
+                    image,
+                    title: `Gallery ${index + 1}`,
+                    description: '',
+                  }))) || [];
+            if (fromLanding.length > 0) {
+              return { ...section, items: fromLanding };
+            }
+            const fromGallery =
+              gallery?.images?.map(
+                (image: { url?: string; caption?: string }, index: number) => ({
+                  image: image.url || '',
+                  title: image.caption || `Gallery ${index + 1}`,
+                  description: image.caption || '',
+                }),
+              ) || [];
+            return fromGallery.length
+              ? { ...section, items: fromGallery, isVisible: section.isVisible !== false }
+              : section;
+          }),
+        }
       : { sections, isPublished: true };
 
     return {

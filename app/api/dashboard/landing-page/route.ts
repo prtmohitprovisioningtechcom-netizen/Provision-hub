@@ -134,9 +134,41 @@ export async function POST(request: NextRequest) {
     const company = await Company.findById(auth.companyId).select('slug').lean();
     if (company?.slug) {
       revalidatePath(`/${company.slug}`);
+      revalidatePath(`/${company.slug}`, 'layout');
+      revalidatePath(`/${company.slug}`, 'page');
       for (const page of normalizedPages) {
         revalidatePath(`/${company.slug}/p/${page.slug}`);
       }
+    }
+
+    // Keep dashboard Gallery model in sync with landing gallery section.
+    const gallerySection = normalizedSections.find((section) => section.type === 'gallery');
+    if (gallerySection) {
+      const { default: Gallery } = await import('@/models/Gallery');
+      const images = (gallerySection.items || [])
+        .map((raw) => {
+          const item = raw as { image?: string; title?: string; description?: string };
+          const url = String(item.image || '').trim();
+          if (!url) return null;
+          return {
+            url,
+            caption: String(item.title || item.description || '').trim(),
+          };
+        })
+        .filter(Boolean);
+      await Gallery.findOneAndUpdate(
+        { companyId: auth.companyId },
+        {
+          images: images.map((image, order) => ({
+            url: (image as { url: string }).url,
+            publicId:
+              String((image as { url: string }).url).split('/').pop() || `gallery-${order}`,
+            caption: (image as { caption?: string }).caption || '',
+            order,
+          })),
+        },
+        { upsert: true, new: true },
+      );
     }
 
     return apiSuccess(landingPage);
