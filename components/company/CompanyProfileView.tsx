@@ -173,15 +173,15 @@ export function CompanyProfileView({
     ? safeCompanyLink(navbarSection.buttonLink)
     : null;
   const showNavbarCta = Boolean(navbarCtaText && navbarCtaHref);
+  const addressLine = [
+    company.address?.street,
+    company.address?.city,
+    company.address?.state,
+  ]
+    .filter(Boolean)
+    .join(', ');
 
   if (hasLanding) {
-    const addressLine = [
-      company.address?.street,
-      company.address?.city,
-      company.address?.state,
-    ]
-      .filter(Boolean)
-      .join(', ');
     const navy = company.theme?.primaryColor || '#0b2a5b';
     const accentColor = navy;
 

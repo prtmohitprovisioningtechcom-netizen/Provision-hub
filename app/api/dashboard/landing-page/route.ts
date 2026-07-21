@@ -145,25 +145,23 @@ export async function POST(request: NextRequest) {
     const gallerySection = normalizedSections.find((section) => section.type === 'gallery');
     if (gallerySection) {
       const { default: Gallery } = await import('@/models/Gallery');
-      const images = (gallerySection.items || [])
-        .map((raw) => {
-          const item = raw as { image?: string; title?: string; description?: string };
-          const url = String(item.image || '').trim();
-          if (!url) return null;
-          return {
-            url,
-            caption: String(item.title || item.description || '').trim(),
-          };
-        })
-        .filter(Boolean);
+      const images: Array<{ url: string; caption: string }> = [];
+      for (const raw of gallerySection.items || []) {
+        const item = raw as { image?: string; title?: string; description?: string };
+        const url = String(item.image || '').trim();
+        if (!url) continue;
+        images.push({
+          url,
+          caption: String(item.title || item.description || '').trim(),
+        });
+      }
       await Gallery.findOneAndUpdate(
         { companyId: auth.companyId },
         {
           images: images.map((image, order) => ({
-            url: (image as { url: string }).url,
-            publicId:
-              String((image as { url: string }).url).split('/').pop() || `gallery-${order}`,
-            caption: (image as { caption?: string }).caption || '',
+            url: image.url,
+            publicId: image.url.split('/').pop() || `gallery-${order}`,
+            caption: image.caption || '',
             order,
           })),
         },

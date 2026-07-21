@@ -210,12 +210,13 @@ function HeroSlideshow({
             'absolute inset-0 z-0 transition-opacity duration-1400 ease-in-out',
             slideIndex === active ? 'opacity-100' : 'opacity-0',
           )}
+          style={{ backgroundColor: navy }}
         >
           <Image
             src={src}
             alt={`${title} slide ${slideIndex + 1}`}
             fill
-            className="object-cover object-center"
+            className="object-contain object-center"
             priority={slideIndex === 0}
             sizes="100vw"
           />
