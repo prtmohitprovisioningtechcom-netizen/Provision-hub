@@ -725,15 +725,32 @@ export default function WebsiteBuilder() {
 
   const handleSocialLinksSave = async () => {
     try {
+      const payload = {
+        facebook: socialLinks.facebook.trim(),
+        instagram: socialLinks.instagram.trim(),
+        youtube: socialLinks.youtube.trim(),
+        twitter: socialLinks.twitter.trim(),
+        linkedin: socialLinks.linkedin.trim(),
+      };
       const { data } = await api.put('/api/dashboard/company-branding', {
-        socialLinks,
+        socialLinks: payload,
       });
       if (!data.success) throw new Error(data.message || 'Update failed');
+      const saved = data.data?.socialLinks || {};
+      setSocialLinks({
+        facebook: String(saved.facebook || payload.facebook || ''),
+        instagram: String(saved.instagram || payload.instagram || ''),
+        youtube: String(saved.youtube || payload.youtube || ''),
+        twitter: String(saved.twitter || payload.twitter || ''),
+        linkedin: String(saved.linkedin || payload.linkedin || ''),
+      });
       toast.success('Social links saved — icons show on navbar & footer');
+      return true;
     } catch (error: unknown) {
       const apiMessage = (error as { response?: { data?: { message?: string } } })
         ?.response?.data?.message;
       toast.error(apiMessage || 'Could not save social links');
+      return false;
     }
   };
 
@@ -822,6 +839,22 @@ export default function WebsiteBuilder() {
         pages: migratedPages,
       });
       if (!data.success) throw new Error(data.message || 'Publish failed');
+
+      // Persist social links with publish so icons don't require a separate save
+      try {
+        await api.put('/api/dashboard/company-branding', {
+          socialLinks: {
+            facebook: socialLinks.facebook.trim(),
+            instagram: socialLinks.instagram.trim(),
+            youtube: socialLinks.youtube.trim(),
+            twitter: socialLinks.twitter.trim(),
+            linkedin: socialLinks.linkedin.trim(),
+          },
+        });
+      } catch {
+        // Landing page already published; social save failure is non-blocking
+      }
+
       setSections(normalized);
       setCustomPages(migratedPages);
       setSaved(true);
@@ -935,7 +968,7 @@ export default function WebsiteBuilder() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-7.5rem)] min-h-125 flex-col gap-4 overflow-hidden">
+    <div className="flex h-[calc(100dvh-7.5rem)] min-h-125 flex-col gap-4 overflow-hidden text-gray-900">
       <div className="shrink-0 overflow-hidden rounded-2xl border border-indigo-100 bg-linear-to-r from-indigo-600 via-violet-600 to-purple-600 p-4 text-white shadow-lg shadow-indigo-500/10 sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -990,7 +1023,7 @@ export default function WebsiteBuilder() {
                 Edit any section. Hide ones you don’t need — they won’t show on your live site.
               </p>
             </div>
-            <CardContent className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain p-2">
+            <CardContent className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain p-2 text-gray-900 dark:text-gray-100">
               {[...sections]
                 .sort((a, b) => a.order - b.order)
                 .map((section, index) => (
@@ -1298,7 +1331,7 @@ export default function WebsiteBuilder() {
                 </Button>
               </div>
             </div>
-            <CardContent className="min-h-0 flex-1 space-y-7 overflow-y-auto overscroll-contain bg-white p-5 sm:p-7 dark:bg-gray-900">
+            <CardContent className="min-h-0 flex-1 space-y-7 overflow-y-auto overscroll-contain bg-white p-5 text-gray-900 sm:p-7 dark:bg-gray-900 dark:text-gray-100">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="section-title">
@@ -1750,9 +1783,10 @@ export default function WebsiteBuilder() {
                 <div className="space-y-3 border-t pt-5">
                     <div>
                       <Label>Social links</Label>
-                      <p className="mt-1 text-xs text-gray-500">
+                      <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                         Jo link daalo (Facebook, Instagram, YouTube, X, LinkedIn) — wahi icons
-                        navbar aur footer pe dikhenge. Khali fields hide rahengi.
+                        navbar aur footer pe dikhenge. Save social links dabao, ya Publish changes
+                        se bhi save ho jayega.
                       </p>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
