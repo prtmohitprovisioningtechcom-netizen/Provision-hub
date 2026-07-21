@@ -1,7 +1,7 @@
 'use client';
 
 import { SafeImage as Image } from '@/components/SafeImage';
-import { motion, type Variants } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { IBlog, ILandingPageSection, IProduct, IService, SocialLinks } from '@/types';
 import { ContactForm } from './ContactForm';
 import { NewsletterForm } from './NewsletterForm';
@@ -21,6 +21,8 @@ import {
   Sparkles,
   Star,
   Wallet,
+  X,
+  ZoomIn,
 } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 
@@ -268,6 +270,209 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         <p className="overflow-hidden text-gray-600">{answer}</p>
       </div>
     </div>
+  );
+}
+
+type GalleryCardItem = {
+  image: string;
+  title: string;
+  description: string;
+  link: string;
+  buttonText: string;
+};
+
+function GalleryGrid({
+  items,
+  sectionTitle,
+  navy,
+  gold,
+  sectionButtonLink,
+  sectionButtonText,
+}: {
+  items: GalleryCardItem[];
+  sectionTitle: string;
+  navy: string;
+  gold: string;
+  sectionButtonLink: string;
+  sectionButtonText: string;
+}) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const active = activeIndex != null ? items[activeIndex] : null;
+
+  useEffect(() => {
+    if (activeIndex == null) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setActiveIndex(null);
+      if (event.key === 'ArrowRight') {
+        setActiveIndex((current) =>
+          current == null ? 0 : (current + 1) % items.length,
+        );
+      }
+      if (event.key === 'ArrowLeft') {
+        setActiveIndex((current) =>
+          current == null ? 0 : (current - 1 + items.length) % items.length,
+        );
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [activeIndex, items.length]);
+
+  return (
+    <>
+      <motion.div
+        variants={staggerGrid}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: '-40px' }}
+        className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      >
+        {items.map((item, i) => {
+          const itemLink = item.link || sectionButtonLink || item.image;
+          const itemCta = item.buttonText || sectionButtonText || '';
+          return (
+            <motion.article
+              key={i}
+              variants={cardReveal}
+              whileHover={{ y: -8 }}
+              className="group overflow-hidden rounded-2xl bg-white shadow-[0_10px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
+            >
+              <button
+                type="button"
+                onClick={() => item.image && setActiveIndex(i)}
+                className="relative block w-full aspect-4/3 overflow-hidden bg-gray-100 text-left"
+              >
+                {item.image ? (
+                  <Image
+                    src={item.image}
+                    alt={item.title || sectionTitle}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-125"
+                  />
+                ) : (
+                  <div
+                    className="flex h-full items-center justify-center text-4xl font-black text-white/40"
+                    style={{ backgroundColor: navy }}
+                  >
+                    {(item.title || 'G').charAt(0)}
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent opacity-80 transition duration-500 group-hover:opacity-100" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="flex h-12 w-12 scale-75 items-center justify-center rounded-full bg-white/90 text-gray-900 opacity-0 shadow-lg transition-all duration-500 group-hover:scale-100 group-hover:opacity-100">
+                    <ZoomIn className="h-5 w-5" />
+                  </span>
+                </div>
+                {item.title && (
+                  <h3 className="absolute bottom-3 left-3 right-3 text-lg font-bold text-white">
+                    {item.title}
+                  </h3>
+                )}
+              </button>
+              {(item.description || (itemCta && itemLink)) && (
+                <div className="p-5">
+                  {item.description && (
+                    <p className="line-clamp-3 text-sm leading-relaxed text-gray-600">
+                      {item.description}
+                    </p>
+                  )}
+                  {itemCta && itemLink && (
+                    <div className="mt-4 flex items-center justify-end">
+                      <a
+                        href={safeLandingLink(itemLink, item.image || '#contact')}
+                        className="text-sm font-bold uppercase tracking-wide transition group-hover:translate-x-0.5"
+                        style={{ color: gold }}
+                        target={
+                          itemLink.startsWith('http') || itemLink.startsWith('/api/')
+                            ? '_blank'
+                            : undefined
+                        }
+                        rel={
+                          itemLink.startsWith('http') || itemLink.startsWith('/api/')
+                            ? 'noopener noreferrer'
+                            : undefined
+                        }
+                      >
+                        {itemCta}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.article>
+          );
+        })}
+      </motion.div>
+
+      <AnimatePresence>
+        {active?.image && activeIndex != null && (
+          <motion.div
+            key="gallery-lightbox"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <button
+              type="button"
+              aria-label="Close gallery zoom"
+              className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+              onClick={() => setActiveIndex(null)}
+            />
+            <motion.div
+              className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col"
+              initial={{ opacity: 0, scale: 0.82 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.88 }}
+              transition={{ duration: 0.35, ease }}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveIndex(null)}
+                className="absolute -top-2 right-0 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25 sm:-right-2"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <div className="relative aspect-4/3 w-full overflow-hidden rounded-2xl bg-black shadow-2xl sm:aspect-video">
+                <Image
+                  src={active.image}
+                  alt={active.title || sectionTitle}
+                  fill
+                  sizes="100vw"
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              {(active.title || active.description) && (
+                <div className="mt-4 text-center text-white">
+                  {active.title && (
+                    <h3 className="text-xl font-bold sm:text-2xl">{active.title}</h3>
+                  )}
+                  {active.description && (
+                    <p className="mt-1 text-sm text-white/70 sm:text-base">
+                      {active.description}
+                    </p>
+                  )}
+                </div>
+              )}
+              {items.length > 1 && (
+                <p className="mt-3 text-center text-xs text-white/50">
+                  {activeIndex + 1} / {items.length}
+                </p>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -853,13 +1058,24 @@ export function CompanyLanding({
             );
 
           case 'gallery': {
-            const galleryItems = section.items?.length
-              ? (section.items as Array<Record<string, unknown>>)
-              : (section.images || []).map((image) => ({
-                  image,
-                  title: '',
-                  description: '',
-                }));
+            const galleryItems: GalleryCardItem[] = (
+              section.items?.length
+                ? (section.items as Array<Record<string, unknown>>)
+                : (section.images || []).map((image) => ({
+                    image,
+                    title: '',
+                    description: '',
+                  }))
+            ).map((item) => ({
+              image: readField(item, 'image'),
+              title:
+                readField(item, 'title') ||
+                readField(item, 'name') ||
+                '',
+              description: readField(item, 'description'),
+              link: readField(item, 'link'),
+              buttonText: readField(item, 'buttonText'),
+            }));
             return (
               <SectionShell id={sectionId} key={section.id} tone="white" navy={navy} withBottomWave>
                 <SectionHead
@@ -868,88 +1084,14 @@ export function CompanyLanding({
                   subtitle={section.subtitle}
                   accent={gold}
                 />
-                <motion.div
-                  variants={staggerGrid}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true, margin: '-40px' }}
-                  className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                >
-                  {galleryItems.map((item, i) => {
-                    const image = readField(item, 'image');
-                    const name =
-                      readField(item, 'title') ||
-                      readField(item, 'name') ||
-                      '';
-                    const description = readField(item, 'description');
-                    const itemLink = readField(item, 'link') || section.buttonLink || image;
-                    const itemCta = readField(item, 'buttonText') || section.buttonText || '';
-                    return (
-                      <motion.article
-                        key={i}
-                        variants={cardReveal}
-                        whileHover={{ y: -8 }}
-                        className="group overflow-hidden rounded-2xl bg-white shadow-[0_10px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
-                      >
-                        <a
-                          href={image || '#'}
-                          target={image ? '_blank' : undefined}
-                          rel={image ? 'noopener noreferrer' : undefined}
-                          className="relative block aspect-4/3 overflow-hidden bg-gray-100"
-                        >
-                          {image ? (
-                            <Image
-                              src={image}
-                              alt={name || section.title}
-                              fill
-                              sizes="(max-width: 768px) 100vw, 25vw"
-                              className="object-cover transition duration-700 group-hover:scale-110"
-                            />
-                          ) : (
-                            <div
-                              className="flex h-full items-center justify-center text-4xl font-black text-white/40"
-                              style={{ backgroundColor: navy }}
-                            >
-                              {(name || 'G').charAt(0)}
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/15 to-transparent" />
-                          {name && (
-                            <h3 className="absolute bottom-3 left-3 right-3 text-lg font-bold text-white">
-                              {name}
-                            </h3>
-                          )}
-                        </a>
-                        {(description || (itemCta && itemLink)) && (
-                          <div className="p-5">
-                            {description && (
-                              <p className="line-clamp-3 text-sm leading-relaxed text-gray-600">
-                                {description}
-                              </p>
-                            )}
-                            {itemCta && itemLink && (
-                              <div className="mt-4 flex items-center justify-end">
-                                <a
-                                  href={safeLandingLink(itemLink, image || '#contact')}
-                                  className="text-sm font-bold uppercase tracking-wide transition group-hover:translate-x-0.5"
-                                  style={{ color: gold }}
-                                  target={itemLink.startsWith('http') || itemLink.startsWith('/api/') ? '_blank' : undefined}
-                                  rel={
-                                    itemLink.startsWith('http') || itemLink.startsWith('/api/')
-                                      ? 'noopener noreferrer'
-                                      : undefined
-                                  }
-                                >
-                                  {itemCta}
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </motion.article>
-                    );
-                  })}
-                </motion.div>
+                <GalleryGrid
+                  items={galleryItems}
+                  sectionTitle={section.title}
+                  navy={navy}
+                  gold={gold}
+                  sectionButtonLink={section.buttonLink || ''}
+                  sectionButtonText={section.buttonText || ''}
+                />
               </SectionShell>
             );
           }
@@ -1053,7 +1195,7 @@ export function CompanyLanding({
                                 {item.name || item.author}
                               </p>
                               <p className="text-xs text-gray-500">
-                                {item.role || 'Traveler'}
+                                {item.role || 'Customer'}
                               </p>
                             </div>
                           </footer>

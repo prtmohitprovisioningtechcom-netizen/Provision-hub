@@ -50,14 +50,14 @@ type BuilderItem = Record<string, unknown>;
 
 const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
   navbar: 'Customize logo, brand, nav pages/links, Call & enquire buttons.',
-  hero: 'Add 3–5 cover images for an auto-sliding hero, plus headline and Book Now button.',
+  hero: 'Add 3–5 cover images for an auto-sliding hero, plus headline and CTA button.',
   rating: 'Google/Facebook trust bar with score, gold stars, brand name, and tagline — all editable.',
   about: 'Tell your story with an engaging image and company introduction.',
   'why-choose-us': 'Explain the strongest reasons customers should choose your company.',
-  services: 'Shows as Popular Destinations — add services from Dashboard → Services.',
-  products: 'Shows as Featured Tours — add products/packages from Dashboard → Products.',
-  gallery: 'Photo gallery mosaic like a travel portfolio.',
-  blogs: 'Publish professional insight and news cards.',
+  services: 'Shows as Our Services — add services from Dashboard → Services.',
+  products: 'Shows as Featured Products — add products from Dashboard → Products.',
+  gallery: 'Photo gallery grid for your work and moments.',
+  blogs: 'Publish news and insight cards.',
   testimonials: 'Add customer quotes that build trust.',
   faq: 'Answer common customer questions.',
   subscribe: 'Invite visitors to subscribe for company updates and offers.',
@@ -66,6 +66,156 @@ const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
 };
 
 const IMAGE_SECTIONS: ILandingPageSection['type'][] = ['about'];
+
+/** Old travel/tour defaults → generic section names (only if still exactly the old text). */
+const LEGACY_SECTION_COPY: Record<
+  string,
+  Partial<Pick<ILandingPageSection, 'title' | 'subtitle' | 'content'>>
+> = {
+  hero: {
+    title: 'Welcome to Our Company',
+    subtitle: 'Quality products, honest rates, and trusted service for every customer.',
+  },
+  rating: {
+    subtitle: 'Quality products, honest rates, and trusted service.',
+  },
+  about: {
+    title: 'About Us',
+    subtitle: 'Who we are and what we stand for.',
+    content:
+      'We deliver reliable products and services with clear communication, expert support, and a customer-first approach. Every solution is designed around your needs.',
+  },
+  'why-choose-us': {
+    subtitle: 'We provide the best service for your needs.',
+  },
+  services: {
+    title: 'Our Services',
+    subtitle: 'Explore what we offer.',
+  },
+  products: {
+    title: 'Featured Products',
+    subtitle: 'Our most popular products and packages.',
+  },
+  gallery: {
+    subtitle: 'A look at our work and moments.',
+  },
+  blogs: {
+    title: 'News & Insights',
+  },
+  testimonials: {
+    title: 'What Our Customers Say',
+  },
+  faq: {
+    subtitle: 'Helpful answers to common questions.',
+  },
+  subscribe: {
+    subtitle: 'Get updates, offers, and news in your inbox.',
+  },
+  footer: {
+    title: "Let's work together",
+    subtitle: 'Clear communication and dependable support.',
+  },
+};
+
+const LEGACY_TITLE_MATCHES = new Set([
+  'Explore Unforgettable Tours',
+  'Our Story',
+  'Popular Destinations',
+  'Featured Tours',
+  'Travel Tips & Stories',
+  'What Our Travelers Say',
+  'Plan your next trip with us',
+]);
+
+const LEGACY_SUBTITLE_MATCHES = new Set([
+  'Customize packages, honest rates, and trusted service for every trip.',
+  'Explore packages, honest rates, and trusted service.',
+  'Locally trusted. Globally inspired.',
+  'We provide the best service for your journey.',
+  'Explore the most fascinating places with us.',
+  'Our most popular packages for every traveler.',
+  'Moments from journeys through our travelers’ lens.',
+  "Moments from journeys through our travelers' lens.",
+  'Helpful answers before you book.',
+  'Get travel updates, offers, and insider tips in your inbox.',
+  'Authentic experiences, clear communication, and dependable support.',
+]);
+
+const LEGACY_ABOUT_CONTENT =
+  'We craft authentic travel experiences with expert planning, local knowledge, and warm hospitality. From short getaways to full custom tours, every journey is designed around you.';
+
+function replaceLegacyTourCopy(section: ILandingPageSection): ILandingPageSection {
+  const next = LEGACY_SECTION_COPY[section.type];
+  let result = section;
+
+  if (next) {
+    const patch: Partial<ILandingPageSection> = {};
+    if (next.title && section.title && LEGACY_TITLE_MATCHES.has(section.title)) {
+      patch.title = next.title;
+    }
+    if (next.subtitle && section.subtitle && LEGACY_SUBTITLE_MATCHES.has(section.subtitle)) {
+      patch.subtitle = next.subtitle;
+    }
+    if (
+      next.content &&
+      section.type === 'about' &&
+      section.content?.trim() === LEGACY_ABOUT_CONTENT
+    ) {
+      patch.content = next.content;
+    }
+    if (Object.keys(patch).length) {
+      result = { ...section, ...patch };
+    }
+  }
+
+  if (result.type === 'why-choose-us' && result.items?.length) {
+    const itemMap: Record<string, { title: string; description: string }> = {
+      '24/7 Support': {
+        title: '24/7 Support',
+        description: 'Round-the-clock assistance whenever you need us.',
+      },
+      'Local Guides': {
+        title: 'Expert Team',
+        description: 'Skilled professionals focused on quality results.',
+      },
+      'Custom Packages': {
+        title: 'Custom Solutions',
+        description: 'Plans tailored to your goals and budget.',
+      },
+      'Budget Friendly': {
+        title: 'Fair Pricing',
+        description: 'Transparent pricing with no hidden charges.',
+      },
+    };
+    const items = result.items.map((item) => {
+      const row = item as { title?: string; description?: string };
+      if (!row.title || !itemMap[row.title]) return row;
+      // Only rewrite known travel defaults, not custom edits
+      if (
+        row.title === '24/7 Support' &&
+        !String(row.description || '').includes('journey')
+      ) {
+        return row;
+      }
+      return { ...row, ...itemMap[row.title] };
+    });
+    result = { ...result, items };
+  }
+
+  return result;
+}
+
+function replaceLegacyNavLabels(section: ILandingPageSection): ILandingPageSection {
+  if (section.type !== 'footer' && section.type !== 'navbar') return section;
+  const items = (section.items || []).map((item) => {
+    const row = item as { label?: string; link?: string; title?: string };
+    if (row.label === 'Destinations' && (row.link === '#services' || !row.link)) {
+      return { ...row, label: 'Services' };
+    }
+    return row;
+  });
+  return { ...section, items };
+}
 
 function mergeMissingSections(
   savedSections: ILandingPageSection[],
@@ -82,21 +232,22 @@ function mergeMissingSections(
       return true;
     })
     .map((section) => {
+      const normalized = replaceLegacyNavLabels(replaceLegacyTourCopy(section));
       if (
-        section.type === 'gallery' &&
-        !section.items?.length &&
-        section.images?.length
+        normalized.type === 'gallery' &&
+        !normalized.items?.length &&
+        normalized.images?.length
       ) {
         return {
-          ...section,
-          items: section.images.map((image, index) => ({
+          ...normalized,
+          items: normalized.images.map((image, index) => ({
             image,
             title: `Gallery image ${index + 1}`,
             description: '',
           })),
         };
       }
-      return section;
+      return normalized;
     });
 
   LANDING_SECTIONS.forEach((defaultSection, defaultIndex) => {
