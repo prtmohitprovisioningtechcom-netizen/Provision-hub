@@ -126,6 +126,8 @@ export interface ILandingPageSection {
   content?: string;
   image?: string;
   images?: string[];
+  /** Google Maps embed URL, share link, or address query — used on contact section */
+  mapUrl?: string;
   buttonText?: string;
   buttonLink?: string;
   eyebrow?: string;
@@ -134,6 +136,25 @@ export interface ILandingPageSection {
   items?: Record<string, unknown>[];
   isVisible: boolean;
   order: number;
+}
+
+/** Extra pages linked from the company navbar, served at /{companySlug}/p/{pageSlug} */
+export interface ILandingCustomPage {
+  id: string;
+  title: string;
+  slug: string;
+  subtitle?: string;
+  content: string;
+  image?: string;
+  isVisible: boolean;
+}
+
+export interface ILandingPage {
+  _id?: string;
+  companyId: string;
+  sections: ILandingPageSection[];
+  pages?: ILandingCustomPage[];
+  isPublished?: boolean;
 }
 
 export interface IProduct {

@@ -6,6 +6,43 @@ import { connectDB } from '@/lib/mongodb';
 import LandingPage from '@/models/LandingPage';
 import Company from '@/models/Company';
 import { LANDING_SECTIONS } from '@/constants';
+import { generateSlug } from '@/lib/utils';
+import {
+  containsDataImage,
+  sanitizeLandingSections,
+} from '@/lib/sanitize-landing-sections';
+
+function normalizePages(pages: unknown) {
+  if (!Array.isArray(pages)) return [];
+  if (pages.length > 20) {
+    throw new Error('You can create up to 20 custom pages');
+  }
+
+  const normalized = pages.map((raw, index) => {
+    const page = raw as Record<string, unknown>;
+    const title = String(page.title || '').trim();
+    if (!title) throw new Error(`Page ${index + 1} needs a title`);
+    const slugSource = String(page.slug || title).trim();
+    const slug = generateSlug(slugSource);
+    if (!slug) throw new Error(`Page "${title}" needs a valid URL slug`);
+    return {
+      id: String(page.id || `page-${Date.now()}-${index}`),
+      title,
+      slug,
+      subtitle: String(page.subtitle || ''),
+      content: String(page.content || ''),
+      image: typeof page.image === 'string' ? page.image : '',
+      isVisible: page.isVisible !== false,
+    };
+  });
+
+  const slugs = normalized.map((page) => page.slug);
+  if (new Set(slugs).size !== slugs.length) {
+    throw new Error('Each custom page needs a unique URL slug');
+  }
+
+  return normalized;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,8 +52,8 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
     const landingPage = await LandingPage.findOne({ companyId: auth.companyId }).lean();
-    
-    return apiSuccess(landingPage || { sections: [] });
+
+    return apiSuccess(landingPage || { sections: [], pages: [] });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to get landing page';
     return apiError(message, 400);
@@ -34,11 +71,11 @@ export async function POST(request: NextRequest) {
       body = await parseBody(request);
     } catch {
       return apiError(
-        'Request is too large. Re-upload images (they must use Cloudinary URLs, not embedded files) and try again.',
+        'Request is too large. Re-upload large images (use Upload, not paste), then publish again.',
         413,
       );
     }
-    const { sections } = body as { sections: any[] };
+    const { sections, pages } = body as { sections: any[]; pages?: unknown };
 
     if (!Array.isArray(sections)) {
       return apiError('Invalid sections data', 400);
@@ -46,17 +83,28 @@ export async function POST(request: NextRequest) {
     if (sections.length > 20) {
       return apiError('A landing page can contain up to 20 sections', 400);
     }
-    if (JSON.stringify(sections).length > 3_500_000) {
+    if (containsDataImage(sections) || containsDataImage(pages)) {
       return apiError(
-        'The total landing page data is too large. Please remove some images and try again.',
+        'Embedded images are not allowed. Upload each image again, then publish.',
         413,
       );
     }
-    const sanitized = sections; // Base64 is now fully allowed and stored in Vercel DB
+    const { sections: sanitized, tooLarge } = sanitizeLandingSections(sections);
+    if (tooLarge) {
+      return apiError(
+        'Landing page content is too large to publish. Remove some gallery/media images and try again.',
+        413,
+      );
+    }
 
-    const allowedTypes = new Set(
-      LANDING_SECTIONS.map((section) => section.type),
-    );
+    let normalizedPages;
+    try {
+      normalizedPages = normalizePages(pages);
+    } catch (error) {
+      return apiError(error instanceof Error ? error.message : 'Invalid pages', 400);
+    }
+
+    const allowedTypes = new Set(LANDING_SECTIONS.map((section) => section.type));
     const sectionTypes = sanitized.map((section) => section?.type);
     if (sectionTypes.some((type) => !allowedTypes.has(type))) {
       return apiError('Landing page contains an unsupported section', 400);
@@ -75,13 +123,20 @@ export async function POST(request: NextRequest) {
     await connectDB();
     const landingPage = await LandingPage.findOneAndUpdate(
       { companyId: auth.companyId },
-      { sections: normalizedSections, isPublished: true },
-      { new: true, upsert: true }
+      {
+        sections: normalizedSections,
+        pages: normalizedPages,
+        isPublished: true,
+      },
+      { new: true, upsert: true },
     ).lean();
 
     const company = await Company.findById(auth.companyId).select('slug').lean();
     if (company?.slug) {
       revalidatePath(`/${company.slug}`);
+      for (const page of normalizedPages) {
+        revalidatePath(`/${company.slug}/p/${page.slug}`);
+      }
     }
 
     return apiSuccess(landingPage);

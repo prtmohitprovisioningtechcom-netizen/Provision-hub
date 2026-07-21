@@ -12,12 +12,17 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Loader2, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface ContactFormProps {
   companyId: string;
   services?: string[];
   className?: string;
 }
+
+/** Force readable light-theme fields on public company pages (even if OS is dark). */
+const fieldClass =
+  'bg-white text-gray-900 border-gray-200 placeholder:text-gray-400 caret-gray-900 dark:bg-white dark:text-gray-900 dark:border-gray-200 dark:placeholder:text-gray-400';
 
 export function ContactForm({ companyId, services = [], className }: ContactFormProps) {
   const [submitting, setSubmitting] = useState(false);
@@ -57,34 +62,61 @@ export function ContactForm({ companyId, services = [], className }: ContactForm
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
       onSubmit={handleSubmit(onSubmit)}
-      className={className}
+      className={cn('text-gray-900', className)}
     >
       <input type="hidden" {...register('companyId')} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="customerName">Full Name</Label>
-          <Input id="customerName" placeholder="John Doe" {...register('customerName')} />
+          <Label htmlFor="customerName" className="text-gray-800">
+            Full Name
+          </Label>
+          <Input
+            id="customerName"
+            placeholder="John Doe"
+            className={fieldClass}
+            {...register('customerName')}
+          />
           {errors.customerName && (
             <p className="text-xs text-red-500">{errors.customerName.message}</p>
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="john@example.com" {...register('email')} />
+          <Label htmlFor="email" className="text-gray-800">
+            Email
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="john@example.com"
+            className={fieldClass}
+            {...register('email')}
+          />
           {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone</Label>
-          <Input id="phone" placeholder="+1 234 567 8900" {...register('phone')} />
+          <Label htmlFor="phone" className="text-gray-800">
+            Phone
+          </Label>
+          <Input
+            id="phone"
+            placeholder="+91 98765 43210"
+            className={fieldClass}
+            {...register('phone')}
+          />
           {errors.phone && <p className="text-xs text-red-500">{errors.phone.message}</p>}
         </div>
         {services.length > 0 && (
           <div className="space-y-2">
-            <Label htmlFor="interestedService">Interested In</Label>
+            <Label htmlFor="interestedService" className="text-gray-800">
+              Interested In
+            </Label>
             <select
               id="interestedService"
-              className="flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900"
+              className={cn(
+                'flex h-10 w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+                fieldClass,
+              )}
               {...register('interestedService')}
             >
               <option value="">Select a service</option>
@@ -99,11 +131,14 @@ export function ContactForm({ companyId, services = [], className }: ContactForm
       </div>
 
       <div className="mt-4 space-y-2">
-        <Label htmlFor="message">Message</Label>
+        <Label htmlFor="message" className="text-gray-800">
+          Message
+        </Label>
         <Textarea
           id="message"
           rows={4}
           placeholder="Tell us about your requirements..."
+          className={fieldClass}
           {...register('message')}
         />
         {errors.message && <p className="text-xs text-red-500">{errors.message.message}</p>}

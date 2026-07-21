@@ -1,28 +1,34 @@
 'use client';
 
-import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { SafeImage as Image } from '@/components/SafeImage';
+import { motion, type Variants } from 'framer-motion';
 import { IBlog, ILandingPageSection, IProduct, IService } from '@/types';
 import { ContactForm } from './ContactForm';
 import { NewsletterForm } from './NewsletterForm';
 import { ReviewForm } from './ReviewForm';
+import { FloatingContactButtons } from './FloatingContactButtons';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { cn, formatCurrency } from '@/lib/utils';
+import { toGoogleMapsEmbedUrl } from '@/lib/maps';
+import { filterNavFooterItems } from '@/lib/nav-links';
 import {
-  ArrowUpRight,
-  CheckCircle2,
   ChevronDown,
-  Eye,
+  Headphones,
+  Mail,
+  MapPin,
+  Phone,
+  Shield,
+  Sparkles,
   Star,
+  Wallet,
 } from 'lucide-react';
-import { useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 
 interface CompanyLandingProps {
   sections: ILandingPageSection[];
@@ -32,16 +38,45 @@ interface CompanyLandingProps {
   services?: IService[];
   blogs?: IBlog[];
   primaryColor?: string;
+  accentColor?: string;
   rating?: number;
   reviewCount?: number;
+  phone?: string;
+  email?: string;
+  addressLine?: string;
+  whatsappUrl?: string | null;
+  showFloatingContact?: boolean;
 }
 
-const fadeUp = {
-  initial: { opacity: 0, y: 24 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-50px' },
-  transition: { duration: 0.5 },
+const ease = [0.22, 1, 0.36, 1] as const;
+
+const sectionReveal: Variants = {
+  hidden: { opacity: 0, y: 36 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease },
+  },
 };
+
+const staggerGrid: Variants = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.12 },
+  },
+};
+
+const cardReveal: Variants = {
+  hidden: { opacity: 0, y: 28, scale: 0.98 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.55, ease },
+  },
+};
+
+const WHY_ICONS = [Headphones, Shield, Sparkles, Wallet];
 
 function readField(item: Record<string, unknown>, key: string): string {
   const value = item[key];
@@ -55,26 +90,230 @@ function readNumber(item: Record<string, unknown>, key: string): number {
 
 function safeLandingLink(link: string | undefined, fallback: string) {
   if (!link) return fallback;
-  if (link.startsWith('#') || link.startsWith('/') || link.startsWith('https://')) {
+  if (
+    link.startsWith('#') ||
+    link.startsWith('/') ||
+    link.startsWith('https://') ||
+    link.startsWith('tel:') ||
+    link.startsWith('mailto:')
+  ) {
     return link;
   }
   return fallback;
 }
 
+function WaveDivider({ fill, flip = false }: { fill: string; flip?: boolean }) {
+  return (
+    <div className={cn('pointer-events-none leading-none', flip && 'rotate-180')} aria-hidden>
+      <svg viewBox="0 0 1440 64" className="block h-10 w-full md:h-14" preserveAspectRatio="none">
+        <path
+          fill={fill}
+          d="M0,32 C240,64 480,0 720,24 C960,48 1200,64 1440,24 L1440,64 L0,64 Z"
+        />
+      </svg>
+    </div>
+  );
+}
+
+function SectionShell({
+  id,
+  tone = 'white',
+  navy,
+  children,
+  className,
+  withTopWave = false,
+  withBottomWave = false,
+}: {
+  id: string;
+  tone?: 'white' | 'soft' | 'navy' | 'navySoft';
+  navy: string;
+  children: ReactNode;
+  className?: string;
+  withTopWave?: boolean;
+  withBottomWave?: boolean;
+}) {
+  const bg =
+    tone === 'soft'
+      ? '#f4f7fb'
+      : tone === 'navy'
+        ? navy
+        : tone === 'navySoft'
+          ? undefined
+          : '#ffffff';
+
+  return (
+    <motion.section
+      id={id}
+      variants={sectionReveal}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, margin: '-80px' }}
+      className={cn('relative scroll-mt-24', className)}
+      style={
+        tone === 'navySoft'
+          ? { background: `linear-gradient(180deg, ${navy}0f 0%, #ffffff 70%)` }
+          : { backgroundColor: bg }
+      }
+    >
+      {withTopWave && <WaveDivider fill={tone === 'soft' ? '#ffffff' : '#f4f7fb'} />}
+      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-24">{children}</div>
+      {withBottomWave && (
+        <WaveDivider fill={tone === 'white' ? '#f4f7fb' : '#ffffff'} flip />
+      )}
+    </motion.section>
+  );
+}
+
+function HeroSlideshow({
+  images,
+  title,
+  navy,
+  gold,
+}: {
+  images: string[];
+  title: string;
+  navy: string;
+  gold: string;
+}) {
+  const [active, setActive] = useState(0);
+  const slides = images.filter(Boolean).slice(0, 5);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setActive((current) => (current + 1) % slides.length);
+    }, 5500);
+    return () => window.clearInterval(timer);
+  }, [slides.length]);
+
+  if (!slides.length) {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at 20% 20%, ${gold}55, transparent 40%), linear-gradient(135deg, ${navy}, #163b7a 55%, #0a1f45)`,
+        }}
+      />
+    );
+  }
+
+  return (
+    <>
+      {slides.map((src, slideIndex) => (
+        <div
+          key={`${src}-${slideIndex}`}
+          className={cn(
+            'absolute inset-0 z-0 transition-opacity duration-1400 ease-in-out',
+            slideIndex === active ? 'opacity-100' : 'opacity-0',
+          )}
+        >
+          <Image
+            src={src}
+            alt={`${title} slide ${slideIndex + 1}`}
+            fill
+            className="object-cover object-center"
+            priority={slideIndex === 0}
+            sizes="100vw"
+          />
+        </div>
+      ))}
+      {slides.length > 1 && (
+        <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-2.5">
+          {slides.map((_, dotIndex) => (
+            <button
+              key={dotIndex}
+              type="button"
+              aria-label={`Go to slide ${dotIndex + 1}`}
+              onClick={() => setActive(dotIndex)}
+              className={cn(
+                'h-1.5 rounded-full transition-all duration-500',
+                dotIndex === active ? 'w-8 bg-white' : 'w-1.5 bg-white/45 hover:bg-white/75',
+              )}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-gray-200 dark:border-gray-800">
+    <div className="border-b border-gray-100 last:border-0">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between py-4 text-left font-medium"
+        className="flex w-full items-center justify-between gap-4 py-5 text-left font-semibold text-gray-900"
       >
-        {question}
-        <ChevronDown className={cn('h-5 w-5 transition-transform', open && 'rotate-180')} />
+        <span>{question}</span>
+        <ChevronDown
+          className={cn(
+            'h-5 w-5 shrink-0 text-gray-400 transition-transform duration-300',
+            open && 'rotate-180',
+          )}
+        />
       </button>
-      {open && <p className="pb-4 text-gray-600 dark:text-gray-400">{answer}</p>}
+      <div
+        className={cn(
+          'grid transition-all duration-300',
+          open ? 'grid-rows-[1fr] pb-5 opacity-100' : 'grid-rows-[0fr] opacity-0',
+        )}
+      >
+        <p className="overflow-hidden text-gray-600">{answer}</p>
+      </div>
     </div>
+  );
+}
+
+function SectionHead({
+  eyebrow,
+  title,
+  subtitle,
+  accent,
+  light = false,
+}: {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  accent: string;
+  light?: boolean;
+}) {
+  return (
+    <motion.div
+      variants={cardReveal}
+      className="mx-auto mb-12 max-w-3xl text-center md:mb-16"
+    >
+      {eyebrow && (
+        <p
+          className="mb-3 inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em]"
+          style={{ color: accent, backgroundColor: light ? 'rgba(255,255,255,0.12)' : `${accent}18` }}
+        >
+          {eyebrow}
+        </p>
+      )}
+      <h2
+        className={cn(
+          'text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl',
+          light ? 'text-white' : 'text-gray-950',
+        )}
+      >
+        {title}
+      </h2>
+      {subtitle && (
+        <p className={cn('mx-auto mt-4 max-w-2xl text-base sm:text-lg', light ? 'text-white/75' : 'text-gray-500')}>
+          {subtitle}
+        </p>
+      )}
+      <motion.div
+        initial={{ scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 0.2, ease }}
+        className="mx-auto mt-5 h-1 w-16 origin-center rounded-full"
+        style={{ backgroundColor: accent }}
+      />
+    </motion.div>
   );
 }
 
@@ -84,28 +323,27 @@ export function CompanyLanding({
   companyName,
   products = [],
   services = [],
-  blogs = [],
-  primaryColor = '#6366f1',
+  primaryColor = '#0b2a5b',
+  accentColor = '#0b2a5b',
   rating = 0,
   reviewCount = 0,
+  phone,
+  email,
+  addressLine,
+  whatsappUrl,
+  showFloatingContact = true,
 }: CompanyLandingProps) {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const visibleSections = [...sections]
     .filter((section) => {
       if (!section.isVisible) return false;
       if (section.type === 'navbar') return false;
-      if (section.type === 'services') {
-        return Boolean(section.items?.length);
-      }
-      if (section.type === 'products') {
-        return Boolean(section.items?.length);
-      }
+      if (section.type === 'services') return Boolean(section.items?.length);
+      if (section.type === 'products') return Boolean(section.items?.length);
       if (section.type === 'gallery') {
         return Boolean(section.items?.length || section.images?.length);
       }
-      if (section.type === 'why-choose-us') {
-        return Boolean(section.items?.length);
-      }
+      if (section.type === 'why-choose-us') return Boolean(section.items?.length);
       if (section.type === 'blogs') return Boolean(section.items?.length);
       if (section.type === 'faq' || section.type === 'testimonials') {
         return Boolean(section.items?.length);
@@ -118,351 +356,433 @@ export function CompanyLanding({
 
   const serviceNames = services.map((s) => s.name);
   const hasContactSection = visibleSections.some((section) => section.type === 'contact');
+  const callUrl = phone ? `tel:${phone.replace(/\s/g, '')}` : null;
+  const navy = primaryColor || '#0b2a5b';
+  // No yellow accents on the public landing — use navy for CTAs and labels.
+  const gold = navy;
 
   return (
-    <div className="space-y-0">
-      {visibleSections.map((section, index) => {
-        const items = (section.items || []) as Array<Record<string, string>>;
+    <div
+      className="overflow-x-hidden bg-white text-gray-900 antialiased"
+      style={{
+        ['--brand' as string]: navy,
+        ['--accent' as string]: gold,
+      }}
+    >
+      {visibleSections.map((section) => {
+        const rawItems = (section.items || []) as Array<Record<string, string>>;
+        const items =
+          section.type === 'navbar' || section.type === 'footer'
+            ? (filterNavFooterItems(rawItems) as Array<Record<string, string>>)
+            : rawItems;
+        const sectionId = section.type;
 
         switch (section.type) {
-          case 'hero':
+          case 'hero': {
+            const heroImages = [
+              ...(section.images || []),
+              ...(section.image ? [section.image] : []),
+            ].filter((src, i, arr) => src && arr.indexOf(src) === i);
             return (
-              <motion.section
+              <section
+                id={sectionId}
                 key={section.id}
-                {...fadeUp}
-                className="relative min-h-150 overflow-hidden bg-gray-900 flex items-center"
+                className="relative min-h-[88vh] scroll-mt-24 overflow-hidden"
               >
-                {/* Background image or gradient */}
-                {section.image ? (
-                  <div className="absolute inset-0">
-                    <Image
-                      src={section.image}
-                      alt={section.title}
-                      fill
-                      className="object-cover opacity-40"
-                      priority={index === 0}
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/60 to-transparent" />
-                  </div>
-                ) : (
-                  <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${primaryColor}, #1e1b4b)` }} />
-                )}
-
-                <div className="relative z-10 mx-auto max-w-5xl px-6 py-20 text-center text-white">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
+                <HeroSlideshow images={heroImages} title={section.title} navy={navy} gold={gold} />
+                <div className="relative z-10 mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-center px-4 py-28 sm:px-6">
+                  <motion.p
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease }}
+                    className="mb-4 text-sm font-bold uppercase tracking-[0.3em] text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.55)]"
                   >
-                    <h2 className="mb-6 bg-linear-to-r from-white to-gray-300 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent sm:text-6xl lg:text-7xl">
-                      {section.title}
-                    </h2>
-                  </motion.div>
+                    {companyName}
+                  </motion.p>
+                  <motion.h1
+                    initial={{ opacity: 0, y: 28 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.75, delay: 0.08, ease }}
+                    className="max-w-4xl text-4xl font-black uppercase leading-[1.05] text-white [text-shadow:0_4px_24px_rgba(0,0,0,0.55)] sm:text-6xl lg:text-7xl"
+                  >
+                    {section.title}
+                  </motion.h1>
                   {section.subtitle && (
                     <motion.p
                       initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.4 }}
-                      className="mx-auto mt-6 max-w-2xl text-xl text-gray-200 font-light"
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.7, delay: 0.18, ease }}
+                      className="mt-6 max-w-2xl text-lg text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.5)] sm:text-xl"
                     >
                       {section.subtitle}
                     </motion.p>
                   )}
                   {section.content && (
                     <motion.p
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.6 }}
-                      className="mx-auto mt-4 max-w-2xl text-md text-gray-400"
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.65, delay: 0.26, ease }}
+                      className="mt-3 max-w-2xl text-base text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.5)]"
                     >
                       {section.content}
                     </motion.p>
                   )}
-                  {(section.buttonText || hasContactSection) && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.75 }}
-                      className="mt-9"
-                    >
+                  <motion.div
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.65, delay: 0.34, ease }}
+                    className="mt-10 flex flex-wrap gap-3"
+                  >
+                    {section.buttonText?.trim() && (
                       <a
                         href={safeLandingLink(
                           section.buttonLink,
-                          hasContactSection ? '#contact' : '/search',
+                          hasContactSection ? '#contact' : '#services',
                         )}
-                        className="inline-flex items-center rounded-full bg-white px-7 py-3.5 text-sm font-bold text-gray-900 shadow-xl transition hover:-translate-y-0.5 hover:bg-gray-100"
+                        className="inline-flex items-center rounded-full px-8 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-[0_18px_40px_rgba(0,0,0,0.25)] transition hover:-translate-y-1"
+                        style={{ backgroundColor: gold }}
                       >
-                        {section.buttonText || 'Get in touch'}
+                        {section.buttonText}
                       </a>
-                    </motion.div>
-                  )}
+                    )}
+                  </motion.div>
                 </div>
-              </motion.section>
+                <div className="absolute inset-x-0 bottom-0">
+                  <WaveDivider fill="#ffffff" />
+                </div>
+              </section>
             );
+          }
 
           case 'rating': {
             const roundedRating = Math.round(rating);
             return (
-              <motion.section
-                key={section.id}
-                {...fadeUp}
-                className="relative overflow-hidden border-y border-gray-200 bg-white px-4 py-14 dark:border-gray-800 dark:bg-gray-950"
-              >
-                <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at center, ${primaryColor}, transparent 60%)` }} />
-                <div className="relative mx-auto grid max-w-6xl items-center gap-8 text-center md:grid-cols-[1fr_auto_1fr] md:text-left">
-                  <div>
-                    <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: primaryColor }}>
-                      {section.eyebrow || 'Customer rating'}
-                    </p>
-                    <h2 className="mt-3 text-3xl font-extrabold text-gray-900 sm:text-4xl dark:text-white">
+              <SectionShell id={sectionId} key={section.id} tone="soft" navy={navy} className="py-0!">
+                <div className="flex flex-col items-center justify-between gap-10 py-4 md:flex-row md:py-2">
+                  <div className="text-center md:text-left">
+                    {section.eyebrow?.trim() && (
+                      <p className="text-sm font-bold uppercase tracking-[0.2em]" style={{ color: gold }}>
+                        {section.eyebrow}
+                      </p>
+                    )}
+                    <h2 className="mt-2 text-3xl font-extrabold text-gray-950 sm:text-4xl">
                       {section.title}
                     </h2>
-                    {section.subtitle && (
-                      <p className="mt-3 text-gray-500 dark:text-gray-400">{section.subtitle}</p>
-                    )}
+                    {section.subtitle && <p className="mt-2 text-gray-500">{section.subtitle}</p>}
                   </div>
-                  <div className="mx-auto flex h-36 w-36 flex-col items-center justify-center rounded-full border-8 border-white bg-gray-950 text-white shadow-2xl dark:border-gray-900">
-                    <span className="text-5xl font-black">{rating > 0 ? rating.toFixed(1) : 'New'}</span>
-                    {rating > 0 && <span className="text-xs uppercase tracking-widest text-gray-400">out of 5</span>}
-                  </div>
-                  <div className="md:text-right">
-                    <div className="flex justify-center gap-1 md:justify-end">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={cn(
-                            'h-7 w-7',
-                            star <= roundedRating
-                              ? 'fill-amber-400 text-amber-400'
-                              : 'text-gray-300 dark:text-gray-700',
-                          )}
-                        />
-                      ))}
-                    </div>
-                    <p className="mt-3 text-lg font-semibold text-gray-900 dark:text-white">
-                      {reviewCount > 0
-                        ? `Based on ${reviewCount} verified review${reviewCount === 1 ? '' : 's'}`
-                        : 'Be the first to share your experience'}
-                    </p>
-                  </div>
+                  <motion.div
+                    variants={staggerGrid}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true }}
+                    className="flex items-center gap-6"
+                  >
+                    <motion.div
+                      variants={cardReveal}
+                      className="flex h-28 w-28 flex-col items-center justify-center rounded-full text-white shadow-2xl"
+                      style={{
+                        background: `linear-gradient(145deg, ${navy}, #163b7a)`,
+                        boxShadow: `0 20px 50px ${navy}44`,
+                      }}
+                    >
+                      <span className="text-4xl font-black">
+                        {rating > 0 ? rating.toFixed(1) : '—'}
+                      </span>
+                      {rating > 0 && (
+                        <span className="text-[10px] uppercase tracking-widest text-white/70">
+                          / 5
+                        </span>
+                      )}
+                    </motion.div>
+                    <motion.div variants={cardReveal}>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={cn(
+                              'h-6 w-6',
+                              star <= roundedRating
+                                ? 'fill-current text-current'
+                                : 'text-gray-200',
+                            )}
+                            style={
+                              star <= roundedRating ? { color: navy } : undefined
+                            }
+                          />
+                        ))}
+                      </div>
+                      <p className="mt-2 font-semibold text-gray-800">
+                        {reviewCount > 0
+                          ? `${reviewCount} verified review${reviewCount === 1 ? '' : 's'}`
+                          : 'Be the first to review'}
+                      </p>
+                    </motion.div>
+                  </motion.div>
                 </div>
-              </motion.section>
+              </SectionShell>
             );
           }
 
-          case 'about':
-            return (
-              <motion.section key={section.id} {...fadeUp} className="py-24 px-4 bg-white dark:bg-gray-950 relative overflow-hidden">
-                {/* Decorative blob */}
-                <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-50 dark:bg-indigo-950/20 rounded-full blur-3xl -z-10 transform -translate-x-1/2 -translate-y-1/2" />
-                <div className="mx-auto max-w-7xl grid gap-16 md:grid-cols-2 items-center">
-                  <div className="space-y-6">
-                    <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
-                      {section.title}
-                    </h2>
-                    {section.subtitle && (
-                      <p className="text-lg font-semibold uppercase tracking-widest" style={{ color: primaryColor }}>
-                        {section.subtitle}
-                      </p>
-                    )}
-                    <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-                      {section.content}
-                    </p>
-                  </div>
-                  {section.image && (
-                    <div className="group relative aspect-4/5 overflow-hidden rounded-3xl shadow-2xl md:aspect-square">
-                      <Image
-                        src={section.image}
-                        alt={section.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/10 dark:ring-white/10" />
-                    </div>
-                  )}
-                </div>
-              </motion.section>
-            );
-
-          case 'why-choose-us':
-            return (
-              <motion.section
-                key={section.id}
-                {...fadeUp}
-                className="bg-gray-950 px-4 py-24 text-white"
-              >
-                <div className="mx-auto max-w-7xl">
-                  <div className="mx-auto max-w-3xl text-center">
-                    <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: primaryColor }}>
-                      Our advantage
-                    </p>
-                    <h2 className="mt-4 text-4xl font-extrabold sm:text-5xl">{section.title}</h2>
-                    {section.subtitle && <p className="mt-5 text-lg text-gray-400">{section.subtitle}</p>}
-                  </div>
-                  <div className="mt-14 grid gap-5 md:grid-cols-3">
-                    {items.map((item, itemIndex) => (
-                      <motion.article
-                        key={itemIndex}
-                        initial={{ opacity: 0, y: 24 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: itemIndex * 0.08 }}
-                        className="group rounded-3xl border border-white/10 bg-white/5 p-7 transition hover:-translate-y-1 hover:bg-white/10"
-                      >
-                        <div
-                          className="flex h-12 w-12 items-center justify-center rounded-2xl"
-                          style={{ backgroundColor: `${primaryColor}25`, color: primaryColor }}
-                        >
-                          <CheckCircle2 className="h-6 w-6" />
-                        </div>
-                        <h3 className="mt-6 text-xl font-bold">{readField(item, 'title')}</h3>
-                        <p className="mt-3 leading-relaxed text-gray-400">
-                          {readField(item, 'description')}
-                        </p>
-                      </motion.article>
-                    ))}
-                  </div>
-                </div>
-              </motion.section>
-            );
-
           case 'services':
             return (
-              <motion.section
-                key={section.id}
-                {...fadeUp}
-                className="py-24 px-4 bg-gray-50 dark:bg-gray-900/40 relative"
-              >
-                <div className="mx-auto max-w-7xl">
-                  <div className="text-center mb-16 space-y-4">
-                    <h2 className="text-4xl font-extrabold tracking-tight">{section.title}</h2>
-                    {section.subtitle && (
-                      <p className="mx-auto max-w-2xl text-xl text-gray-500">{section.subtitle}</p>
-                    )}
-                  </div>
-                  <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                    {items.map((item) => ({
-                          name: readField(item, 'name'),
-                          description: readField(item, 'description'),
-                          price: readNumber(item, 'price'),
-                          image: readField(item, 'image'),
-                        })
-                    ).map((item, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: i * 0.1 }}
-                          className="group relative rounded-3xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl dark:border-gray-800 dark:bg-gray-950"
-                        >
-                          {item.image && (
-                            <div className="relative -mx-8 -mt-8 mb-6 h-48 overflow-hidden">
-                              <Image
-                                src={item.image}
-                                alt={item.name}
-                                fill
-                                sizes="(max-width: 768px) 100vw, 33vw"
-                                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                              />
+              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy} withBottomWave>
+                <SectionHead
+                  eyebrow={section.eyebrow}
+                  title={section.title}
+                  subtitle={section.subtitle}
+                  accent={gold}
+                />
+                <motion.div
+                  variants={staggerGrid}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: '-40px' }}
+                  className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                >
+                  {items.map((item, i) => {
+                    const name = readField(item, 'name');
+                    const description = readField(item, 'description');
+                    const image = readField(item, 'image');
+                    const price = readNumber(item, 'price');
+                    const itemLink = readField(item, 'link') || section.buttonLink || '';
+                    const itemCta = readField(item, 'buttonText') || section.buttonText || '';
+                    return (
+                      <motion.article
+                        key={i}
+                        variants={cardReveal}
+                        whileHover={{ y: -8 }}
+                        className="group overflow-hidden rounded-2xl bg-white shadow-[0_10px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
+                      >
+                        <div className="relative aspect-4/3 overflow-hidden bg-gray-100">
+                          {image ? (
+                            <Image
+                              src={image}
+                              alt={name}
+                              fill
+                              sizes="(max-width: 768px) 100vw, 25vw"
+                              className="object-cover transition duration-700 group-hover:scale-110"
+                            />
+                          ) : (
+                            <div
+                              className="flex h-full items-center justify-center text-4xl font-black text-white/40"
+                              style={{ backgroundColor: navy }}
+                            >
+                              {name.charAt(0)}
                             </div>
                           )}
-                          <div className="mb-4 h-12 w-12 rounded-xl flex items-center justify-center text-white" style={{ background: primaryColor }}>
-                            {/* Abstract icon based on index */}
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={i % 2 === 0 ? "M13 10V3L4 14h7v7l9-11h-7z" : "M5 13l4 4L19 7"} />
-                            </svg>
+                          <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/15 to-transparent" />
+                          <h3 className="absolute bottom-3 left-3 right-3 text-lg font-bold text-white">
+                            {name}
+                          </h3>
+                        </div>
+                        <div className="p-5">
+                          <p className="line-clamp-3 text-sm leading-relaxed text-gray-600">
+                            {description}
+                          </p>
+                          <div className="mt-4 flex items-center justify-between">
+                            {price > 0 ? (
+                              <span className="font-bold" style={{ color: navy }}>
+                                {formatCurrency(price)}
+                              </span>
+                            ) : (
+                              <span />
+                            )}
+                            {itemCta && itemLink && (
+                              <a
+                                href={safeLandingLink(itemLink, '#contact')}
+                                className="text-sm font-bold uppercase tracking-wide transition group-hover:translate-x-0.5"
+                                style={{ color: gold }}
+                              >
+                                {itemCta}
+                              </a>
+                            )}
                           </div>
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 transition-colors">{item.name}</h3>
-                          <p className="mt-4 text-gray-600 dark:text-gray-400 line-clamp-3 leading-relaxed">{item.description}</p>
-                          {item.price > 0 && (
-                            <p className="mt-6 text-2xl font-black" style={{ color: primaryColor }}>
-                              {formatCurrency(item.price)}
-                            </p>
-                          )}
-                        </motion.div>
-                      ))}
-                  </div>
-                </div>
-              </motion.section>
+                        </div>
+                      </motion.article>
+                    );
+                  })}
+                </motion.div>
+              </SectionShell>
             );
 
           case 'products':
             return (
-              <motion.section key={section.id} {...fadeUp} className="py-24 px-4 relative">
-                <div className="mx-auto max-w-7xl">
-                  <div className="text-center mb-16 space-y-4">
-                    <h2 className="text-4xl font-extrabold tracking-tight">{section.title}</h2>
-                    {section.subtitle && (
-                      <p className="mx-auto max-w-2xl text-xl text-gray-500">{section.subtitle}</p>
-                    )}
-                  </div>
-                  <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                    {items.map((item) => ({
-                          name: readField(item, 'name'),
-                          description: readField(item, 'description'),
-                          images: Array.isArray(item.images)
-                            ? (item.images as string[])
-                            : [],
-                          price: readNumber(item, 'price'),
-                          offerPrice:
-                            item.offerPrice != null ? readNumber(item, 'offerPrice') : undefined,
-                        })
-                    ).map((product, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                          whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: i * 0.08 }}
-                          className="group flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                        >
-                          <div className="relative aspect-4/5 overflow-hidden bg-gray-100 dark:bg-gray-900">
-                            {product.images?.[0] ? (
-                              <Image
-                                src={product.images[0]}
-                                alt={product.name}
-                                fill
-                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                              />
-                            ) : (
-                              <div className="flex h-full items-center justify-center text-gray-400">
-                                No image
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                          </div>
-                          <div className="p-6 flex-1 flex flex-col justify-between">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">{product.name}</h3>
-                            {product.description && (
-                              <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-gray-500">
-                                {product.description}
-                              </p>
-                            )}
-                            <div className="mt-4 flex flex-wrap items-baseline gap-2">
-                              {product.offerPrice ? (
+              <SectionShell id={sectionId} key={section.id} tone="soft" navy={navy}>
+                <SectionHead
+                  eyebrow={section.eyebrow}
+                  title={section.title}
+                  subtitle={section.subtitle}
+                  accent={gold}
+                />
+                <motion.div
+                  variants={staggerGrid}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                  className="grid gap-7 md:grid-cols-2 lg:grid-cols-3"
+                >
+                  {items.map((item, i) => {
+                    const name = readField(item, 'name');
+                    const description = readField(item, 'description');
+                    const images = Array.isArray(item.images) ? (item.images as string[]) : [];
+                    const price = readNumber(item, 'price');
+                    const offerPrice =
+                      item.offerPrice != null ? readNumber(item, 'offerPrice') : undefined;
+                    const itemLink = readField(item, 'link') || section.buttonLink || '';
+                    const itemCta = readField(item, 'buttonText') || section.buttonText || '';
+                    return (
+                      <motion.article
+                        key={i}
+                        variants={cardReveal}
+                        whileHover={{ y: -8 }}
+                        className="overflow-hidden rounded-2xl bg-white shadow-[0_14px_40px_rgba(15,23,42,0.08)] ring-1 ring-gray-100"
+                      >
+                        <div className="relative aspect-16/10 overflow-hidden bg-gray-100">
+                          {images[0] ? (
+                            <Image
+                              src={images[0]}
+                              alt={name}
+                              fill
+                              className="object-cover transition duration-700 hover:scale-105"
+                              sizes="33vw"
+                            />
+                          ) : null}
+                        </div>
+                        <div className="p-6">
+                          <h3 className="text-xl font-bold text-gray-950">{name}</h3>
+                          <p className="mt-2 line-clamp-3 text-sm text-gray-600">{description}</p>
+                          <div className="mt-5 flex items-center justify-between gap-3">
+                            <div>
+                              {offerPrice ? (
                                 <>
-                                  <span className="text-2xl font-black" style={{ color: primaryColor }}>
-                                    {formatCurrency(product.offerPrice)}
+                                  <span className="text-xl font-black" style={{ color: navy }}>
+                                    {formatCurrency(offerPrice)}
                                   </span>
-                                  <span className="text-sm font-medium text-gray-400 line-through">
-                                    {formatCurrency(product.price)}
+                                  <span className="ml-2 text-sm text-gray-400 line-through">
+                                    {formatCurrency(price)}
                                   </span>
                                 </>
-                              ) : (
-                                <span className="text-2xl font-black" style={{ color: primaryColor }}>
-                                  {formatCurrency(product.price)}
+                              ) : price > 0 ? (
+                                <span className="text-xl font-black" style={{ color: navy }}>
+                                  {formatCurrency(price)}
                                 </span>
-                              )}
+                              ) : null}
                             </div>
+                            {itemCta && itemLink && (
+                              <a
+                                href={safeLandingLink(itemLink, '#contact')}
+                                className="rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition hover:brightness-110"
+                                style={{ backgroundColor: gold }}
+                              >
+                                {itemCta}
+                              </a>
+                            )}
                           </div>
-                        </motion.div>
-                      ))}
-                  </div>
+                        </div>
+                      </motion.article>
+                    );
+                  })}
+                </motion.div>
+              </SectionShell>
+            );
+
+          case 'why-choose-us':
+            return (
+              <SectionShell id={sectionId} key={section.id} tone="navySoft" navy={navy} withTopWave>
+                <SectionHead
+                  eyebrow={section.eyebrow}
+                  title={section.title}
+                  subtitle={section.subtitle}
+                  accent={gold}
+                />
+                <motion.div
+                  variants={staggerGrid}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                  className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+                >
+                  {items.map((item, itemIndex) => {
+                    const Icon = WHY_ICONS[itemIndex % WHY_ICONS.length];
+                    return (
+                      <motion.article
+                        key={itemIndex}
+                        variants={cardReveal}
+                        whileHover={{ y: -6 }}
+                        className="rounded-2xl border border-white/70 bg-white/90 p-7 text-center shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur"
+                      >
+                        <div
+                          className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg"
+                          style={{ background: `linear-gradient(145deg, ${navy}, #1a4a8c)` }}
+                        >
+                          <Icon className="h-6 w-6" />
+                        </div>
+                        <h3 className="mt-5 text-lg font-bold text-gray-950">
+                          {readField(item, 'title')}
+                        </h3>
+                        <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                          {readField(item, 'description')}
+                        </p>
+                      </motion.article>
+                    );
+                  })}
+                </motion.div>
+              </SectionShell>
+            );
+
+          case 'about':
+            return (
+              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy}>
+                <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+                  <motion.div variants={cardReveal}>
+                    {section.eyebrow?.trim() && (
+                      <p
+                        className="inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em]"
+                        style={{ color: gold, backgroundColor: `${gold}18` }}
+                      >
+                        {section.eyebrow}
+                      </p>
+                    )}
+                    <h2 className="mt-4 text-3xl font-extrabold text-gray-950 sm:text-4xl md:text-5xl">
+                      {section.title}
+                    </h2>
+                    <div className="mt-4 h-1 w-16 rounded-full" style={{ backgroundColor: gold }} />
+                    {section.subtitle && (
+                      <p className="mt-5 text-lg font-semibold" style={{ color: navy }}>
+                        {section.subtitle}
+                      </p>
+                    )}
+                    <p className="mt-4 text-base leading-relaxed text-gray-600">{section.content}</p>
+                    {section.buttonText?.trim() && (
+                      <a
+                        href={safeLandingLink(section.buttonLink, '#contact')}
+                        className="mt-8 inline-flex rounded-full px-7 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:-translate-y-0.5"
+                        style={{ backgroundColor: gold }}
+                      >
+                        {section.buttonText}
+                      </a>
+                    )}
+                  </motion.div>
+                  {section.image && (
+                    <motion.div
+                      variants={cardReveal}
+                      className="relative aspect-4/3 overflow-hidden rounded-4xl shadow-[0_30px_80px_rgba(11,42,91,0.2)]"
+                    >
+                      <Image
+                        src={section.image}
+                        alt={section.title}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        className="object-cover"
+                      />
+                      <div
+                        className="absolute -bottom-6 -left-6 h-28 w-28 rounded-full opacity-80 blur-2xl"
+                        style={{ backgroundColor: gold }}
+                      />
+                    </motion.div>
+                  )}
                 </div>
-              </motion.section>
+              </SectionShell>
             );
 
           case 'gallery': {
@@ -470,309 +790,376 @@ export function CompanyLanding({
               ? (section.items as Array<Record<string, unknown>>)
               : (section.images || []).map((image, imageIndex) => ({
                   image,
-                  title: `Gallery image ${imageIndex + 1}`,
+                  title: `Gallery ${imageIndex + 1}`,
                   description: '',
                 }));
             return (
-              <motion.section
-                key={section.id}
-                {...fadeUp}
-                className="relative bg-gray-950 px-4 py-24 text-white"
-              >
-                <div className="mx-auto max-w-7xl">
-                  <div className="mx-auto max-w-3xl text-center">
-                    <h2 className="text-4xl font-extrabold sm:text-5xl">{section.title}</h2>
-                    {section.subtitle && <p className="mt-4 text-lg text-gray-400">{section.subtitle}</p>}
-                  </div>
-                  <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {galleryItems.map((item, i) => {
-                      const image = readField(item, 'image');
-                      const title = readField(item, 'title');
-                      const description = readField(item, 'description');
-                      return (
-                        <motion.a
+              <SectionShell id={sectionId} key={section.id} tone="soft" navy={navy} withTopWave>
+                <SectionHead
+                  eyebrow={section.eyebrow}
+                  title={section.title}
+                  subtitle={section.subtitle}
+                  accent={gold}
+                />
+                <motion.div
+                  variants={staggerGrid}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                  className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4"
+                >
+                  {galleryItems.map((item, i) => {
+                    const image = readField(item, 'image');
+                    const title = readField(item, 'title');
+                    return (
+                      <motion.a
                         key={i}
+                        variants={cardReveal}
                         href={image}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label={`Open gallery image ${i + 1}`}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.05 }}
-                        className="group overflow-hidden rounded-3xl border border-white/10 bg-white/5 transition hover:-translate-y-1 hover:bg-white/10"
+                        className={cn(
+                          'group relative overflow-hidden rounded-2xl bg-gray-200',
+                          i % 5 === 0
+                            ? 'aspect-square md:col-span-2 md:row-span-2'
+                            : 'aspect-square',
+                        )}
                       >
-                        <div className="relative aspect-4/3 overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={image}
-                            alt={title || `Gallery ${i + 1}`}
-                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
-                            <Eye className="h-8 w-8 text-white" />
-                          </div>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={image}
+                          alt={title}
+                          className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 flex items-end bg-linear-to-t from-black/65 to-transparent p-4 opacity-0 transition duration-300 group-hover:opacity-100">
+                          <span className="text-sm font-semibold text-white">{title}</span>
                         </div>
-                        <div className="p-6">
-                          <h3 className="text-xl font-bold">{title}</h3>
-                          {description && <p className="mt-2 leading-relaxed text-gray-400">{description}</p>}
-                        </div>
-                        </motion.a>
-                      );
-                    })}
-                  </div>
-                </div>
-              </motion.section>
+                      </motion.a>
+                    );
+                  })}
+                </motion.div>
+              </SectionShell>
             );
           }
 
-          case 'blogs': {
-            const blogItems = items;
+          case 'blogs':
             return (
-              <motion.section
-                key={section.id}
-                {...fadeUp}
-                className="bg-white px-4 py-24 dark:bg-gray-950"
-              >
-                <div className="mx-auto max-w-7xl">
-                  <div className="mx-auto max-w-3xl text-center">
-                    <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-white">
-                      {section.title}
-                    </h2>
-                    {section.subtitle && (
-                      <p className="mt-4 text-lg text-gray-500 dark:text-gray-400">
-                        {section.subtitle}
-                      </p>
-                    )}
-                  </div>
-                  <div className="mt-14 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
-                    {blogItems.map((item, itemIndex) => {
-                      const link = safeLandingLink(readField(item, 'link'), '#');
-                      const card = (
-                        <>
-                          {item.image && (
-                            <div className="relative aspect-16/10 overflow-hidden">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={readField(item, 'image')}
-                                alt={readField(item, 'title')}
-                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              />
-                            </div>
-                          )}
-                          <div className="p-7">
-                            <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition group-hover:text-white dark:bg-gray-800" style={{ color: primaryColor }}>
-                              <ArrowUpRight className="h-5 w-5" />
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                              {readField(item, 'title')}
-                            </h3>
-                            <p className="mt-3 leading-relaxed text-gray-500 dark:text-gray-400">
-                              {readField(item, 'description')}
-                            </p>
-                          </div>
-                        </>
-                      );
-                      return link === '#' ? (
-                        <motion.article
-                          key={itemIndex}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          className="group overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900"
-                        >
-                          {card}
-                        </motion.article>
-                      ) : (
-                        <motion.a
-                          key={itemIndex}
-                          href={link}
-                          target={link.startsWith('http') ? '_blank' : undefined}
-                          rel={link.startsWith('http') ? 'noopener noreferrer' : undefined}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          className="group overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
-                        >
-                          {card}
-                        </motion.a>
-                      );
-                    })}
-                  </div>
-                </div>
-              </motion.section>
+              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy}>
+                <SectionHead title={section.title} subtitle={section.subtitle} accent={gold} />
+                <motion.div
+                  variants={staggerGrid}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                  className="grid gap-6 md:grid-cols-3"
+                >
+                  {items.map((item, itemIndex) => (
+                    <motion.article
+                      key={itemIndex}
+                      variants={cardReveal}
+                      whileHover={{ y: -6 }}
+                      className="overflow-hidden rounded-2xl bg-white shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
+                    >
+                      {item.image && (
+                        <div className="relative aspect-16/10 overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={readField(item, 'image')}
+                            alt={readField(item, 'title')}
+                            className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                          />
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <h3 className="text-lg font-bold text-gray-950">
+                          {readField(item, 'title')}
+                        </h3>
+                        <p className="mt-2 text-sm text-gray-500">
+                          {readField(item, 'description')}
+                        </p>
+                      </div>
+                    </motion.article>
+                  ))}
+                </motion.div>
+              </SectionShell>
             );
-          }
 
           case 'testimonials':
             return (
-              <motion.section key={section.id} {...fadeUp} className="py-24 px-4 bg-indigo-50/50 dark:bg-indigo-950/10">
-                <div className="mx-auto max-w-7xl">
-                  <h2 className="text-4xl font-extrabold text-center mb-16">{section.title}</h2>
-                  {section.subtitle && (
-                    <p className="-mt-12 mb-16 text-center text-lg text-gray-500">
-                      {section.subtitle}
-                    </p>
-                  )}
-                  <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    {items.map((item, i) => (
-                      <motion.blockquote
-                        key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.1 }}
-                        className="relative rounded-3xl bg-white p-8 shadow-xl dark:bg-gray-900"
-                      >
-                        <div className="absolute -top-4 -left-2 text-6xl text-indigo-200 dark:text-indigo-900/40 font-serif">
-                          &ldquo;
-                        </div>
-                        <p className="relative z-10 text-lg text-gray-700 dark:text-gray-300 italic font-medium leading-relaxed">
-                          {item.quote || item.comment}
-                        </p>
-                        <footer className="mt-8 flex items-center gap-4">
-                          {item.image ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={String(item.image)}
-                              alt=""
-                              className="h-10 w-10 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-indigo-400 to-purple-500 font-bold text-white">
+              <section id={sectionId} key={section.id} className="relative scroll-mt-24">
+                <WaveDivider fill={navy} />
+                <motion.div
+                  variants={sectionReveal}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: '-60px' }}
+                  className="px-4 py-20 sm:px-6 md:py-24"
+                  style={{ backgroundColor: navy }}
+                >
+                  <div className="mx-auto max-w-7xl">
+                    <SectionHead
+                      title={section.title}
+                      subtitle={section.subtitle}
+                      accent={gold}
+                      light
+                    />
+                    <motion.div
+                      variants={staggerGrid}
+                      initial="hidden"
+                      whileInView="show"
+                      viewport={{ once: true }}
+                      className="grid gap-6 md:grid-cols-3"
+                    >
+                      {items.map((item, i) => (
+                        <motion.blockquote
+                          key={i}
+                          variants={cardReveal}
+                          whileHover={{ y: -6 }}
+                          className="rounded-2xl bg-white/95 p-7 shadow-2xl backdrop-blur"
+                        >
+                          <div className="mb-4 flex gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className="h-4 w-4"
+                                style={{ color: navy, fill: navy }}
+                              />
+                            ))}
+                          </div>
+                          <p className="text-sm leading-relaxed text-gray-700 italic">
+                            “{item.quote || item.comment}”
+                          </p>
+                          <footer className="mt-6 flex items-center gap-3">
+                            <div
+                              className="flex h-11 w-11 items-center justify-center rounded-full font-bold text-white"
+                              style={{ backgroundColor: gold }}
+                            >
                               {(item.name || item.author || 'A').charAt(0)}
                             </div>
-                          )}
-                          <div>
-                            <p className="font-bold text-gray-900 dark:text-white">{item.name || item.author}</p>
-                            <p className="text-sm text-gray-500">
-                              {item.role || 'Verified Customer'}
-                            </p>
-                          </div>
-                        </footer>
-                      </motion.blockquote>
-                    ))}
+                            <div>
+                              <p className="font-bold text-gray-950">
+                                {item.name || item.author}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {item.role || 'Traveler'}
+                              </p>
+                            </div>
+                          </footer>
+                        </motion.blockquote>
+                      ))}
+                    </motion.div>
                   </div>
-                </div>
-              </motion.section>
+                </motion.div>
+                <WaveDivider fill="#ffffff" flip />
+              </section>
             );
 
           case 'faq':
             return (
-              <motion.section
-                key={section.id}
-                {...fadeUp}
-                className="py-16 px-4 bg-gray-50 dark:bg-gray-900/50"
-              >
-                <div className="mx-auto max-w-3xl">
-                  <h2 className="text-3xl font-bold text-center mb-12">{section.title}</h2>
-                  {section.subtitle && (
-                    <p className="-mt-8 mb-12 text-center text-gray-500">
-                      {section.subtitle}
-                    </p>
-                  )}
-                  <div>
-                    {items.map((item, i) => (
-                      <FAQItem
-                        key={i}
-                        question={String(item.question || item.title || '')}
-                        answer={String(item.answer || item.content || '')}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </motion.section>
+              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy}>
+                <SectionHead title={section.title} subtitle={section.subtitle} accent={gold} />
+                <motion.div
+                  variants={cardReveal}
+                  className="mx-auto max-w-3xl rounded-2xl bg-white px-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
+                >
+                  {items.map((item, i) => (
+                    <FAQItem
+                      key={i}
+                      question={String(item.question || item.title || '')}
+                      answer={String(item.answer || item.content || '')}
+                    />
+                  ))}
+                </motion.div>
+              </SectionShell>
             );
 
           case 'subscribe':
             return (
-              <motion.section
-                key={section.id}
-                {...fadeUp}
-                className="relative overflow-hidden bg-gray-950 px-4 py-24 text-center text-white"
-              >
-                <div
-                  className="absolute inset-0 opacity-30"
-                  style={{
-                    background: `radial-gradient(circle at 20% 20%, ${primaryColor}, transparent 35%), radial-gradient(circle at 80% 80%, ${primaryColor}, transparent 35%)`,
-                  }}
-                />
-                <div className="relative mx-auto max-w-4xl">
-                  <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: primaryColor }}>
-                    {section.eyebrow || 'Stay connected'}
-                  </p>
-                  <h2 className="mt-4 text-4xl font-extrabold sm:text-5xl">{section.title}</h2>
-                  {section.subtitle && <p className="mx-auto mt-5 max-w-2xl text-lg text-gray-300">{section.subtitle}</p>}
-                  {section.content && <p className="mx-auto mt-3 max-w-2xl text-sm text-gray-400">{section.content}</p>}
-                  <NewsletterForm
-                    companyId={companyId}
-                    buttonText={section.buttonText || 'Subscribe'}
-                    placeholder={section.placeholder || 'Enter your email address'}
-                    primaryColor={primaryColor}
+              <section id={sectionId} key={section.id} className="relative scroll-mt-24">
+                <WaveDivider fill={navy} />
+                <motion.div
+                  variants={sectionReveal}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                  className="relative overflow-hidden px-4 py-20 text-center text-white sm:px-6"
+                  style={{ backgroundColor: navy }}
+                >
+                  <div
+                    className="pointer-events-none absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full opacity-30 blur-3xl"
+                    style={{ backgroundColor: gold }}
                   />
-                  <p className="mt-4 text-xs text-gray-500">
-                    {section.note || 'No spam. Unsubscribe whenever you want.'}
-                  </p>
-                </div>
-              </motion.section>
-            );
-
-          case 'contact':
-            return (
-              <motion.section id="contact" key={section.id} {...fadeUp} className="scroll-mt-20 py-16 px-4">
-                <div className="mx-auto max-w-2xl">
-                  <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold">{section.title}</h2>
+                  <div className="relative mx-auto max-w-3xl">
+                    <h2 className="text-3xl font-extrabold sm:text-4xl md:text-5xl">
+                      {section.title}
+                    </h2>
                     {section.subtitle && (
-                      <p className="mt-2 text-gray-500">{section.subtitle}</p>
+                      <p className="mx-auto mt-4 max-w-2xl text-white/75">{section.subtitle}</p>
+                    )}
+                    <NewsletterForm
+                      companyId={companyId}
+                      buttonText={section.buttonText || undefined}
+                      placeholder={section.placeholder || undefined}
+                      primaryColor={gold}
+                    />
+                    {section.note?.trim() && (
+                      <p className="mt-3 text-xs text-white/50">{section.note}</p>
                     )}
                   </div>
-                  <div className="rounded-2xl border bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-                    <ContactForm companyId={companyId} services={serviceNames} />
-                  </div>
-                </div>
-              </motion.section>
+                </motion.div>
+                <WaveDivider fill="#f4f7fb" flip />
+              </section>
             );
+
+          case 'contact': {
+            const mapSrc = toGoogleMapsEmbedUrl(section.mapUrl || addressLine);
+            return (
+              <SectionShell id="contact" key={section.id} tone="soft" navy={navy}>
+                <SectionHead
+                  eyebrow={section.eyebrow}
+                  title={section.title}
+                  subtitle={section.subtitle}
+                  accent={gold}
+                />
+                <motion.div
+                  variants={staggerGrid}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                  className="grid gap-6 lg:grid-cols-2"
+                >
+                  <motion.div
+                    variants={cardReveal}
+                    className="rounded-2xl bg-white p-8 shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
+                  >
+                    <div className="space-y-5">
+                      {addressLine && (
+                        <div className="flex gap-3">
+                          <MapPin className="mt-0.5 h-5 w-5 shrink-0" style={{ color: gold }} />
+                          <p className="text-sm text-gray-600">{addressLine}</p>
+                        </div>
+                      )}
+                      {phone && (
+                        <div className="flex gap-3">
+                          <Phone className="mt-0.5 h-5 w-5 shrink-0" style={{ color: gold }} />
+                          <a
+                            href={callUrl || '#'}
+                            className="text-sm text-gray-600 hover:underline"
+                          >
+                            {phone}
+                          </a>
+                        </div>
+                      )}
+                      {email && (
+                        <div className="flex gap-3">
+                          <Mail className="mt-0.5 h-5 w-5 shrink-0" style={{ color: gold }} />
+                          <a
+                            href={`mailto:${email}`}
+                            className="text-sm text-gray-600 hover:underline"
+                          >
+                            {email}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                    {whatsappUrl && section.buttonText?.trim() && (
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-8 inline-flex rounded-full px-5 py-2.5 text-sm font-bold text-white transition hover:-translate-y-0.5"
+                        style={{ backgroundColor: gold }}
+                      >
+                        {section.buttonText}
+                      </a>
+                    )}
+                  </motion.div>
+                  <motion.div
+                    variants={cardReveal}
+                    className="rounded-2xl bg-white p-8 shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
+                  >
+                    <ContactForm companyId={companyId} services={serviceNames} />
+                  </motion.div>
+                </motion.div>
+                {mapSrc && (
+                  <motion.div
+                    variants={cardReveal}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true }}
+                    className="mt-8 overflow-hidden rounded-2xl bg-white shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
+                  >
+                    <iframe
+                      title={`${companyName} location map`}
+                      src={mapSrc}
+                      className="h-72 w-full border-0 md:h-96"
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      allowFullScreen
+                    />
+                  </motion.div>
+                )}
+              </SectionShell>
+            );
+          }
 
           case 'footer':
             return (
-              <motion.footer
-                key={section.id}
-                {...fadeUp}
-                className="border-t border-white/10 bg-gray-950 px-4 py-14 text-white"
-              >
-                <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.5fr_1fr] md:items-start">
-                  <div>
-                    <p className="text-sm font-bold uppercase tracking-[0.25em]" style={{ color: primaryColor }}>
-                      {companyName}
-                    </p>
-                    <h2 className="mt-4 max-w-xl text-3xl font-extrabold">
-                      {section.title || companyName}
-                    </h2>
-                    {section.subtitle && (
-                      <p className="mt-3 max-w-xl text-gray-400">{section.subtitle}</p>
+              <footer id={sectionId} key={section.id} className="relative text-white">
+                <WaveDivider fill={navy} />
+                <div className="px-4 py-14 sm:px-6" style={{ backgroundColor: navy }}>
+                  <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <p className="text-lg font-extrabold">{companyName}</p>
+                      {section.subtitle?.trim() && (
+                        <p className="mt-3 text-sm leading-relaxed text-white/70">
+                          {section.subtitle}
+                        </p>
+                      )}
+                    </div>
+                    {items.length > 0 && (
+                      <div>
+                        {section.eyebrow?.trim() && (
+                          <h4 className="font-bold text-white">{section.eyebrow}</h4>
+                        )}
+                        <nav className={cn('flex flex-col gap-2', section.eyebrow?.trim() && 'mt-4')}>
+                          {items.map((item, itemIndex) => (
+                            <a
+                              key={itemIndex}
+                              href={safeLandingLink(readField(item, 'link'), '/')}
+                              className="text-sm text-white/75 transition hover:text-white"
+                            >
+                              {readField(item, 'label')}
+                            </a>
+                          ))}
+                        </nav>
+                      </div>
                     )}
-                  </div>
-                  <nav className="flex flex-wrap gap-x-6 gap-y-3 md:justify-end">
-                    {items.map((item, itemIndex) => {
-                      const link = safeLandingLink(readField(item, 'link'), '/');
-                      return (
+                    <div>
+                      {section.title?.trim() && (
+                        <h4 className="font-bold text-white">{section.title}</h4>
+                      )}
+                      <div className={cn('space-y-2 text-sm text-white/75', section.title?.trim() && 'mt-4')}>
+                        {addressLine && <p>{addressLine}</p>}
+                        {phone && <p>{phone}</p>}
+                        {email && <p>{email}</p>}
+                      </div>
+                      {section.buttonText?.trim() && callUrl && (
                         <a
-                          key={itemIndex}
-                          href={link}
-                          className="text-sm font-medium text-gray-300 transition hover:text-white"
+                          href={callUrl}
+                          className="mt-4 inline-flex rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition hover:-translate-y-0.5 hover:bg-white/20"
                         >
-                          {readField(item, 'label')}
+                          {section.buttonText}
                         </a>
-                      );
-                    })}
-                  </nav>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 text-center text-xs text-white/50">
+                    {section.content?.trim() ||
+                      `© ${new Date().getFullYear()} ${companyName}`}
+                  </div>
                 </div>
-                <div className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 text-sm text-gray-500">
-                  {section.content ||
-                    `© ${new Date().getFullYear()} ${companyName}. All rights reserved.`}
-                </div>
-              </motion.footer>
+              </footer>
             );
 
           default:
@@ -780,28 +1167,34 @@ export function CompanyLanding({
         }
       })}
 
-      {/* Floating Review Button */}
+      {showFloatingContact && (
+        <FloatingContactButtons
+          phone={phone}
+          email={email}
+          whatsappUrl={whatsappUrl}
+          accentColor={gold}
+        />
+      )}
+
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
         <DialogTrigger asChild>
-          <button 
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full px-5 py-3.5 text-sm font-bold text-white shadow-xl transition-all hover:scale-105"
-            style={{ backgroundColor: primaryColor }}
+          <button
+            type="button"
+            aria-label="Review"
+            className="fixed bottom-24 left-6 z-40 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-xl transition hover:-translate-y-0.5"
+            style={{ backgroundColor: navy }}
           >
             <Star className="h-5 w-5 fill-white" />
-            Rate Us
           </button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-106.25">
           <DialogHeader>
-            <DialogTitle>Write a Review</DialogTitle>
-            <DialogDescription>
-              Share your experience with {companyName}. Your review helps others!
-            </DialogDescription>
+            <DialogTitle>{companyName}</DialogTitle>
           </DialogHeader>
-          <ReviewForm 
-            companyId={companyId} 
-            onSuccess={() => setIsReviewOpen(false)} 
-            className="mt-4" 
+          <ReviewForm
+            companyId={companyId}
+            onSuccess={() => setIsReviewOpen(false)}
+            className="mt-4"
           />
         </DialogContent>
       </Dialog>

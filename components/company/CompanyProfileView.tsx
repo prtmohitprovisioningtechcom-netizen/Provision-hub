@@ -1,7 +1,8 @@
 'use client';
 
-import Image from 'next/image';
+import { SafeImage as Image } from '@/components/SafeImage';
 import Link from 'next/link';
+import { filterNavFooterItems, isPlaceholderBrandLabel } from '@/lib/nav-links';
 import { motion } from 'framer-motion';
 import {
   MapPin,
@@ -55,7 +56,9 @@ function safeCompanyLink(link: string | undefined, fallback = '/') {
   if (
     link?.startsWith('/') ||
     link?.startsWith('#') ||
-    link?.startsWith('https://')
+    link?.startsWith('https://') ||
+    link?.startsWith('tel:') ||
+    link?.startsWith('mailto:')
   ) {
     return link;
   }
@@ -137,84 +140,177 @@ export function CompanyProfileView({
   const navbarSection = enrichedSections.find(
     (section) => section.type === 'navbar',
   );
-  const navbarItems = (navbarSection?.items || []) as Array<{
-    label?: string;
-    link?: string;
-  }>;
-  const navbarName =
-    navbarSection?.title && navbarSection.title !== 'Company Navigation'
-      ? navbarSection.title
-      : company.name;
-  const navbarButtonLink = navbarSection?.buttonLink
-    ? safeCompanyLink(navbarSection.buttonLink, whatsappUrl || '/')
-    : whatsappUrl;
+  const navbarItems = filterNavFooterItems(
+    (navbarSection?.items || []) as Array<{
+      label?: string;
+      link?: string;
+    }>,
+  );
+  const rawNavbarName = navbarSection?.title?.trim() || '';
+  const navbarName = isPlaceholderBrandLabel(rawNavbarName)
+    ? company.name
+    : rawNavbarName || company.name;
+  const navbarCtaText = navbarSection?.buttonText?.trim() || '';
+  const navbarCtaHref = navbarSection?.buttonLink?.trim()
+    ? safeCompanyLink(navbarSection.buttonLink)
+    : null;
+  const showNavbarCta = Boolean(navbarCtaText && navbarCtaHref);
 
   if (hasLanding) {
+    const addressLine = [
+      company.address?.street,
+      company.address?.city,
+      company.address?.state,
+    ]
+      .filter(Boolean)
+      .join(', ');
+    const navy = company.theme?.primaryColor || '#0b2a5b';
+    const accentColor = navy;
+
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-950">
-        {navbarSection?.isVisible !== false && (
-          <header className="sticky top-0 z-50 border-b border-gray-200/80 bg-white/90 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/90">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-            <Link href={`/${company.slug}`} className="flex min-w-0 items-center gap-3">
-              {company.logo ? (
-                <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border bg-white">
-                  <Image src={company.logo} alt="" fill sizes="40px" className="object-contain p-1" />
-                </span>
-              ) : (
-                <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white"
-                  style={{ backgroundColor: company.theme?.primaryColor || '#6366f1' }}
-                >
-                  {company.name.charAt(0)}
-                </span>
+      <div className="min-h-screen bg-white text-gray-900">
+        <div className="text-white" style={{ backgroundColor: navy }}>
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-xs sm:px-6 sm:text-sm">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              {company.phone && (
+                <a href={`tel:${company.phone.replace(/\s/g, '')}`} className="inline-flex items-center gap-1.5 hover:text-white">
+                  <Phone className="h-3.5 w-3.5" />
+                  {company.phone}
+                </a>
               )}
-              <div className="flex items-center gap-2">
-                <span>
-                  <span className="block truncate text-base font-bold sm:text-lg">{navbarName}</span>
+              {company.email && (
+                <a href={`mailto:${company.email}`} className="inline-flex items-center gap-1.5 hover:text-white">
+                  <Mail className="h-3.5 w-3.5" />
+                  {company.email}
+                </a>
+              )}
+            </div>
+            <div className="flex items-center gap-3 text-white/80">
+              {company.socialLinks?.facebook && (
+                <a
+                  href={company.socialLinks.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white"
+                  aria-label="Facebook"
+                >
+                  Facebook
+                </a>
+              )}
+              {company.socialLinks?.instagram && (
+                <a
+                  href={company.socialLinks.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white"
+                  aria-label="Instagram"
+                >
+                  Instagram
+                </a>
+              )}
+              {company.socialLinks?.youtube && (
+                <a
+                  href={company.socialLinks.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white"
+                  aria-label="YouTube"
+                >
+                  YouTube
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {navbarSection?.isVisible !== false && (
+          <header className="sticky top-0 z-50 border-b border-white/40 bg-white/85 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+            <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+              <Link href={`/${company.slug}`} className="flex min-w-0 items-center gap-3">
+                {company.logo ? (
+                  <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border border-gray-100 bg-white shadow-sm">
+                    <Image src={company.logo} alt="" fill sizes="48px" className="object-contain p-1" />
+                  </span>
+                ) : (
+                  <span
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white shadow-sm"
+                    style={{ backgroundColor: navy }}
+                  >
+                    {company.name.charAt(0)}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <span className="block truncate text-base font-extrabold tracking-tight text-gray-950 sm:text-lg">
+                    {navbarName}
+                  </span>
                   {navbarSection?.subtitle && (
                     <span className="hidden truncate text-xs text-gray-500 md:block">
                       {navbarSection.subtitle}
                     </span>
                   )}
-                </span>
+                </div>
                 {company.isVerified && (
-                  <BadgeCheck className="h-5 w-5 text-blue-500 shrink-0" aria-label="Verified" />
+                  <BadgeCheck className="h-5 w-5 shrink-0 text-blue-500" aria-label="Verified" />
+                )}
+              </Link>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <nav className="hidden items-center gap-0.5 lg:flex">
+                  {navbarItems.slice(0, 8).map((item, index) =>
+                    item.label && item.link ? (
+                      <a
+                        key={`${item.label}-${index}`}
+                        href={safeCompanyLink(item.link)}
+                        className="rounded-full px-3.5 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
+                        style={{ ['--hover' as string]: navy }}
+                        onMouseEnter={(event) => {
+                          event.currentTarget.style.color = navy;
+                        }}
+                        onMouseLeave={(event) => {
+                          event.currentTarget.style.color = '';
+                        }}
+                      >
+                        {item.label}
+                      </a>
+                    ) : null,
+                  )}
+                </nav>
+                {showNavbarCta && navbarCtaHref && (
+                  <Button
+                    asChild
+                    size="sm"
+                    className="rounded-full font-bold uppercase tracking-wide text-white shadow-md transition hover:-translate-y-0.5"
+                    style={{ backgroundColor: accentColor }}
+                  >
+                    <a
+                      href={navbarCtaHref}
+                      target={navbarCtaHref.startsWith('https://') ? '_blank' : undefined}
+                      rel={
+                        navbarCtaHref.startsWith('https://')
+                          ? 'noopener noreferrer'
+                          : undefined
+                      }
+                    >
+                      {navbarCtaText}
+                    </a>
+                  </Button>
                 )}
               </div>
-            </Link>
-            <div className="flex items-center gap-2">
-              {navbarItems.slice(0, 3).map((item, index) =>
-                item.label && item.link ? (
-                  <Button
-                    key={`${item.label}-${index}`}
-                    asChild
-                    variant="ghost"
-                    size="sm"
-                    className="hidden md:inline-flex"
-                  >
-                    <a href={safeCompanyLink(item.link)}>{item.label}</a>
-                  </Button>
-                ) : null,
-              )}
-              {navbarButtonLink && (
-                <Button
-                  asChild
-                  size="sm"
-                  className="rounded-full text-white"
-                  style={{ backgroundColor: company.theme?.primaryColor || '#6366f1' }}
-                >
-                  <a
-                    href={navbarButtonLink}
-                    target={navbarButtonLink.startsWith('https://') ? '_blank' : undefined}
-                    rel={navbarButtonLink.startsWith('https://') ? 'noopener noreferrer' : undefined}
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    {navbarSection?.buttonText || 'Enquire now'}
-                  </a>
-                </Button>
-              )}
             </div>
-          </div>
+            {navbarItems.length > 0 && (
+              <div className="flex gap-1 overflow-x-auto border-t border-gray-50 px-4 py-2 lg:hidden">
+                {navbarItems.slice(0, 8).map((item, index) =>
+                  item.label && item.link ? (
+                    <a
+                      key={`m-${item.label}-${index}`}
+                      href={safeCompanyLink(item.link)}
+                      className="shrink-0 rounded-full bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-700"
+                    >
+                      {item.label}
+                    </a>
+                  ) : null,
+                )}
+              </div>
+            )}
           </header>
         )}
         <CompanyLanding
@@ -224,9 +320,14 @@ export function CompanyProfileView({
           products={products}
           services={services}
           blogs={blogs}
-          primaryColor={company.theme?.primaryColor}
+          primaryColor={navy}
+          accentColor={accentColor}
           rating={company.rating}
           reviewCount={company.reviewCount}
+          phone={company.phone}
+          email={company.email}
+          addressLine={addressLine}
+          whatsappUrl={whatsappUrl}
         />
       </div>
     );

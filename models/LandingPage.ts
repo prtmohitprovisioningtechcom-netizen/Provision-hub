@@ -10,6 +10,7 @@ export interface ILandingPageDocument extends Document {
     content?: string;
     image?: string;
     images?: string[];
+    mapUrl?: string;
     buttonText?: string;
     buttonLink?: string;
     eyebrow?: string;
@@ -18,6 +19,15 @@ export interface ILandingPageDocument extends Document {
     items?: Record<string, unknown>[];
     isVisible: boolean;
     order: number;
+  }>;
+  pages: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    subtitle?: string;
+    content: string;
+    image?: string;
+    isVisible: boolean;
   }>;
   templateId?: string;
   isPublished: boolean;
@@ -37,6 +47,7 @@ const LandingPageSchema = new Schema<ILandingPageDocument>(
         content: String,
         image: String,
         images: [String],
+        mapUrl: String,
         buttonText: String,
         buttonLink: String,
         eyebrow: String,
@@ -48,6 +59,17 @@ const LandingPageSchema = new Schema<ILandingPageDocument>(
       },
     ],
     templateId: String,
+    pages: [
+      {
+        id: String,
+        title: String,
+        slug: String,
+        subtitle: String,
+        content: String,
+        image: String,
+        isVisible: { type: Boolean, default: true },
+      },
+    ],
     isPublished: { type: Boolean, default: true },
   },
   { timestamps: true },

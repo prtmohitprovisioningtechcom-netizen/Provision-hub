@@ -27,6 +27,7 @@ import toast from 'react-hot-toast';
 import api from '@/services/api';
 import {
   IBlog,
+  ILandingCustomPage,
   ILandingPageSection,
   IProduct,
   IService,
@@ -39,30 +40,32 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import { compressDataUrl, compressImageFile, fileToBase64 } from '@/lib/compress-image';
+import { cn, generateSlug } from '@/lib/utils';
+import { toGoogleMapsEmbedUrl } from '@/lib/maps';
+import { filterNavFooterItems, isPlaceholderBrandLabel } from '@/lib/nav-links';
+import { compressDataUrl, compressImageFile } from '@/lib/compress-image';
 import { LANDING_SECTIONS } from '@/constants';
 
 type BuilderItem = Record<string, unknown>;
 
 const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
-  navbar: 'Customize your logo, brand name, navigation link, and enquiry button.',
-  hero: 'Create a strong first impression with a headline and cover image.',
+  navbar: 'Customize logo, brand, nav pages/links, Call & enquire buttons.',
+  hero: 'Add 3–5 cover images for an auto-sliding hero, plus headline and Book Now button.',
   rating: 'Show your real customer rating in a bold trust-building block.',
   about: 'Tell your story with an engaging image and company introduction.',
   'why-choose-us': 'Explain the strongest reasons customers should choose your company.',
-  services: 'Automatically displays services added from your dashboard.',
-  products: 'Automatically displays products added from your dashboard.',
-  gallery: 'Create a visual portfolio with a title and description for every image.',
+  services: 'Shows as Popular Destinations — add services from Dashboard → Services.',
+  products: 'Shows as Featured Tours — add products/packages from Dashboard → Products.',
+  gallery: 'Photo gallery mosaic like a travel portfolio.',
   blogs: 'Publish professional insight and news cards.',
   testimonials: 'Add customer quotes that build trust.',
   faq: 'Answer common customer questions.',
   subscribe: 'Invite visitors to subscribe for company updates and offers.',
-  contact: 'Show an enquiry form so visitors can contact you.',
+  contact: 'Enquiry form, contact details, and Google Map location.',
   footer: 'Close the page with your company name and copyright.',
 };
 
-const IMAGE_SECTIONS: ILandingPageSection['type'][] = ['hero', 'about'];
+const IMAGE_SECTIONS: ILandingPageSection['type'][] = ['about'];
 
 function mergeMissingSections(
   savedSections: ILandingPageSection[],
@@ -124,21 +127,92 @@ function mergeMissingSections(
   return ordered.map((section, order) => ({ ...section, order }));
 }
 
+/** Drop placeholder "Your Company" menu links that were mistaken for pages. */
+function sanitizeNavFooterItems(
+  sections: ILandingPageSection[],
+  companyName?: string,
+): ILandingPageSection[] {
+  return sections.map((section) => {
+    if (section.type !== 'navbar' && section.type !== 'footer') return section;
+
+    const items = filterNavFooterItems(
+      (section.items || []) as Array<{ label?: string; link?: string }>,
+    );
+
+    let title = section.title;
+    if (
+      section.type === 'navbar' &&
+      (!title?.trim() || isPlaceholderBrandLabel(title)) &&
+      companyName?.trim()
+    ) {
+      title = companyName.trim();
+    }
+
+    return { ...section, title, items };
+  });
+}
+
 async function uploadImageFile(file: File, onProgress?: (progress: number) => void) {
+  onProgress?.(15);
+  const compressed = await compressImageFile(file);
+  onProgress?.(45);
+  const formData = new FormData();
+  formData.append('file', compressed);
   try {
-    onProgress?.(25);
-    const compressed = await compressImageFile(file);
-    onProgress?.(75);
-    const base64 = await fileToBase64(compressed);
+    const { data } = await api.post('/api/dashboard/upload', formData);
     onProgress?.(100);
-    return base64;
+    if (!data.success || !data.data?.url) {
+      throw new Error(data.message || 'Upload failed');
+    }
+    return data.data.url as string;
   } catch (error: unknown) {
+    const apiMessage = (error as { response?: { data?: { message?: string } } })?.response
+      ?.data?.message;
+    if (apiMessage) throw new Error(apiMessage);
     throw error instanceof Error ? error : new Error('Upload failed');
   }
 }
+
+async function replaceEmbeddedImages<T>(value: T): Promise<T> {
+  if (typeof value === 'string') {
+    if (!value.startsWith('data:image/')) return value;
+    const file = await compressDataUrl(value);
+    return (await uploadImageFile(file)) as T;
+  }
+  if (Array.isArray(value)) {
+    const next = [];
+    for (const item of value) next.push(await replaceEmbeddedImages(item));
+    return next as T;
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = await replaceEmbeddedImages(nested);
+    }
+    return out as T;
+  }
+  return value;
+}
+
+const SECTION_LINK_OPTIONS = [
+  { label: 'Hero', link: '#hero' },
+  { label: 'About', link: '#about' },
+  { label: 'Why choose us', link: '#why-choose-us' },
+  { label: 'Services', link: '#services' },
+  { label: 'Products', link: '#products' },
+  { label: 'Gallery', link: '#gallery' },
+  { label: 'Blogs', link: '#blogs' },
+  { label: 'Testimonials', link: '#testimonials' },
+  { label: 'FAQ', link: '#faq' },
+  { label: 'Subscribe', link: '#subscribe' },
+  { label: 'Contact', link: '#contact' },
+];
+
 export default function WebsiteBuilder() {
   const { companyId, companySlug } = useCompany();
   const [sections, setSections] = useState<ILandingPageSection[]>([]);
+  const [customPages, setCustomPages] = useState<ILandingCustomPage[]>([]);
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -147,6 +221,8 @@ export default function WebsiteBuilder() {
   const [saved, setSaved] = useState(true);
   const [companyName, setCompanyName] = useState('');
   const [companyLogo, setCompanyLogo] = useState('');
+  const [companyPhone, setCompanyPhone] = useState('');
+  const [companyWhatsapp, setCompanyWhatsapp] = useState('');
   const [companyRating, setCompanyRating] = useState(0);
   const [companyReviewCount, setCompanyReviewCount] = useState(0);
   const [publishedBlogs, setPublishedBlogs] = useState<IBlog[]>([]);
@@ -186,18 +262,42 @@ export default function WebsiteBuilder() {
 
         const rawSections =
           (data.data?.sections as ILandingPageSection[] | undefined) || [];
-        const loaded = mergeMissingSections(rawSections);
+        const brandName = brandingResponse.success
+          ? String(brandingResponse.data?.name || '')
+          : '';
+        const loaded = sanitizeNavFooterItems(
+          mergeMissingSections(rawSections),
+          brandName,
+        );
         const ordered = [...loaded].sort((a, b) => a.order - b.order);
         setSections(ordered);
+        setCustomPages(
+          Array.isArray(data.data?.pages)
+            ? (data.data.pages as ILandingCustomPage[]).filter((page) => {
+                const title = page.title?.trim().toLowerCase() || '';
+                const slug = page.slug?.trim().toLowerCase() || '';
+                // Placeholder page created by mistake from navbar brand name
+                if (title === 'your company' || slug === 'your-company') return false;
+                return true;
+              })
+            : [],
+        );
         setSelectedId(null);
+        setEditingPageId(null);
         setSaved(JSON.stringify(rawSections) === JSON.stringify(loaded));
         if (brandingResponse.success) {
           setCompanyName(brandingResponse.data?.name || '');
           setCompanyLogo(brandingResponse.data?.logo || '');
+          setCompanyPhone(brandingResponse.data?.phone || '');
+          setCompanyWhatsapp(
+            brandingResponse.data?.socialLinks?.whatsapp ||
+              brandingResponse.data?.phone ||
+              '',
+          );
           setCompanyRating(Number(brandingResponse.data?.rating || 0));
           setCompanyReviewCount(Number(brandingResponse.data?.reviewCount || 0));
           setPrimaryColor(
-            brandingResponse.data?.theme?.primaryColor || '#6366f1',
+            brandingResponse.data?.theme?.primaryColor || '#0ea5e9',
           );
         }
         if (blogsResponse.success) {
@@ -370,8 +470,8 @@ export default function WebsiteBuilder() {
           ? error.message
           : 'Image upload failed';
       toast.error(
-        message.includes('Cloudinary')
-          ? 'Image hosting is not configured. Add Cloudinary env vars on Vercel.'
+        message.includes('too large')
+          ? message
           : 'Image upload failed. Try a smaller image.',
       );
       return null;
@@ -392,6 +492,46 @@ export default function WebsiteBuilder() {
     if (!file) return;
     const url = await uploadImage(file, section.id);
     if (url) updateSection(section.id, { image: url });
+  };
+
+  const handleHeroImages = async (
+    section: ILandingPageSection,
+    files: FileList | null,
+  ) => {
+    if (!files?.length) return;
+    const current = section.images?.length
+      ? [...section.images]
+      : section.image
+        ? [section.image]
+        : [];
+    const available = Math.max(0, 5 - current.length);
+    const chosen = Array.from(files).slice(0, available);
+    if (!available) {
+      toast.error('Hero can have up to 5 slideshow images');
+      return;
+    }
+    if (chosen.length < files.length) {
+      toast.error(`Only ${available} more image(s) can be added (max 5)`);
+    }
+
+    const uploaded: string[] = [];
+    for (const [index, file] of chosen.entries()) {
+      const url = await uploadImage(file, `${section.id}-hero-${index}`);
+      if (url) uploaded.push(url);
+    }
+    if (!uploaded.length) return;
+    const images = [...current, ...uploaded].slice(0, 5);
+    updateSection(section.id, { images, image: images[0] || '' });
+  };
+
+  const removeHeroImage = (section: ILandingPageSection, imageIndex: number) => {
+    const current = section.images?.length
+      ? [...section.images]
+      : section.image
+        ? [section.image]
+        : [];
+    const images = current.filter((_, index) => index !== imageIndex);
+    updateSection(section.id, { images, image: images[0] || '' });
   };
 
   const handleNavbarLogo = async (file?: File) => {
@@ -476,55 +616,40 @@ export default function WebsiteBuilder() {
     }
     setSaving(true);
     try {
-      const cleanBase64 = (obj: any): any => {
-        if (!obj) return obj;
-        if (typeof obj === 'string') {
-          // Allow up to ~300KB strings (since we explicitly compress to 200KB)
-          if (obj.startsWith('data:image/') && obj.length > 300000) {
-            return ''; // Strip out large base64 images to prevent 413 error
-          }
-          return obj;
-        }
-        if (Array.isArray(obj)) return obj.map(cleanBase64);
-        if (typeof obj === 'object') {
-          const newObj: any = {};
-          for (const key in obj) {
-            newObj[key] = cleanBase64(obj[key]);
-          }
-          return newObj;
-        }
-        return obj;
-      };
-
-      const normalized = [...sections]
+      const migratedSections = await replaceEmbeddedImages(
+        sanitizeNavFooterItems(sections, companyName),
+      );
+      const migratedPages = (await replaceEmbeddedImages(customPages)).filter(
+        (page) => {
+          const title = page.title?.trim().toLowerCase() || '';
+          const slug = page.slug?.trim().toLowerCase() || '';
+          return title !== 'your company' && slug !== 'your-company';
+        },
+      );
+      const normalized = [...migratedSections]
         .sort((a, b) => a.order - b.order)
-        .map((section, order) => cleanBase64({ ...section, order }));
+        .map((section, order) => ({ ...section, order }));
 
-      const payloadSize = JSON.stringify({ sections: normalized }).length;
+      const payloadSize = JSON.stringify({
+        sections: normalized,
+        pages: migratedPages,
+      }).length;
       if (payloadSize > 3_200_000) {
-        // Find which section is taking up the most space
-        let largestSection = normalized[0];
-        let maxLen = 0;
-        for (const sec of normalized) {
-          const len = JSON.stringify(sec).length;
-          if (len > maxLen) {
-            maxLen = len;
-            largestSection = sec;
-          }
-        }
         toast.error(
-          `Page content is too large to publish (Current size: ${(payloadSize / 1024 / 1024).toFixed(2)}MB). The "${largestSection.type}" section is taking up the most space (${(maxLen / 1024 / 1024).toFixed(2)}MB). Please remove and re-upload its images.`,
-          { duration: 8000 }
+          'Page content is too large to publish. Remove some gallery images and try again.',
         );
         setSections(normalized);
+        setCustomPages(migratedPages);
         return;
       }
 
       const { data } = await api.post('/api/dashboard/landing-page', {
         sections: normalized,
+        pages: migratedPages,
       });
       if (!data.success) throw new Error(data.message || 'Publish failed');
       setSections(normalized);
+      setCustomPages(migratedPages);
       setSaved(true);
       toast.success('Website published successfully');
     } catch (error: unknown) {
@@ -543,6 +668,84 @@ export default function WebsiteBuilder() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const addCustomPage = () => {
+    const id = `page-${Date.now()}`;
+    const title = `New page ${customPages.length + 1}`;
+    setCustomPages((current) => [
+      ...current,
+      {
+        id,
+        title,
+        slug: generateSlug(title),
+        subtitle: '',
+        content: '',
+        image: '',
+        isVisible: true,
+      },
+    ]);
+    setEditingPageId(id);
+    setSelectedId(null);
+    setSaved(false);
+  };
+
+  const updateCustomPage = (id: string, update: Partial<ILandingCustomPage>) => {
+    setCustomPages((current) =>
+      current.map((page) => {
+        if (page.id !== id) return page;
+        const next = { ...page, ...update };
+        if (update.title && !update.slug) {
+          next.slug = generateSlug(update.title);
+        }
+        if (update.slug) next.slug = generateSlug(update.slug);
+        return next;
+      }),
+    );
+    setSaved(false);
+  };
+
+  const removeCustomPage = (id: string) => {
+    setCustomPages((current) => current.filter((page) => page.id !== id));
+    if (editingPageId === id) setEditingPageId(null);
+    setSaved(false);
+  };
+
+  const addPageLinkToNav = (
+    page: ILandingCustomPage,
+    type: 'navbar' | 'footer' = 'navbar',
+  ) => {
+    const target = sections.find((section) => section.type === type);
+    if (!target || !companySlug) {
+      toast.error(`${type} section not found`);
+      return;
+    }
+    const link = `/${companySlug}/p/${page.slug}`;
+    const exists = (target.items || []).some(
+      (item) => String((item as BuilderItem).link || '') === link,
+    );
+    if (exists) {
+      toast.success(`This page is already in the ${type}`);
+      return;
+    }
+    updateSection(target.id, {
+      items: [
+        ...(target.items || []),
+        { label: page.title, link },
+      ],
+    });
+    toast.success(`Added to ${type} — opens as /${companySlug}/p/${page.slug}`);
+  };
+
+  const setNavbarButtonToPage = (page: ILandingCustomPage) => {
+    const navbar = sections.find((section) => section.type === 'navbar');
+    if (!navbar || !companySlug) return;
+    const link = `/${companySlug}/p/${page.slug}`;
+    updateSection(navbar.id, {
+      buttonLink: link,
+      buttonText: navbar.buttonText?.trim() || page.title,
+    });
+    toast.success('Navbar button will open this page');
   };
 
   if (loading) {
@@ -602,53 +805,251 @@ export default function WebsiteBuilder() {
       <div className="grid min-h-0 flex-1 gap-5 lg:grid-cols-[400px_minmax(0,1fr)]">
         {/* Left Side: Editor */}
         <div className="flex min-h-0 flex-col overflow-hidden">
-          {!selected ? (
+          {!selected && !editingPageId ? (
           <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="shrink-0 border-b bg-gray-50 px-4 py-3 dark:bg-gray-900">
               <div className="flex items-center gap-2 font-semibold">
                 <LayoutTemplate className="h-4 w-4 text-indigo-600" />
-                Page sections
+                Website sections
               </div>
-              <p className="mt-1 text-xs text-gray-500">Select a section to edit.</p>
+              <p className="mt-1 text-xs text-gray-500">
+                Edit any section. Hide ones you don’t need — they won’t show on your live site.
+              </p>
             </div>
             <CardContent className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain p-2">
               {[...sections]
                 .sort((a, b) => a.order - b.order)
                 .map((section, index) => (
-                  <button
+                  <div
                     key={section.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedId(section.id);
-                    }}
                     className={cn(
-                      'group flex w-full items-center gap-2 rounded-xl border px-3 py-3 text-left transition',
-                      selectedId === section.id
-                        ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-300'
-                        : 'border-transparent hover:border-gray-200 hover:bg-gray-50 dark:hover:border-gray-800 dark:hover:bg-gray-900',
+                      'group flex w-full items-center gap-1 rounded-xl border px-2 py-2 transition',
+                      section.isVisible
+                        ? 'border-transparent hover:border-gray-200 hover:bg-gray-50'
+                        : 'border-dashed border-gray-200 bg-gray-50/80 opacity-75',
                     )}
                   >
-                    <span
-                      className={cn(
-                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
-                        section.isVisible
-                          ? 'bg-white text-indigo-600 shadow-sm dark:bg-gray-800'
-                          : 'bg-gray-100 text-gray-400 dark:bg-gray-800',
-                      )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedId(section.id);
+                        setEditingPageId(null);
+                      }}
+                      className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left"
                     >
-                      {index + 1}
+                      <span
+                        className={cn(
+                          'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
+                          section.isVisible
+                            ? 'bg-white text-indigo-600 shadow-sm'
+                            : 'bg-gray-200 text-gray-400',
+                        )}
+                      >
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium capitalize">
+                          {section.type === 'navbar'
+                            ? 'Navbar'
+                            : section.type === 'footer'
+                              ? 'Footer'
+                              : section.title || section.type}
+                        </span>
+                        <span className="block truncate text-xs text-gray-500">
+                          {section.type === 'navbar'
+                            ? section.title || 'Brand name'
+                            : section.type === 'footer'
+                              ? 'Links & copyright'
+                              : section.type}
+                          {!section.isVisible ? ' · removed from site' : ''}
+                        </span>
+                      </span>
+                      <ChevronRight className="h-4 w-4 opacity-40" />
+                    </button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0"
+                      title={
+                        section.isVisible
+                          ? 'Remove from website'
+                          : 'Add back to website'
+                      }
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        updateSection(section.id, { isVisible: !section.isVisible });
+                      }}
+                    >
+                      {section.isVisible ? (
+                        <Eye className="h-4 w-4 text-emerald-600" />
+                      ) : (
+                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      )}
+                    </Button>
+                  </div>
+                ))}
+
+              <div className="mt-4 border-t pt-3">
+                <div className="mb-2 flex items-center justify-between px-2">
+                  <div>
+                    <p className="text-sm font-semibold">Custom pages</p>
+                    <p className="text-xs text-gray-500">
+                      Routes like /{companySlug || 'your-slug'}/p/about
+                    </p>
+                  </div>
+                  <Button type="button" size="sm" variant="outline" onClick={addCustomPage}>
+                    <Plus className="h-4 w-4" />
+                    Add page
+                  </Button>
+                </div>
+                {customPages.length === 0 && (
+                  <p className="px-2 py-4 text-center text-xs text-gray-500">
+                    Create pages for navbar (About, Privacy, Offers, etc.).
+                  </p>
+                )}
+                {customPages.map((page) => (
+                  <button
+                    key={page.id}
+                    type="button"
+                    onClick={() => {
+                      setEditingPageId(page.id);
+                      setSelectedId(null);
+                    }}
+                    className="group mb-1 flex w-full items-center gap-2 rounded-xl border border-transparent px-3 py-3 text-left transition hover:border-gray-200 hover:bg-gray-50"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-xs font-bold text-sky-700">
+                      P
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{section.title}</span>
-                      <span className="block text-xs capitalize text-gray-500">{section.type}</span>
+                      <span className="block truncate text-sm font-medium">{page.title}</span>
+                      <span className="block truncate text-xs text-gray-500">
+                        /{companySlug}/p/{page.slug}
+                      </span>
                     </span>
-                    {!section.isVisible && <EyeOff className="h-4 w-4 text-gray-400" />}
+                    {!page.isVisible && <EyeOff className="h-4 w-4 text-gray-400" />}
                     <ChevronRight className="h-4 w-4 opacity-40" />
                   </button>
                 ))}
+              </div>
             </CardContent>
           </Card>
-          ) : (
+          ) : editingPageId ? (
+            (() => {
+              const page = customPages.find((item) => item.id === editingPageId);
+              if (!page) return null;
+              return (
+                <Card className="flex min-h-0 flex-1 flex-col overflow-hidden border-sky-200 shadow-xl">
+                  <div className="flex shrink-0 items-center gap-3 border-b bg-sky-50/60 px-4 py-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingPageId(null)}
+                      className="h-8 gap-1 pl-1.5"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Back
+                    </Button>
+                    <span className="text-sm font-semibold text-sky-900">Edit custom page</span>
+                  </div>
+                  <CardContent className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4">
+                    <div className="space-y-2">
+                      <Label>Page title</Label>
+                      <Input
+                        value={page.title}
+                        onChange={(event) =>
+                          updateCustomPage(page.id, { title: event.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>URL slug (route)</Label>
+                      <Input
+                        value={page.slug}
+                        onChange={(event) =>
+                          updateCustomPage(page.id, { slug: event.target.value })
+                        }
+                      />
+                      <p className="text-xs text-gray-500">
+                        Live URL: /{companySlug}/p/{page.slug || '...'}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Subtitle</Label>
+                      <Input
+                        value={page.subtitle || ''}
+                        onChange={(event) =>
+                          updateCustomPage(page.id, { subtitle: event.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Page content</Label>
+                      <Textarea
+                        rows={8}
+                        value={page.content}
+                        onChange={(event) =>
+                          updateCustomPage(page.id, { content: event.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          updateCustomPage(page.id, { isVisible: !page.isVisible })
+                        }
+                      >
+                        {page.isVisible ? (
+                          <>
+                            <Eye className="h-4 w-4" /> Visible
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="h-4 w-4" /> Hidden
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => addPageLinkToNav(page, 'navbar')}
+                      >
+                        Add to navbar
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => addPageLinkToNav(page, 'footer')}
+                      >
+                        Add to footer
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setNavbarButtonToPage(page)}
+                      >
+                        Set as navbar button
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeCustomPage(page.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()
+          ) : selected ? (
             <Card className="flex min-h-0 flex-1 flex-col overflow-hidden border-indigo-200 shadow-xl dark:border-indigo-800">
             <div className="shrink-0 flex items-center gap-3 border-b bg-indigo-50/50 px-4 py-3 dark:bg-indigo-950/20">
               <Button
@@ -677,7 +1078,7 @@ export default function WebsiteBuilder() {
                         : 'bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
                     )}
                   >
-                    {selected.isVisible ? 'Visible' : 'Hidden'}
+                    {selected.isVisible ? 'On website' : 'Removed'}
                   </span>
                 </div>
                 <p className="mt-1 text-sm text-gray-500">{SECTION_HELP[selected.type]}</p>
@@ -719,7 +1120,7 @@ export default function WebsiteBuilder() {
                   }
                 >
                   {selected.isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  {selected.isVisible ? 'Hide' : 'Show'}
+                  {selected.isVisible ? 'Remove from site' : 'Add to site'}
                 </Button>
               </div>
             </div>
@@ -728,7 +1129,7 @@ export default function WebsiteBuilder() {
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="section-title">
                     {selected.type === 'navbar'
-                      ? 'Brand name'
+                      ? 'Brand name (logo text)'
                       : selected.type === 'footer'
                         ? 'Footer heading'
                         : 'Heading'}
@@ -740,8 +1141,18 @@ export default function WebsiteBuilder() {
                     onChange={(event) =>
                       updateSection(selected.id, { title: event.target.value })
                     }
-                    placeholder="Add a clear section heading"
+                    placeholder={
+                      selected.type === 'navbar'
+                        ? companyName || 'Your brand name'
+                        : 'Add a clear section heading'
+                    }
                   />
+                  {selected.type === 'navbar' && (
+                    <p className="text-xs text-gray-500">
+                      Only shows next to the logo. Ye menu page nahi hai — links neeche add karo
+                      (#about ya custom page).
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="section-subtitle">
@@ -772,6 +1183,48 @@ export default function WebsiteBuilder() {
                     />
                   </div>
                 )}
+                {['rating', 'about', 'services', 'products', 'why-choose-us', 'gallery', 'contact', 'footer'].includes(
+                  selected.type,
+                ) && (
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label>Small label (optional)</Label>
+                    <Input
+                      value={selected.eyebrow || ''}
+                      onChange={(event) =>
+                        updateSection(selected.id, { eyebrow: event.target.value })
+                      }
+                      placeholder={
+                        selected.type === 'footer' ? 'Links heading' : 'Short label above the title'
+                      }
+                    />
+                  </div>
+                )}
+                {['about', 'services', 'products', 'contact', 'footer'].includes(selected.type) && (
+                  <div className="grid gap-4 sm:col-span-2 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Button text (optional)</Label>
+                      <Input
+                        value={selected.buttonText || ''}
+                        onChange={(event) =>
+                          updateSection(selected.id, { buttonText: event.target.value })
+                        }
+                        placeholder="Only shows if you type something"
+                      />
+                    </div>
+                    {selected.type !== 'contact' && selected.type !== 'footer' && (
+                      <div className="space-y-2">
+                        <Label>Button link</Label>
+                        <Input
+                          value={selected.buttonLink || ''}
+                          onChange={(event) =>
+                            updateSection(selected.id, { buttonLink: event.target.value })
+                          }
+                          placeholder="#contact or /slug/p/page"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
                 {selected.type === 'hero' && (
                   <>
                     <div className="space-y-2">
@@ -784,7 +1237,7 @@ export default function WebsiteBuilder() {
                             buttonText: event.target.value,
                           })
                         }
-                        placeholder="Get in touch"
+                        placeholder="Leave empty to hide the button"
                       />
                     </div>
                     <div className="space-y-2">
@@ -797,9 +1250,29 @@ export default function WebsiteBuilder() {
                             buttonLink: event.target.value,
                           })
                         }
-                        placeholder="#contact"
+                        placeholder="#contact or /slug/p/about"
                       />
                     </div>
+                    {customPages.length > 0 && (
+                      <div className="flex flex-wrap gap-2 sm:col-span-2">
+                        {customPages.map((page) => (
+                          <Button
+                            key={page.id}
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() =>
+                              updateSection(selected.id, {
+                                buttonLink: `/${companySlug}/p/${page.slug}`,
+                                buttonText: selected.buttonText?.trim() || page.title,
+                              })
+                            }
+                          >
+                            Hero button → {page.title}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
                   </>
                 )}
                 {selected.type === 'subscribe' && (
@@ -853,19 +1326,9 @@ export default function WebsiteBuilder() {
                   </>
                 )}
                 {selected.type === 'rating' && (
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label>Small label</Label>
-                    <Input
-                      value={selected.eyebrow || ''}
-                      onChange={(event) =>
-                        updateSection(selected.id, { eyebrow: event.target.value })
-                      }
-                      placeholder="Customer rating"
-                    />
-                    <p className="text-xs text-gray-500">
-                      Rating score and review count stay connected to approved customer reviews.
-                    </p>
-                  </div>
+                  <p className="text-xs text-gray-500 sm:col-span-2">
+                    Rating score and review count stay connected to approved customer reviews.
+                  </p>
                 )}
               </div>
 
@@ -932,35 +1395,55 @@ export default function WebsiteBuilder() {
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>Enquiry button text</Label>
+                      <Label>Navbar button text</Label>
                       <Input
                         value={selected.buttonText || ''}
                         onChange={(event) =>
                           updateSection(selected.id, { buttonText: event.target.value })
                         }
-                        placeholder="Enquire now"
+                        placeholder="e.g. About us"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Custom button link (optional)</Label>
+                      <Label>Button opens this link / page</Label>
                       <Input
                         value={selected.buttonLink || ''}
                         onChange={(event) =>
                           updateSection(selected.id, { buttonLink: event.target.value })
                         }
-                        placeholder="Leave empty to use WhatsApp"
+                        placeholder={`/${companySlug || 'your-slug'}/p/about`}
                       />
                     </div>
                   </div>
+                  {customPages.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-500">
+                        Pick a custom page — it opens as a separate page (not on the landing scroll).
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {customPages.map((page) => (
+                          <Button
+                            key={page.id}
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => setNavbarButtonToPage(page)}
+                          >
+                            Button → {page.title}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
               {IMAGE_SECTIONS.includes(selected.type) && (
                 <div className="space-y-3 border-t pt-6">
                   <div>
-                    <Label>{selected.type === 'hero' ? 'Hero cover image' : 'About image'}</Label>
+                    <Label>About image</Label>
                     <p className="mt-1 text-xs text-gray-500">
-                      JPG, PNG, WebP, or GIF up to 5MB. Wide, high-resolution images look best.
+                      JPG, PNG, WebP, or GIF. Wide, high-resolution images look best.
                     </p>
                   </div>
                   {selected.image ? (
@@ -1023,6 +1506,108 @@ export default function WebsiteBuilder() {
                         }
                       />
                     </Label>
+                  )}
+                </div>
+              )}
+
+              {selected.type === 'hero' && (
+                <div className="space-y-4 border-t pt-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <Label>Hero slideshow images</Label>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Upload 3–5 wide images. They auto-slide every 5 seconds on the live page.
+                      </p>
+                    </div>
+                    <Label
+                      htmlFor={`hero-slides-${selected.id}`}
+                      className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                    >
+                      {uploading?.startsWith(selected.id) ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <ImagePlus className="h-4 w-4" />
+                      )}
+                      Add images
+                      <Input
+                        id={`hero-slides-${selected.id}`}
+                        type="file"
+                        multiple
+                        accept="image/png,image/jpeg,image/webp,image/gif"
+                        className="sr-only"
+                        disabled={uploading !== null}
+                        onChange={(event) => {
+                          handleHeroImages(selected, event.target.files);
+                          event.target.value = '';
+                        }}
+                      />
+                    </Label>
+                  </div>
+                  {(() => {
+                    const slides = selected.images?.length
+                      ? selected.images
+                      : selected.image
+                        ? [selected.image]
+                        : [];
+                    if (!slides.length) {
+                      return (
+                        <div className="rounded-xl border border-dashed p-8 text-center text-sm text-gray-500">
+                          No hero images yet. Add at least 3 images for a smooth slideshow.
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {slides.map((src, imageIndex) => (
+                          <div
+                            key={`${src}-${imageIndex}`}
+                            className="group relative aspect-video overflow-hidden rounded-xl border bg-gray-100"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={src} alt="" className="h-full w-full object-cover" />
+                            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/55 px-2 py-1.5 text-[10px] font-semibold text-white">
+                              <span>Slide {imageIndex + 1}</span>
+                              <button
+                                type="button"
+                                className="rounded bg-red-500/90 px-1.5 py-0.5"
+                                onClick={() => removeHeroImage(selected, imageIndex)}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {selected.type === 'contact' && (
+                <div className="space-y-3 border-t pt-6">
+                  <div>
+                    <Label htmlFor="contact-map-url">Google Map location</Label>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Paste a Google Maps link, embed URL, or full address (e.g. Sector 9, Gurugram).
+                    </p>
+                  </div>
+                  <Input
+                    id="contact-map-url"
+                    value={selected.mapUrl || ''}
+                    onChange={(event) =>
+                      updateSection(selected.id, { mapUrl: event.target.value })
+                    }
+                    placeholder="https://maps.google.com/... or Sector 9 Gurugram"
+                  />
+                  {selected.mapUrl && toGoogleMapsEmbedUrl(selected.mapUrl) && (
+                    <div className="overflow-hidden rounded-xl border">
+                      <iframe
+                        title="Map preview"
+                        src={toGoogleMapsEmbedUrl(selected.mapUrl)!}
+                        className="h-48 w-full border-0"
+                        loading="lazy"
+                      />
+                    </div>
                   )}
                 </div>
               )}
@@ -1486,9 +2071,10 @@ export default function WebsiteBuilder() {
                 <div className="space-y-4 border-t pt-6">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <Label>{selected.type === 'navbar' ? 'Navigation links' : 'Footer links'}</Label>
+                      <Label>{selected.type === 'navbar' ? 'Navigation links / pages' : 'Footer links'}</Label>
                       <p className="mt-1 text-xs text-gray-500">
-                        Add clear labels and valid internal or external links.
+                        Custom pages open at /{companySlug || 'slug'}/p/page-name (separate page).
+                        Section anchors like #about stay on the landing page.
                       </p>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => addItem(selected)}>
@@ -1496,6 +2082,38 @@ export default function WebsiteBuilder() {
                       Add link
                     </Button>
                   </div>
+                  <div className="flex flex-wrap gap-2">
+                      {selected.type === 'navbar' &&
+                        SECTION_LINK_OPTIONS.map((option) => (
+                          <Button
+                            key={option.link}
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() =>
+                              updateSection(selected.id, {
+                                items: [
+                                  ...(selected.items || []),
+                                  { label: option.label, link: option.link },
+                                ],
+                              })
+                            }
+                          >
+                            + {option.label}
+                          </Button>
+                        ))}
+                      {customPages.map((page) => (
+                        <Button
+                          key={page.id}
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => addPageLinkToNav(page, selected.type as 'navbar' | 'footer')}
+                        >
+                          + {page.title} (page)
+                        </Button>
+                      ))}
+                    </div>
                   {(selected.items || []).map((rawItem, index) => {
                     const item = rawItem as BuilderItem;
                     return (
@@ -1514,13 +2132,13 @@ export default function WebsiteBuilder() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label>Link</Label>
+                          <Label>Link / route</Label>
                           <Input
                             value={String(item.link || '')}
                             onChange={(event) =>
                               updateItem(selected.id, index, 'link', event.target.value)
                             }
-                            placeholder="#contact or https://..."
+                            placeholder="#contact or /slug/p/about"
                           />
                         </div>
                         <Button
@@ -1543,7 +2161,7 @@ export default function WebsiteBuilder() {
                   <Sparkles className="mt-0.5 h-5 w-5 shrink-0" />
                   <p>
                     {selected.type === 'contact' &&
-                      'The enquiry form automatically sends leads to Dashboard → Leads.'}
+                      'Enquiry form sends leads to Dashboard → Leads. Set a Google Map link below for the location.'}
                     {selected.type === 'footer' &&
                       'Your company name is used automatically in the footer.'}
                   </p>
@@ -1551,7 +2169,7 @@ export default function WebsiteBuilder() {
               )}
             </CardContent>
           </Card>
-        )}
+          ) : null}
         </div>
 
         {/* Right Side: Live Preview */}
@@ -1603,37 +2221,49 @@ export default function WebsiteBuilder() {
               )}
             >
               {previewNavbar?.isVisible !== false && (
-                <div className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-white/95 px-5 backdrop-blur">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-50 font-bold text-indigo-600">
-                      {companyLogo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={companyLogo} alt="" className="h-full w-full object-contain p-1" />
-                      ) : (
-                        companyName.charAt(0) || 'C'
-                      )}
-                    </div>
-                    <div className="min-w-0">
+                <div className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur">
+                  <div className="flex h-16 items-center justify-between px-5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-50 font-bold text-sky-600">
+                        {companyLogo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={companyLogo} alt="" className="h-full w-full object-contain p-1" />
+                        ) : (
+                          companyName.charAt(0) || 'C'
+                        )}
+                      </div>
+                      <div className="min-w-0">
                       <p className="truncate text-sm font-bold">
-                        {previewNavbar?.title &&
-                        previewNavbar.title !== 'Company Navigation'
-                          ? previewNavbar.title
-                          : companyName || 'Your company'}
+                        {previewNavbar?.title?.trim() ||
+                          companyName ||
+                          'Your company'}
                       </p>
-                      {previewNavbar?.subtitle && (
-                        <p className="truncate text-[10px] text-gray-500">
-                          {previewNavbar.subtitle}
-                        </p>
-                      )}
+                        {previewNavbar?.subtitle && (
+                          <p className="truncate text-[10px] text-gray-500">
+                            {previewNavbar.subtitle}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {(previewNavbar?.items || []).slice(0, 4).map((raw, index) => {
+                        const item = raw as BuilderItem;
+                        if (!item.label) return null;
+                        return (
+                          <span key={index} className="hidden text-xs font-medium text-gray-500 md:inline">
+                            {String(item.label)}
+                          </span>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        className="rounded-md px-4 py-2 text-xs font-bold uppercase tracking-wide text-white"
+                        style={{ backgroundColor: primaryColor || '#0b2a5b' }}
+                      >
+                        {previewNavbar?.buttonText || 'Button'}
+                      </button>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="rounded-full px-4 py-2 text-xs font-semibold text-white"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    {previewNavbar?.buttonText || 'Enquire now'}
-                  </button>
                 </div>
               )}
               <CompanyLanding 
@@ -1645,7 +2275,15 @@ export default function WebsiteBuilder() {
                 blogs={publishedBlogs}
                 rating={companyRating}
                 reviewCount={companyReviewCount}
-                primaryColor={primaryColor}
+                primaryColor={primaryColor || '#0b2a5b'}
+                accentColor={primaryColor || '#0b2a5b'}
+                phone={companyPhone}
+                whatsappUrl={
+                  companyWhatsapp
+                    ? `https://wa.me/${companyWhatsapp.replace(/\D/g, '')}`
+                    : null
+                }
+                showFloatingContact
               />
             </div>
           </div>

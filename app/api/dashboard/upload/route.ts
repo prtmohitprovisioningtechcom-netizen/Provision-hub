@@ -1,13 +1,19 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/server/middleware/auth';
 import { apiError, apiSuccess } from '@/server/utils/api-response';
-import { uploadBufferToCloudinary } from '@/lib/cloudinary';
+import { saveMediaBuffer } from '@/lib/media-storage';
 
 export const runtime = 'nodejs';
 
-/** Keep under Vercel’s ~4.5MB serverless body limit (multipart + overhead). */
+/** Keep under Vercel’s ~4.5MB serverless body limit. */
 const MAX_IMAGE_BYTES = 2.5 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif']);
+const ALLOWED_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+  'image/gif',
+]);
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,43 +29,36 @@ export async function POST(request: NextRequest) {
     const form = await request.formData();
     const file = form.get('file');
 
-    if (!file || typeof file === 'string' || !('arrayBuffer' in (file as any))) {
+    if (!file || typeof file === 'string' || !('arrayBuffer' in (file as object))) {
       return apiError('Please upload an image file', 400);
     }
 
     const actualFile = file as File;
     const mimeType = actualFile.type || 'image/jpeg';
-    
+
     if (!ALLOWED_TYPES.has(mimeType.toLowerCase())) {
       return apiError('Please upload a valid PNG, JPG, WebP, or GIF image', 400);
     }
-    
+
     if (actualFile.size > MAX_IMAGE_BYTES) {
       return apiError('Image must be smaller than 2.5MB after compression', 413);
     }
 
     const buffer = Buffer.from(await actualFile.arrayBuffer());
-
-    // Strict Cloudinary check - prevents silent bloat of DB with base64 strings
-    if (
-      !process.env.CLOUDINARY_CLOUD_NAME ||
-      !process.env.CLOUDINARY_API_KEY ||
-      !process.env.CLOUDINARY_API_SECRET
-    ) {
-      return apiError('Cloudinary is not configured. Please add environment variables.', 400);
-    }
-
-    const uploaded = await uploadBufferToCloudinary(
+    const uploaded = await saveMediaBuffer({
+      companyId: auth.companyId,
       buffer,
       mimeType,
-      `multi-tenant/landing-pages/${auth.companyId}`,
-    );
+      filename: actualFile.name,
+    });
 
     return apiSuccess(uploaded);
   } catch (error) {
-    console.error('Landing page image upload failed:', error);
-    const isConfigError = error instanceof Error && error.message.includes('Cloudinary is not configured');
-    const message = isConfigError ? error.message : 'Failed to upload image';
-    return apiError(message, isConfigError ? 400 : 500);
+    console.error('Image upload failed:', error);
+    const message =
+      error instanceof Error && error.message.includes('too large')
+        ? error.message
+        : 'Failed to upload image';
+    return apiError(message, 500);
   }
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage as Image } from '@/components/SafeImage';
 import { motion } from 'framer-motion';
 import { MapPin, Star, BadgeCheck } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';

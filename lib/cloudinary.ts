@@ -1,35 +1,17 @@
-import { v2 as cloudinary } from 'cloudinary';
+import { saveMediaFromDataUrl, deleteMediaById } from '@/lib/media-storage';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-function assertCloudinaryConfigured() {
-  if (
-    !process.env.CLOUDINARY_CLOUD_NAME ||
-    !process.env.CLOUDINARY_API_KEY ||
-    !process.env.CLOUDINARY_API_SECRET
-  ) {
-    throw new Error(
-      'Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.',
-    );
-  }
-}
-
+/**
+ * Image uploads are stored in MongoDB and served from /api/media/[id].
+ * No Cloudinary account is required.
+ */
 export async function uploadToCloudinary(
   file: string,
   folder = 'multi-tenant',
 ): Promise<{ url: string; publicId: string }> {
-  assertCloudinaryConfigured();
-
-  const result = await cloudinary.uploader.upload(file, {
-    folder,
-    resource_type: 'image',
-  });
-
-  return { url: result.secure_url, publicId: result.public_id };
+  // folder kept for API compatibility; companyId is extracted by callers when needed.
+  // When folder looks like `gallery/{companyId}`, use that id.
+  const companyId = folder.includes('/') ? folder.split('/').pop()! : folder;
+  return saveMediaFromDataUrl(companyId, file);
 }
 
 export async function uploadBufferToCloudinary(
@@ -37,15 +19,13 @@ export async function uploadBufferToCloudinary(
   mimeType: string,
   folder = 'multi-tenant',
 ): Promise<{ url: string; publicId: string }> {
-  assertCloudinaryConfigured();
-
-  const dataUri = `data:${mimeType};base64,${buffer.toString('base64')}`;
-  return uploadToCloudinary(dataUri, folder);
+  const { saveMediaBuffer } = await import('@/lib/media-storage');
+  const companyId = folder.includes('/') ? folder.split('/').pop()! : folder;
+  return saveMediaBuffer({ companyId, buffer, mimeType });
 }
 
 export async function deleteFromCloudinary(publicId: string): Promise<void> {
-  if (!process.env.CLOUDINARY_CLOUD_NAME) return;
-  await cloudinary.uploader.destroy(publicId);
+  // Skip legacy Cloudinary public IDs that are not Mongo ObjectIds.
+  if (!/^[a-f\d]{24}$/i.test(publicId)) return;
+  await deleteMediaById(publicId);
 }
-
-export { cloudinary };

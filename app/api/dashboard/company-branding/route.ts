@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
     const company = await Company.findById(auth.companyId)
-      .select('name slug logo theme rating reviewCount')
+      .select('name slug logo theme rating reviewCount phone socialLinks')
       .lean();
     if (!company) return apiError('Company not found', 404);
     return apiSuccess(company);
@@ -36,9 +36,13 @@ export async function PUT(request: NextRequest) {
     if (body.logo !== undefined) {
       if (
         typeof body.logo !== 'string' ||
-        (!body.logo.startsWith('https://') && !body.logo.startsWith('data:image/'))
+        !(
+          body.logo.startsWith('https://') ||
+          body.logo.startsWith('/api/media/') ||
+          body.logo.startsWith('data:image/')
+        )
       ) {
-        return apiError('Logo must be an image URL or valid Base64 image', 400);
+        return apiError('Logo must be an uploaded image URL', 400);
       }
       update.logo = body.logo;
     }
