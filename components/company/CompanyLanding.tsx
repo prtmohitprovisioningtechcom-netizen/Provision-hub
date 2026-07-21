@@ -216,7 +216,7 @@ function HeroSlideshow({
             src={src}
             alt={`${title} slide ${slideIndex + 1}`}
             fill
-            className="object-contain object-center"
+            className="object-cover object-center"
             priority={slideIndex === 0}
             sizes="100vw"
           />
