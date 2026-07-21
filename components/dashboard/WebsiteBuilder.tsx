@@ -34,7 +34,6 @@ import {
 } from '@/types';
 import { useCompany } from '@/hooks/useCompany';
 import { CompanyLanding } from '@/components/company/CompanyLanding';
-import { SocialIcons } from '@/components/company/SocialIcons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -50,7 +49,7 @@ import { LANDING_SECTIONS } from '@/constants';
 type BuilderItem = Record<string, unknown>;
 
 const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
-  navbar: 'Customize logo, brand, nav pages/links, social icons, and CTA button.',
+  navbar: 'Customize logo, brand, nav pages/links, and CTA button.',
   hero: 'Add 3–5 cover images for an auto-sliding hero, plus headline and CTA button.',
   rating: 'Google/Facebook trust bar with score, gold stars, brand name, and tagline — all editable.',
   about: 'Tell your story with an engaging image and company introduction.',
@@ -744,7 +743,7 @@ export default function WebsiteBuilder() {
         twitter: String(saved.twitter || payload.twitter || ''),
         linkedin: String(saved.linkedin || payload.linkedin || ''),
       });
-      toast.success('Social links saved — icons show on navbar & footer');
+      toast.success('Social links saved — icons show on footer');
       return true;
     } catch (error: unknown) {
       const apiMessage = (error as { response?: { data?: { message?: string } } })
@@ -1779,14 +1778,14 @@ export default function WebsiteBuilder() {
                 </div>
               )}
 
-              {(selected.type === 'navbar' || selected.type === 'footer') && (
+              {(selected.type === 'footer') && (
                 <div className="space-y-3 border-t pt-5">
                     <div>
                       <Label>Social links</Label>
                       <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                         Jo link daalo (Facebook, Instagram, YouTube, X, LinkedIn) — wahi icons
-                        navbar aur footer pe dikhenge. Save social links dabao, ya Publish changes
-                        se bhi save ho jayega.
+                        footer pe dikhenge. Navbar pe nahi. Save social links dabao, ya Publish
+                        changes se bhi save ho jayega.
                       </p>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -2660,11 +2659,6 @@ export default function WebsiteBuilder() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <SocialIcons
-                        links={socialLinks}
-                        className="hidden sm:flex"
-                        iconClassName="h-3.5 w-3.5"
-                      />
                       {(previewNavbar?.items || []).slice(0, 4).map((raw, index) => {
                         const item = raw as BuilderItem;
                         if (!item.label) return null;

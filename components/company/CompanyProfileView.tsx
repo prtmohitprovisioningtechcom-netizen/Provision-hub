@@ -20,7 +20,6 @@ import { Button } from '@/components/ui/button';
 import { ContactForm } from './ContactForm';
 import { ReviewForm } from './ReviewForm';
 import { CompanyLanding } from './CompanyLanding';
-import { SocialIcons } from './SocialIcons';
 import { formatCurrency, formatDate, cn } from '@/lib/utils';
 import { usePlatformBranding } from '@/hooks/usePlatformBranding';
 import {
@@ -203,9 +202,6 @@ export function CompanyProfileView({
                 </a>
               )}
             </div>
-            <div className="flex items-center gap-3 text-white/80">
-              <SocialIcons links={company.socialLinks} tone="light" iconClassName="h-3.5 w-3.5" />
-            </div>
           </div>
         </div>
 
@@ -240,11 +236,6 @@ export function CompanyProfileView({
                 )}
               </Link>
               <div className="flex items-center gap-1 sm:gap-2">
-                <SocialIcons
-                  links={company.socialLinks}
-                  className="mr-1 hidden sm:flex"
-                  iconClassName="h-4 w-4"
-                />
                 <nav className="hidden items-center gap-0.5 lg:flex">
                   {navbarItems.slice(0, 8).map((item, index) =>
                     item.label && item.link ? (
