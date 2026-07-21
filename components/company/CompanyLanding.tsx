@@ -788,13 +788,13 @@ export function CompanyLanding({
           case 'gallery': {
             const galleryItems = section.items?.length
               ? (section.items as Array<Record<string, unknown>>)
-              : (section.images || []).map((image, imageIndex) => ({
+              : (section.images || []).map((image) => ({
                   image,
-                  title: `Gallery ${imageIndex + 1}`,
+                  title: '',
                   description: '',
                 }));
             return (
-              <SectionShell id={sectionId} key={section.id} tone="soft" navy={navy} withTopWave>
+              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy} withBottomWave>
                 <SectionHead
                   eyebrow={section.eyebrow}
                   title={section.title}
@@ -805,36 +805,81 @@ export function CompanyLanding({
                   variants={staggerGrid}
                   initial="hidden"
                   whileInView="show"
-                  viewport={{ once: true }}
-                  className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4"
+                  viewport={{ once: true, margin: '-40px' }}
+                  className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 >
                   {galleryItems.map((item, i) => {
                     const image = readField(item, 'image');
-                    const title = readField(item, 'title');
+                    const name =
+                      readField(item, 'title') ||
+                      readField(item, 'name') ||
+                      '';
+                    const description = readField(item, 'description');
+                    const itemLink = readField(item, 'link') || section.buttonLink || image;
+                    const itemCta = readField(item, 'buttonText') || section.buttonText || '';
                     return (
-                      <motion.a
+                      <motion.article
                         key={i}
                         variants={cardReveal}
-                        href={image}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(
-                          'group relative overflow-hidden rounded-2xl bg-gray-200',
-                          i % 5 === 0
-                            ? 'aspect-square md:col-span-2 md:row-span-2'
-                            : 'aspect-square',
-                        )}
+                        whileHover={{ y: -8 }}
+                        className="group overflow-hidden rounded-2xl bg-white shadow-[0_10px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={image}
-                          alt={title}
-                          className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 flex items-end bg-linear-to-t from-black/65 to-transparent p-4 opacity-0 transition duration-300 group-hover:opacity-100">
-                          <span className="text-sm font-semibold text-white">{title}</span>
-                        </div>
-                      </motion.a>
+                        <a
+                          href={image || '#'}
+                          target={image ? '_blank' : undefined}
+                          rel={image ? 'noopener noreferrer' : undefined}
+                          className="relative block aspect-4/3 overflow-hidden bg-gray-100"
+                        >
+                          {image ? (
+                            <Image
+                              src={image}
+                              alt={name || section.title}
+                              fill
+                              sizes="(max-width: 768px) 100vw, 25vw"
+                              className="object-cover transition duration-700 group-hover:scale-110"
+                            />
+                          ) : (
+                            <div
+                              className="flex h-full items-center justify-center text-4xl font-black text-white/40"
+                              style={{ backgroundColor: navy }}
+                            >
+                              {(name || 'G').charAt(0)}
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/15 to-transparent" />
+                          {name && (
+                            <h3 className="absolute bottom-3 left-3 right-3 text-lg font-bold text-white">
+                              {name}
+                            </h3>
+                          )}
+                        </a>
+                        {(description || (itemCta && itemLink)) && (
+                          <div className="p-5">
+                            {description && (
+                              <p className="line-clamp-3 text-sm leading-relaxed text-gray-600">
+                                {description}
+                              </p>
+                            )}
+                            {itemCta && itemLink && (
+                              <div className="mt-4 flex items-center justify-end">
+                                <a
+                                  href={safeLandingLink(itemLink, image || '#contact')}
+                                  className="text-sm font-bold uppercase tracking-wide transition group-hover:translate-x-0.5"
+                                  style={{ color: gold }}
+                                  target={itemLink.startsWith('http') || itemLink.startsWith('/api/') ? '_blank' : undefined}
+                                  rel={
+                                    itemLink.startsWith('http') || itemLink.startsWith('/api/')
+                                      ? 'noopener noreferrer'
+                                      : undefined
+                                  }
+                                >
+                                  {itemCta}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </motion.article>
                     );
                   })}
                 </motion.div>
@@ -1021,6 +1066,11 @@ export function CompanyLanding({
                   subtitle={section.subtitle}
                   accent={gold}
                 />
+                {section.content?.trim() && (
+                  <p className="mx-auto -mt-6 mb-10 max-w-2xl text-center text-base leading-relaxed text-gray-600">
+                    {section.content}
+                  </p>
+                )}
                 <motion.div
                   variants={staggerGrid}
                   initial="hidden"

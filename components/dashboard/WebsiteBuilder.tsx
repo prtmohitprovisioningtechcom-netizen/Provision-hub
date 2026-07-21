@@ -1165,21 +1165,36 @@ export default function WebsiteBuilder() {
                     onChange={(event) =>
                       updateSection(selected.id, { subtitle: event.target.value })
                     }
-                    placeholder="A short line that supports the heading"
+                    placeholder={
+                      selected.type === 'contact'
+                        ? "We'd love to hear from you"
+                        : 'A short line that supports the heading'
+                    }
                   />
+                  {selected.type === 'contact' && (
+                    <p className="text-xs text-gray-500">
+                      Ye line Contact Us heading ke neeche live page pe dikhegi.
+                    </p>
+                  )}
                 </div>
-                {['hero', 'about', 'subscribe', 'footer'].includes(selected.type) && (
+                {['hero', 'about', 'subscribe', 'footer', 'contact'].includes(selected.type) && (
                   <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="section-content">Description</Label>
+                    <Label htmlFor="section-content">
+                      {selected.type === 'contact' ? 'Extra supporting text' : 'Description'}
+                    </Label>
                     <Textarea
                       id="section-content"
-                      rows={5}
+                      rows={selected.type === 'contact' ? 3 : 5}
                       maxLength={1000}
                       value={selected.content || ''}
                       onChange={(event) =>
                         updateSection(selected.id, { content: event.target.value })
                       }
-                      placeholder="Write polished, customer-focused copy..."
+                      placeholder={
+                        selected.type === 'contact'
+                          ? 'Optional longer text under the contact heading...'
+                          : 'Write polished, customer-focused copy...'
+                      }
                     />
                   </div>
                 )}
@@ -1618,7 +1633,7 @@ export default function WebsiteBuilder() {
                     <div>
                       <Label>Gallery images</Label>
                       <p className="mt-1 text-xs text-gray-500">
-                        Upload up to 12 portfolio images. You can select multiple files.
+                        Same card layout as Services — image, title, and description on each card.
                       </p>
                     </div>
                     <Label
