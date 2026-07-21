@@ -34,6 +34,7 @@ import {
 } from '@/types';
 import { useCompany } from '@/hooks/useCompany';
 import { CompanyLanding } from '@/components/company/CompanyLanding';
+import { SocialIcons } from '@/components/company/SocialIcons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -49,7 +50,7 @@ import { LANDING_SECTIONS } from '@/constants';
 type BuilderItem = Record<string, unknown>;
 
 const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
-  navbar: 'Customize logo, brand, nav pages/links, Call & enquire buttons.',
+  navbar: 'Customize logo, brand, nav pages/links, social icons, and CTA button.',
   hero: 'Add 3–5 cover images for an auto-sliding hero, plus headline and CTA button.',
   rating: 'Google/Facebook trust bar with score, gold stars, brand name, and tagline — all editable.',
   about: 'Tell your story with an engaging image and company introduction.',
@@ -62,7 +63,7 @@ const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
   faq: 'Answer common customer questions.',
   subscribe: 'Invite visitors to subscribe for company updates and offers.',
   contact: 'Enquiry form, contact details, and Google Map location.',
-  footer: 'Close the page with your company name and copyright.',
+  footer: 'Company info, links, and social icons (only filled links show).',
 };
 
 const IMAGE_SECTIONS: ILandingPageSection['type'][] = ['about'];
@@ -728,7 +729,7 @@ export default function WebsiteBuilder() {
         socialLinks,
       });
       if (!data.success) throw new Error(data.message || 'Update failed');
-      toast.success('Social links saved — icons show on live navbar');
+      toast.success('Social links saved — icons show on navbar & footer');
     } catch (error: unknown) {
       const apiMessage = (error as { response?: { data?: { message?: string } } })
         ?.response?.data?.message;
@@ -1742,12 +1743,16 @@ export default function WebsiteBuilder() {
                       </div>
                     </div>
                   )}
-                  <div className="space-y-3 border-t pt-5">
+                </div>
+              )}
+
+              {(selected.type === 'navbar' || selected.type === 'footer') && (
+                <div className="space-y-3 border-t pt-5">
                     <div>
                       <Label>Social links</Label>
                       <p className="mt-1 text-xs text-gray-500">
-                        Link paste karo — Facebook / Instagram / YouTube icons navbar pe automatic aa
-                        jayenge.
+                        Jo link daalo (Facebook, Instagram, YouTube, X, LinkedIn) — wahi icons
+                        navbar aur footer pe dikhenge. Khali fields hide rahengi.
                       </p>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
@@ -1779,7 +1784,6 @@ export default function WebsiteBuilder() {
                       Save social links
                     </Button>
                   </div>
-                </div>
               )}
 
               {IMAGE_SECTIONS.includes(selected.type) && (
@@ -2539,7 +2543,7 @@ export default function WebsiteBuilder() {
                     {selected.type === 'contact' &&
                       'Enquiry form sends leads to Dashboard → Leads. Set a Google Map link below for the location.'}
                     {selected.type === 'footer' &&
-                      'Your company name is used automatically in the footer.'}
+                      'Your company name is used automatically. Social icons appear when you save Facebook / Instagram / etc. links.'}
                   </p>
                 </div>
               )}
@@ -2622,6 +2626,11 @@ export default function WebsiteBuilder() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      <SocialIcons
+                        links={socialLinks}
+                        className="hidden sm:flex"
+                        iconClassName="h-3.5 w-3.5"
+                      />
                       {(previewNavbar?.items || []).slice(0, 4).map((raw, index) => {
                         const item = raw as BuilderItem;
                         if (!item.label) return null;
@@ -2654,6 +2663,7 @@ export default function WebsiteBuilder() {
                 primaryColor={primaryColor || '#0b2a5b'}
                 accentColor={primaryColor || '#0b2a5b'}
                 phone={companyPhone}
+                socialLinks={socialLinks}
                 whatsappUrl={
                   companyWhatsapp
                     ? `https://wa.me/${companyWhatsapp.replace(/\D/g, '')}`

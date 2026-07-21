@@ -50,6 +50,14 @@ function normalizeSocialUrl(url: string): string {
   return `https://${trimmed}`;
 }
 
+export function hasSocialLinks(links?: SocialLinks | null): boolean {
+  if (!links) return false;
+  return ORDER.some((key) => {
+    if (key === 'whatsapp') return false;
+    return Boolean(links[key]?.trim());
+  });
+}
+
 export function SocialIcons({
   links,
   className = '',
@@ -85,8 +93,8 @@ export function SocialIcons({
 
   const color =
     tone === 'light'
-      ? 'text-white/85 hover:text-white'
-      : 'text-gray-500 hover:text-gray-900';
+      ? 'text-white/85 hover:text-white hover:bg-white/10'
+      : 'text-gray-500 hover:text-gray-900 hover:bg-black/5';
 
   return (
     <div className={`flex items-center gap-1.5 ${className}`}>
@@ -98,7 +106,7 @@ export function SocialIcons({
           rel="noopener noreferrer"
           aria-label={item.label}
           title={item.label}
-          className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition ${color} hover:bg-black/5`}
+          className={`inline-flex h-9 w-9 items-center justify-center rounded-full transition ${color}`}
         >
           <svg viewBox="0 0 24 24" className={`${iconClassName} fill-current`} aria-hidden>
             <path d={item.path} />

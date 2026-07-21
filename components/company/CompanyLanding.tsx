@@ -6,7 +6,7 @@ import { IBlog, ILandingPageSection, IProduct, IService, SocialLinks } from '@/t
 import { ContactForm } from './ContactForm';
 import { NewsletterForm } from './NewsletterForm';
 import { FloatingContactButtons } from './FloatingContactButtons';
-import { SocialIcons } from './SocialIcons';
+import { SocialIcons, hasSocialLinks } from './SocialIcons';
 import { cn, formatCurrency } from '@/lib/utils';
 import { toGoogleMapsEmbedUrl } from '@/lib/maps';
 import { filterNavFooterItems } from '@/lib/nav-links';
@@ -1387,7 +1387,7 @@ export function CompanyLanding({
                       )}
                     </div>
 
-                    {socialLinks && (
+                    {hasSocialLinks(socialLinks) && (
                       <div className="mt-6 border-t border-gray-100 pt-5">
                         <SocialIcons links={socialLinks} />
                       </div>
@@ -1480,6 +1480,11 @@ export function CompanyLanding({
                         >
                           {section.buttonText}
                         </a>
+                      )}
+                      {hasSocialLinks(socialLinks) && (
+                        <div className={cn(section.title?.trim() || addressLine || phone || email ? 'mt-5' : '')}>
+                          <SocialIcons links={socialLinks} tone="light" />
+                        </div>
                       )}
                     </div>
                   </div>
