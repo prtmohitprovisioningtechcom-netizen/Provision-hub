@@ -25,6 +25,32 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+/* Field text/placeholder colors live here so Tailwind IntelliSense
+   does not falsely flag text-* vs placeholder:text-* conflicts. */
+.ui-field {
+  color: #111827; /* gray-900 */
+}
+
+.ui-field::placeholder {
+  color: #9ca3af; /* gray-400 */
+}
+
+.dark .ui-field {
+  color: #f3f4f6; /* gray-100 */
+}
+
+.dark .ui-field::placeholder {
+  color: #6b7280; /* gray-500 */
+}
+
+.ui-field-light {
+  color: #111827;
+}
+
+.ui-field-light::placeholder {
+  color: #9ca3af;
+}
+
 html {
   scroll-behavior: smooth;
 }

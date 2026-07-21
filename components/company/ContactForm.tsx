@@ -23,7 +23,7 @@ interface ContactFormProps {
 
 /** Force readable light-theme fields on public company pages (even if OS is dark). */
 const fieldClass =
-  'bg-white text-gray-900 border-gray-200 placeholder:text-gray-400 caret-gray-900 dark:bg-white dark:text-gray-900 dark:border-gray-200 dark:placeholder:text-gray-400';
+  'ui-field-light bg-white border-gray-200 caret-gray-900 dark:bg-white dark:border-gray-200';
 
 export function ContactForm({
   companyId,
