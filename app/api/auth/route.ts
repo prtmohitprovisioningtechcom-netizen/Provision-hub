@@ -100,6 +100,10 @@ export async function POST(request: NextRequest) {
         error.name.includes('Mongoose') ||
         message.includes('MONGODB_URI') ||
         message.includes('ECONNREFUSED') ||
+        message.includes('ETIMEDOUT') ||
+        message.includes('ENOTFOUND') ||
+        message.includes('ECONNRESET') ||
+        message.includes('EHOSTUNREACH') ||
         message.includes('Access denied for user') ||
         message.includes('Unknown database') ||
         message.includes('Table') ||
@@ -108,7 +112,7 @@ export async function POST(request: NextRequest) {
     console.error('Authentication API error:', error);
 
     return apiError(
-      isDatabaseError ? 'Database is temporarily unavailable' : message,
+      isDatabaseError ? `Database connection failed: ${message}` : message,
       isDatabaseError ? 503 : 400,
     );
   }
