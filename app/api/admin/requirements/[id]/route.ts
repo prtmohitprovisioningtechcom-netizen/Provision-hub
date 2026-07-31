@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Requirement from '@/models/Requirement';
-import { connectDB } from '@/lib/mongodb';
+import pool from '@/lib/db';
 import { requireAuth } from '@/server/middleware/auth';
+import { RowDataPacket } from 'mysql2';
 
 export async function PUT(
   request: NextRequest,
@@ -11,17 +11,24 @@ export async function PUT(
     const auth = await requireAuth(request, ['super_admin']);
     if (auth instanceof Response) return auth;
     
-    await connectDB();
     const { id } = await context.params;
     const body = await request.json();
 
-    const requirement = await Requirement.findByIdAndUpdate(id, body, { new: true });
-    
-    if (!requirement) {
-      return NextResponse.json({ success: false, error: 'Requirement not found' }, { status: 404 });
+    const keys = Object.keys(body).filter(k => ['status'].includes(k));
+    if (keys.length > 0) {
+      const setClause = keys.map(k => `${k} = ?`).join(', ');
+      const sqlParams: any[] = keys.map(k => body[k]);
+      sqlParams.push(id);
+      
+      const [result] = await pool.execute<any>(`UPDATE requirements SET ${setClause} WHERE id = ?`, sqlParams);
+      if (result.affectedRows === 0) {
+        return NextResponse.json({ success: false, error: 'Requirement not found' }, { status: 404 });
+      }
     }
+    
+    const [requirements] = await pool.execute<RowDataPacket[]>('SELECT id as _id, customerName, email, phone, title, description, budget, status, createdAt, updatedAt FROM requirements WHERE id = ?', [id]);
 
-    return NextResponse.json({ success: true, data: requirement });
+    return NextResponse.json({ success: true, data: requirements[0] });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message },
@@ -38,12 +45,10 @@ export async function DELETE(
     const auth = await requireAuth(request, ['super_admin']);
     if (auth instanceof Response) return auth;
     
-    await connectDB();
     const { id } = await context.params;
     
-    const requirement = await Requirement.findByIdAndDelete(id);
-    
-    if (!requirement) {
+    const [result] = await pool.execute<any>('DELETE FROM requirements WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
       return NextResponse.json({ success: false, error: 'Requirement not found' }, { status: 404 });
     }
 

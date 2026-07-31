@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb';
 import { toNodeBuffer } from '@/lib/images';
-import Media from '@/models/Media';
-import mongoose from 'mongoose';
+import pool from '@/lib/db';
+import { RowDataPacket } from 'mysql2';
 
 export const runtime = 'nodejs';
 
@@ -13,17 +12,16 @@ interface RouteContext {
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
-    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    if (!id) {
       return new NextResponse('Not found', { status: 404 });
     }
 
-    await connectDB();
-    // Avoid lean() so Buffer fields stay as Node Buffers (lean often returns BSON Binary).
-    const media = await Media.findById(id).select('data mimeType');
-    if (!media?.data) {
+    const [mediaList] = await pool.execute<RowDataPacket[]>('SELECT data, mimeType FROM media WHERE id = ?', [id]);
+    if (mediaList.length === 0 || !mediaList[0].data) {
       return new NextResponse('Not found', { status: 404 });
     }
-
+    
+    const media = mediaList[0];
     const body = toNodeBuffer(media.data);
 
     return new NextResponse(new Uint8Array(body), {

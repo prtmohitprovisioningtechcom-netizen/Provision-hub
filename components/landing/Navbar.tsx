@@ -77,7 +77,7 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
     { href: '/post-requirement', label: 'Post Requirement', icon: ClipboardPlus },
     { href: '/search', label: 'Company Directory', icon: Search },
     { href: '/search?verified=true', label: 'Verified Businesses', icon: BadgeCheck },
-    { href: accountLink, label: accountLabel, icon: Settings },
+    ...(accountLabel !== 'Browse Companies' ? [{ href: accountLink, label: accountLabel, icon: Settings }] : []),
     { href: '/login', label: 'Sign in', icon: Shield },
     { href: '/register/company', label: 'Get Started', icon: ClipboardPlus },
     { href: '/admin/login', label: 'Admin Sign in', icon: Shield }

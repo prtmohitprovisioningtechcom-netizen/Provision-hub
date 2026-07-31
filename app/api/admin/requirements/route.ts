@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Requirement from '@/models/Requirement';
-import { connectDB } from '@/lib/mongodb';
+import pool from '@/lib/db';
 import { requireAuth } from '@/server/middleware/auth';
+import { RowDataPacket } from 'mysql2';
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await requireAuth(request, ['super_admin']);
     if (auth instanceof Response) return auth;
     
-    await connectDB();
-    const requirements = await Requirement.find().sort({ createdAt: -1 }).lean();
+    const [requirements] = await pool.execute<RowDataPacket[]>('SELECT id as _id, customerName, email, phone, title, description, budget, status, createdAt, updatedAt FROM requirements ORDER BY createdAt DESC');
     
     return NextResponse.json({ success: true, data: requirements });
   } catch (error: any) {

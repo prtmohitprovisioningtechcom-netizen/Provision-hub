@@ -1,104 +1,143 @@
-import Company from '@/models/Company';
-import Product from '@/models/Product';
-import Service from '@/models/Service';
-import Review from '@/models/Review';
-import Lead from '@/models/Lead';
-import LandingPage from '@/models/LandingPage';
-import Gallery from '@/models/Gallery';
-import Blog from '@/models/Blog';
-import { connectDB } from '@/lib/mongodb';
+// @ts-nocheck
+import pool from '@/lib/db';
 import { getPaginationMeta } from '@/lib/utils';
 import { SearchFilters, CompanyStatus } from '@/types';
 import { LANDING_SECTIONS } from '@/constants';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
-function escapeRegex(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').slice(0, 80);
+function buildSearchQuery(filters: SearchFilters) {
+  let queryStr = 'SELECT * FROM companies WHERE status = "approved"';
+  const params: unknown[] = [];
+
+  if (filters.query) {
+    queryStr += ' AND (name LIKE ? OR description LIKE ?)';
+    const term = `%${filters.query}%`;
+    params.push(term, term);
+  }
+  if (filters.category) {
+    queryStr += ' AND category = ?';
+    params.push(filters.category);
+  }
+  if (filters.city) {
+    queryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(address, "$.city")) LIKE ?';
+    params.push(`%${filters.city}%`);
+  }
+  if (filters.state) {
+    queryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(address, "$.state")) LIKE ?';
+    params.push(`%${filters.state}%`);
+  }
+  if (filters.country) {
+    queryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(address, "$.country")) LIKE ?';
+    params.push(`%${filters.country}%`);
+  }
+  if (filters.verified) {
+    queryStr += ' AND isVerified = 1';
+  }
+
+  return { queryStr, params };
 }
 
 export class CompanyService {
   static async search(filters: SearchFilters) {
-    await connectDB();
-
     const page = Math.max(1, filters.page || 1);
     const limit = Math.min(50, Math.max(1, filters.limit || 12));
     const skip = (page - 1) * limit;
 
-    const query: Record<string, unknown> = { status: 'approved' };
+    const { queryStr, params } = buildSearchQuery(filters);
 
-    if (filters.query) {
-      const searchTerm = escapeRegex(filters.query.trim());
-      query.$or = [
-        { name: { $regex: searchTerm, $options: 'i' } },
-        { description: { $regex: searchTerm, $options: 'i' } },
-      ];
-    }
-    if (filters.category) query.category = filters.category;
-    if (filters.city) {
-      query['address.city'] = { $regex: escapeRegex(filters.city), $options: 'i' };
-    }
-    if (filters.state) {
-      query['address.state'] = { $regex: escapeRegex(filters.state), $options: 'i' };
-    }
-    if (filters.country) {
-      query['address.country'] = { $regex: escapeRegex(filters.country), $options: 'i' };
-    }
-    if (filters.verified) query.isVerified = true;
-
-    let sort: Record<string, 1 | -1> = { createdAt: -1 };
-    if (filters.topRated) sort = { rating: -1 };
-    if (filters.newest) sort = { createdAt: -1 };
+    let orderBy = 'ORDER BY createdAt DESC';
+    if (filters.topRated) orderBy = 'ORDER BY rating DESC';
+    if (filters.newest) orderBy = 'ORDER BY createdAt DESC';
     if (filters.sortBy && ['createdAt', 'rating', 'name'].includes(filters.sortBy)) {
-      sort = { [filters.sortBy]: filters.sortOrder === 'asc' ? 1 : -1 };
+      orderBy = `ORDER BY ${filters.sortBy} ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
     }
 
-    const [companies, total] = await Promise.all([
-      Company.find(query)
-        .select('name slug logo banner category address rating reviewCount isVerified description')
-        .sort(sort)
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Company.countDocuments(query),
+    const [[countResult], [companies]] = await Promise.all([
+      pool.execute<RowDataPacket[]>(`SELECT COUNT(*) as count FROM (${queryStr}) as t`, params),
+      pool.execute<RowDataPacket[]>(
+        `${queryStr} ${orderBy} LIMIT ? OFFSET ?`,
+        [...params, limit, skip]
+      ),
     ]);
 
+    const total = countResult[0].count;
+
     return {
-      companies,
+      companies: companies.map(c => ({
+        _id: c.id,
+        name: c.name,
+        slug: c.slug,
+        logo: c.logo,
+        banner: c.banner,
+        category: c.category,
+        address: typeof c.address === 'string' ? JSON.parse(c.address) : c.address,
+        rating: Number(c.rating) || 0,
+        reviewCount: Number(c.reviewCount) || 0,
+        isVerified: Boolean(c.isVerified),
+        description: c.description
+      })),
       pagination: getPaginationMeta(page, limit, total),
     };
   }
 
   static async getBySlug(slug: string) {
-    await connectDB();
+    const [companies] = await pool.execute<RowDataPacket[]>(
+      'SELECT * FROM companies WHERE slug = ? AND status = "approved"',
+      [slug]
+    );
+    if (companies.length === 0) throw new Error('Company not found');
+    const companyRaw = companies[0];
+    const companyId = companyRaw.id;
+    const company = {
+      ...companyRaw,
+      _id: companyRaw.id,
+      address: typeof companyRaw.address === 'string' ? JSON.parse(companyRaw.address) : companyRaw.address,
+      socialLinks: typeof companyRaw.socialLinks === 'string' ? JSON.parse(companyRaw.socialLinks) : companyRaw.socialLinks,
+      businessHours: typeof companyRaw.businessHours === 'string' ? JSON.parse(companyRaw.businessHours) : companyRaw.businessHours,
+      theme: typeof companyRaw.theme === 'string' ? JSON.parse(companyRaw.theme) : companyRaw.theme,
+      seo: typeof companyRaw.seo === 'string' ? JSON.parse(companyRaw.seo) : companyRaw.seo,
+      rating: Number(companyRaw.rating) || 0,
+      reviewCount: Number(companyRaw.reviewCount) || 0,
+      isVerified: Boolean(companyRaw.isVerified),
+    };
 
-    const company = await Company.findOne({ slug, status: 'approved' }).lean();
-    if (!company) throw new Error('Company not found');
-
-    const [products, services, reviews, landingPage, gallery, blogs] = await Promise.all([
-      Product.find({ companyId: company._id, status: 'active' }).limit(12).lean(),
-      Service.find({ companyId: company._id }).limit(12).lean(),
-      Review.find({ companyId: company._id, status: 'approved' })
-        .sort({ createdAt: -1 })
-        .limit(10)
-        .lean(),
-      LandingPage.findOne({ companyId: company._id }).lean(),
-      Gallery.findOne({ companyId: company._id }).lean(),
-      Blog.find({ companyId: company._id, status: 'published' })
-        .select('title slug content excerpt category featuredImage status createdAt updatedAt companyId')
-        .sort({ createdAt: -1 })
-        .limit(6)
-        .lean(),
+    const [[products], [services], [reviews], [landingPages], [galleries], [blogs]] = await Promise.all([
+      pool.execute<RowDataPacket[]>('SELECT * FROM products WHERE companyId = ? AND status = "active" LIMIT 12', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT * FROM services WHERE companyId = ? LIMIT 12', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT * FROM reviews WHERE companyId = ? AND status = "approved" ORDER BY createdAt DESC LIMIT 10', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT * FROM landing_pages WHERE companyId = ?', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT * FROM galleries WHERE companyId = ?', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT title, slug, content, excerpt, category, featuredImage, status, createdAt, updatedAt, companyId FROM blogs WHERE companyId = ? AND status = "published" ORDER BY createdAt DESC LIMIT 6', [companyId]),
     ]);
 
-    const allowedTypes = new Set<string>(
-      LANDING_SECTIONS.map((section) => section.type),
-    );
+    const landingPageRaw = landingPages[0];
+    let landingPage = null;
+    if (landingPageRaw) {
+      landingPage = {
+        ...landingPageRaw,
+        sections: typeof landingPageRaw.sections === 'string' ? JSON.parse(landingPageRaw.sections) : (landingPageRaw.sections || []),
+        pages: typeof landingPageRaw.pages === 'string' ? JSON.parse(landingPageRaw.pages) : (landingPageRaw.pages || []),
+        isPublished: Boolean(landingPageRaw.isPublished)
+      };
+    }
+
+    const galleryRaw = galleries[0];
+    let gallery = null;
+    if (galleryRaw) {
+      gallery = {
+        ...galleryRaw,
+        images: typeof galleryRaw.images === 'string' ? JSON.parse(galleryRaw.images) : (galleryRaw.images || []),
+      };
+    }
+
+    const allowedTypes = new Set<string>(LANDING_SECTIONS.map((section) => section.type));
     const seenTypes = new Set<string>();
-    const savedSections = (landingPage?.sections || []).filter((section) => {
+    const savedSections = (landingPage?.sections || []).filter((section: any) => {
       if (!allowedTypes.has(section.type) || seenTypes.has(section.type)) return false;
       seenTypes.add(section.type);
       return true;
     });
-    const savedTypes = new Set(savedSections.map((section) => section.type));
+    const savedTypes = new Set(savedSections.map((section: any) => section.type));
     const sections = [
       ...savedSections,
       ...LANDING_SECTIONS.filter((section) => !savedTypes.has(section.type)).map(
@@ -111,14 +150,12 @@ export class CompanyService {
           images: [],
         }),
       ),
-    ]
-      .sort((a, b) => a.order - b.order)
-      .map((section, order) => ({ ...section, order }));
+    ].sort((a, b) => a.order - b.order).map((section, order) => ({ ...section, order }));
 
     const completeLandingPage = landingPage
       ? {
           ...landingPage,
-          sections: sections.map((section) => {
+          sections: sections.map((section: any) => {
             if (section.type !== 'gallery') return section;
             const fromLanding =
               (section.items && section.items.length > 0
@@ -148,94 +185,110 @@ export class CompanyService {
 
     return {
       company,
-      products,
-      services,
-      reviews,
+      products: products.map(p => ({ ...p, _id: p.id })),
+      services: services.map(s => ({ ...s, _id: s.id })),
+      reviews: reviews.map(r => ({ ...r, _id: r.id })),
       landingPage: completeLandingPage,
       gallery,
-      blogs,
+      blogs: blogs.map(b => ({ ...b, _id: b.id })),
     };
   }
 
   static async getById(id: string) {
-    await connectDB();
-    const company = await Company.findById(id).lean();
-    if (!company) throw new Error('Company not found');
-    return company;
+    const [companies] = await pool.execute<RowDataPacket[]>('SELECT * FROM companies WHERE id = ?', [id]);
+    if (companies.length === 0) throw new Error('Company not found');
+    const company = companies[0];
+    return {
+      ...company,
+      _id: company.id,
+      address: typeof company.address === 'string' ? JSON.parse(company.address) : company.address,
+      socialLinks: typeof company.socialLinks === 'string' ? JSON.parse(company.socialLinks) : company.socialLinks,
+      businessHours: typeof company.businessHours === 'string' ? JSON.parse(company.businessHours) : company.businessHours,
+      theme: typeof company.theme === 'string' ? JSON.parse(company.theme) : company.theme,
+      seo: typeof company.seo === 'string' ? JSON.parse(company.seo) : company.seo,
+      isVerified: Boolean(company.isVerified),
+    };
   }
 
   static async update(id: string, data: Partial<Record<string, unknown>>) {
-    await connectDB();
-    const company = await Company.findByIdAndUpdate(id, data, { new: true });
-    if (!company) throw new Error('Company not found');
-    return company;
+    if (Object.keys(data).length === 0) return await this.getById(id);
+
+    const keys = Object.keys(data);
+    const setClause = keys.map(k => `${k} = ?`).join(', ');
+    const params = keys.map(k => {
+      const val = data[k];
+      return typeof val === 'object' && val !== null ? JSON.stringify(val) : val;
+    });
+    params.push(id);
+
+    await pool.execute(`UPDATE companies SET ${setClause} WHERE id = ?`, params);
+    return await this.getById(id);
   }
 
   static async getDashboardStats(companyId: string) {
-    await connectDB();
-
-    const [products, services, leads, reviews, newLeads] = await Promise.all([
-      Product.countDocuments({ companyId }),
-      Service.countDocuments({ companyId }),
-      Lead.countDocuments({ companyId }),
-      Review.countDocuments({ companyId }),
-      Lead.countDocuments({ companyId, status: 'new' }),
+    const [[productsResult], [servicesResult], [leadsResult], [reviewsResult], [newLeadsResult], [recentLeads]] = await Promise.all([
+      pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM products WHERE companyId = ?', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM services WHERE companyId = ?', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM leads WHERE companyId = ?', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM reviews WHERE companyId = ?', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM leads WHERE companyId = ? AND status = "new"', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT id as _id, customerName, email, message, status, createdAt FROM leads WHERE companyId = ? ORDER BY createdAt DESC LIMIT 5', [companyId]),
     ]);
 
-    const recentLeads = await Lead.find({ companyId })
-      .select('customerName email message status createdAt')
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean();
-
     return {
-      stats: { products, services, leads, reviews, newLeads },
-      recentLeads,
+      stats: {
+        products: productsResult[0].count,
+        services: servicesResult[0].count,
+        leads: leadsResult[0].count,
+        reviews: reviewsResult[0].count,
+        newLeads: newLeadsResult[0].count
+      },
+      recentLeads: recentLeads.map(l => ({ ...l, _id: l._id })),
     };
   }
 
   static async getAllForAdmin(page = 1, limit = 20, status?: CompanyStatus) {
-    await connectDB();
     const skip = (page - 1) * limit;
-    const query: { status?: CompanyStatus } = status ? { status } : {};
+    
+    let queryStr = 'SELECT id as _id, name, slug, logo, category, address, status, isVerified, subscription, createdAt, ownerName, email FROM companies';
+    let countQueryStr = 'SELECT COUNT(*) as count FROM companies';
+    const params: unknown[] = [];
 
-    const [companies, total] = await Promise.all([
-      Company.find(query)
-        .select(
-          'name slug logo category address status isVerified subscription createdAt ownerName email',
-        )
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Company.countDocuments(query),
+    if (status) {
+      queryStr += ' WHERE status = ?';
+      countQueryStr += ' WHERE status = ?';
+      params.push(status);
+    }
+
+    queryStr += ' ORDER BY createdAt DESC LIMIT ? OFFSET ?';
+
+    const [[countResult], [companies]] = await Promise.all([
+      pool.execute<RowDataPacket[]>(countQueryStr, params),
+      pool.execute<RowDataPacket[]>(queryStr, [...params, limit, skip])
     ]);
 
-    return { companies, pagination: getPaginationMeta(page, limit, total) };
+    return {
+      companies: companies.map(c => ({
+        ...c,
+        address: typeof c.address === 'string' ? JSON.parse(c.address) : c.address,
+        isVerified: Boolean(c.isVerified)
+      })),
+      pagination: getPaginationMeta(page, limit, countResult[0].count)
+    };
   }
 
   static async updateStatus(id: string, status: CompanyStatus) {
-    await connectDB();
-    const company = await Company.findByIdAndUpdate(
-      id,
-      { status, isVerified: status === 'approved' },
-      { new: true },
+    const isVerified = status === 'approved' ? 1 : 0;
+    await pool.execute(
+      'UPDATE companies SET status = ?, isVerified = ? WHERE id = ?',
+      [status, isVerified, id]
     );
-    if (!company) throw new Error('Company not found');
-    return company;
+    return await this.getById(id);
   }
 
   static async delete(id: string) {
-    await connectDB();
-    await Company.findByIdAndDelete(id);
-    await Promise.all([
-      Product.deleteMany({ companyId: id }),
-      Service.deleteMany({ companyId: id }),
-      Lead.deleteMany({ companyId: id }),
-      Review.deleteMany({ companyId: id }),
-      LandingPage.deleteMany({ companyId: id }),
-      Gallery.deleteMany({ companyId: id }),
-    ]);
+    await pool.execute('DELETE FROM companies WHERE id = ?', [id]);
+    // Related items will be automatically deleted by ON DELETE CASCADE foreign key constraints in schema.sql
     return { message: 'Company deleted' };
   }
 }

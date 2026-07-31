@@ -28,7 +28,7 @@ body {
 /* Field text/placeholder colors live here so Tailwind IntelliSense
    does not falsely flag text-* vs placeholder:text-* conflicts. */
 .ui-field {
-  color: #111827; /* gray-900 */
+  color: #000000 !important; /* gray-900 */
 }
 
 .ui-field::placeholder {
@@ -36,7 +36,7 @@ body {
 }
 
 .dark .ui-field {
-  color: #f3f4f6; /* gray-100 */
+  color: #ffffff !important; /* gray-100 */
 }
 
 .dark .ui-field::placeholder {
@@ -44,7 +44,7 @@ body {
 }
 
 .ui-field-light {
-  color: #111827;
+  color: #000000 !important;
 }
 
 .ui-field-light::placeholder {

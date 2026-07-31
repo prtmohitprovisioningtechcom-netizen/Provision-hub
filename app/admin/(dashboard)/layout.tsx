@@ -43,8 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     await logout();
-    router.replace('/admin/login');
-    router.refresh();
+    window.location.href = '/admin/login';
   };
 
   return (

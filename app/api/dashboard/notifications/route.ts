@@ -1,20 +1,14 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/server/middleware/auth';
 import { apiSuccess, apiError, parseBody } from '@/server/utils/api-response';
-import { connectDB } from '@/lib/mongodb';
-import Notification from '@/models/Notification';
+import { NotificationService } from '@/server/services/notification.service';
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await requireAuth(request);
     if (auth instanceof Response) return auth;
 
-    await connectDB();
-    const notifications = await Notification.find({ userId: auth.userId })
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .lean();
-    
+    const { notifications } = await NotificationService.getByUser(auth.userId, 1, 50);
     return apiSuccess(notifications);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to get notifications';
@@ -28,20 +22,11 @@ export async function PATCH(request: NextRequest) {
     if (auth instanceof Response) return auth;
 
     const body = (await parseBody(request)) as { id?: string };
-    await connectDB();
-
+    
     if (body.id) {
-      // Mark specific notification as read
-      await Notification.findOneAndUpdate(
-        { _id: body.id, userId: auth.userId },
-        { isRead: true }
-      );
+      await NotificationService.markAsRead(body.id);
     } else {
-      // Mark all as read
-      await Notification.updateMany(
-        { userId: auth.userId, isRead: false },
-        { isRead: true }
-      );
+      await NotificationService.markAllAsRead(auth.userId);
     }
 
     return apiSuccess({ message: 'Notifications updated' });

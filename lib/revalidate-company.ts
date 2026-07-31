@@ -1,12 +1,11 @@
 import 'server-only';
 import { revalidatePath } from 'next/cache';
-import { connectDB } from '@/lib/mongodb';
-import Company from '@/models/Company';
+import pool from '@/lib/db';
+import { RowDataPacket } from 'mysql2';
 
 export async function revalidateCompanyPage(companyId: string) {
-  await connectDB();
-  const company = await Company.findById(companyId).select('slug').lean();
-  if (company?.slug) {
-    revalidatePath(`/${company.slug}`);
+  const [companies] = await pool.execute<RowDataPacket[]>('SELECT slug FROM companies WHERE id = ?', [companyId]);
+  if (companies.length > 0 && companies[0].slug) {
+    revalidatePath(`/${companies[0].slug}`);
   }
 }

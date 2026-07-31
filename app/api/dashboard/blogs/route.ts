@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/server/middleware/auth';
 import { apiSuccess, apiError, parseBody } from '@/server/utils/api-response';
-import { connectDB } from '@/lib/mongodb';
-import Blog from '@/models/Blog';
+import { BlogService } from '@/server/services/blog.service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,8 +9,7 @@ export async function GET(request: NextRequest) {
     if (auth instanceof Response) return auth;
     if (!auth.companyId) return apiError('No company associated', 400);
 
-    await connectDB();
-    const blogs = await Blog.find({ companyId: auth.companyId }).sort({ createdAt: -1 }).lean();
+    const { blogs } = await BlogService.getByCompany(auth.companyId, 1, 100);
     
     return apiSuccess(blogs);
   } catch (error) {
@@ -32,18 +30,7 @@ export async function POST(request: NextRequest) {
       return apiError('Missing required fields', 400);
     }
 
-    const slug = body.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
-
-    await connectDB();
-    const blog = await Blog.create({
-      companyId: auth.companyId,
-      author: auth.userId,
-      title: body.title,
-      slug,
-      content: body.content,
-      category: body.category,
-      status: body.status || 'draft'
-    });
+    const blog = await BlogService.create(auth.companyId, auth.userId, body as any);
 
     return apiSuccess(blog);
   } catch (error) {

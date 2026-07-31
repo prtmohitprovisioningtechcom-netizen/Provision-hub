@@ -1,10 +1,8 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/server/middleware/auth';
 import { apiSuccess, apiError } from '@/server/utils/api-response';
-import { connectDB } from '@/lib/mongodb';
-import Blog from '@/models/Blog';
 import { blogSchema } from '@/lib/validators';
-import { generateSlug } from '@/lib/utils';
+import { BlogService } from '@/server/services/blog.service';
 
 export async function PUT(
   request: NextRequest,
@@ -17,13 +15,9 @@ export async function PUT(
 
     const { id } = await params;
     const data = blogSchema.parse(await request.json());
-    await connectDB();
-    const blog = await Blog.findOneAndUpdate(
-      { _id: id, companyId: auth.companyId },
-      { ...data, slug: `${generateSlug(data.title)}-${Date.now()}` },
-      { new: true, runValidators: true },
-    );
-    if (!blog) return apiError('Blog not found or unauthorized', 404);
+    
+    const blog = await BlogService.update(id, data);
+    
     return apiSuccess(blog, 'Blog updated');
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update blog';
@@ -42,16 +36,7 @@ export async function DELETE(
     const { id } = await params;
     if (!id) return apiError('Blog ID is required', 400);
 
-    await connectDB();
-    
-    const blog = await Blog.findOneAndDelete({ 
-      _id: id, 
-      companyId: auth.companyId 
-    });
-
-    if (!blog) {
-      return apiError('Blog not found or unauthorized', 404);
-    }
+    await BlogService.delete(id);
 
     return apiSuccess({ message: 'Blog deleted successfully' });
   } catch (error) {

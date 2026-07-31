@@ -4,6 +4,7 @@ import { loginSchema, registerSchema, companyRegisterSchema, forgotPasswordSchem
 import { apiSuccess, apiError, parseBody } from '@/server/utils/api-response';
 import { COOKIE_OPTIONS, AUTH_COOKIE } from '@/lib/auth-cookie';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { cookies } from 'next/headers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -77,17 +78,34 @@ export async function POST(request: NextRequest) {
     }
 
     return apiError('Invalid action');
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Authentication failed';
+  } catch (error: any) {
+    let message = error instanceof Error ? error.message : 'Authentication failed';
+    
+    // Handle AggregateError from mysql2
+    if (error?.name === 'AggregateError' && error.errors) {
+      message = error.errors.map((e: any) => e.message).join(', ');
+    }
+    
+    if (error?.name === 'ZodError') {
+      try {
+        const issues = JSON.parse(error.message);
+        message = issues[0]?.message || 'Validation failed';
+      } catch {
+        message = 'Validation failed';
+      }
+    }
     const isDatabaseError =
       error instanceof Error &&
       (error.name.includes('Mongo') ||
         error.name.includes('Mongoose') ||
-        error.message.includes('MONGODB_URI'));
+        message.includes('MONGODB_URI') ||
+        message.includes('ECONNREFUSED') ||
+        message.includes('Access denied for user') ||
+        message.includes('Unknown database') ||
+        message.includes('Table') ||
+        message.includes('ER_'));
 
-    if (isDatabaseError || (message !== 'Invalid email or password' && !message.includes('Validation'))) {
-      console.error('Authentication API error:', error);
-    }
+    console.error('Authentication API error:', error);
 
     return apiError(
       isDatabaseError ? 'Database is temporarily unavailable' : message,
@@ -97,11 +115,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE() {
-  const response = apiSuccess({ message: 'Logged out' });
-  response.cookies.set(AUTH_COOKIE, '', {
-    ...COOKIE_OPTIONS,
-    maxAge: 0,
-    expires: new Date(0),
-  });
-  return response;
+  const cookieStore = await cookies();
+  cookieStore.delete(AUTH_COOKIE);
+  return apiSuccess({ message: 'Logged out' });
 }

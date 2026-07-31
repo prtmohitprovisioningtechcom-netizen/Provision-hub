@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
 import { contactSchema } from '@/lib/validators';
-import { connectDB } from '@/lib/mongodb';
+import pool from '@/lib/db';
 import { getClientIp, rateLimit } from '@/lib/rate-limit';
-import ContactMessage from '@/models/ContactMessage';
 import { apiError, apiSuccess } from '@/server/utils/api-response';
+import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,8 +14,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = contactSchema.parse(await request.json());
-    await connectDB();
-    await ContactMessage.create(body);
+    
+    const id = crypto.randomUUID();
+    await pool.execute(
+      'INSERT INTO contact_messages (id, name, email, subject, message, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, body.name, body.email, body.subject, body.message, 'new']
+    );
+
     return apiSuccess(null, 'Message sent successfully', 201);
   } catch (error) {
     const message =

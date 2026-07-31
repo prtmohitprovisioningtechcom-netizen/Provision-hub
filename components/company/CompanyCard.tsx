@@ -88,8 +88,8 @@ export function CompanyCard({ company, index = 0 }: CompanyCardProps) {
 
             <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
               <span className="flex items-center gap-1">
-                <Star className={cn('h-4 w-4', company.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300')} />
-                {company.rating.toFixed(1)} ({company.reviewCount})
+                <Star className={cn('h-4 w-4', Number(company.rating) > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300')} />
+                {Number(company.rating || 0).toFixed(1)} ({company.reviewCount ?? 0})
               </span>
               <span className="flex items-center gap-1 truncate">
                 <MapPin className="h-4 w-4 shrink-0" />

@@ -1,7 +1,9 @@
 import { NextRequest } from 'next/server';
+import pool from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { AuthPayload, UserRole } from '@/types';
 import { apiError } from '@/server/utils/api-response';
+import { RowDataPacket } from 'mysql2';
 
 export function getTokenFromRequest(request: NextRequest): string | null {
   const authHeader = request.headers.get('authorization');
@@ -9,6 +11,33 @@ export function getTokenFromRequest(request: NextRequest): string | null {
     return authHeader.slice(7);
   }
   return request.cookies.get('auth-token')?.value || null;
+}
+
+/** Resolve company id from users.companyId or companies.ownerId, and backfill when needed. */
+export async function resolveCompanyIdForUser(
+  userId: string,
+  tokenCompanyId?: string | null,
+): Promise<string | undefined> {
+  if (tokenCompanyId) return tokenCompanyId;
+
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT COALESCE(u.companyId, c.id) AS companyId
+     FROM users u
+     LEFT JOIN companies c ON c.ownerId = u.id
+     WHERE u.id = ?
+     LIMIT 1`,
+    [userId],
+  );
+
+  const companyId = rows[0]?.companyId as string | null | undefined;
+  if (!companyId) return undefined;
+
+  await pool.execute(
+    'UPDATE users SET companyId = ? WHERE id = ? AND (companyId IS NULL OR companyId = "")',
+    [companyId, userId],
+  );
+
+  return companyId;
 }
 
 export async function authenticateRequest(request: NextRequest): Promise<AuthPayload | null> {
@@ -28,5 +57,13 @@ export async function requireAuth(
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return apiError('Forbidden', 403);
   }
+
+  if (!user.companyId && user.role === 'company_admin') {
+    const companyId = await resolveCompanyIdForUser(user.userId, user.companyId);
+    if (companyId) {
+      return { ...user, companyId };
+    }
+  }
+
   return user;
 }

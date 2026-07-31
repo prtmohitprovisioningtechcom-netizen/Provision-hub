@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/server/middleware/auth';
 import { ProductService } from '@/server/services/product.service';

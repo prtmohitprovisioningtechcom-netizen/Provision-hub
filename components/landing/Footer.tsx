@@ -41,8 +41,7 @@ export function Footer({ config }: { config?: any }) {
 
   const handleLogout = async () => {
     await logout();
-    router.replace('/');
-    router.refresh();
+    window.location.href = '/';
   };
 
   const footerSections = [

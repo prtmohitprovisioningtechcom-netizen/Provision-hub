@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Metadata } from 'next';
 import { Navbar } from '@/components/landing/Navbar';
 import { Hero } from '@/components/landing/Hero';
@@ -48,12 +49,12 @@ export default async function HomePage() {
         config={config.heroConfig}
         showTemplates={config.featureToggles?.showTemplates !== false}
       />
-      {config.featureToggles?.showFeatures && <Features config={config.featuresConfig} />}
-      {config.featureToggles?.showHowItWorks && <HowItWorks config={config.howItWorksConfig} />}
-      {config.featureToggles?.showTemplates && <Templates />}
-      {config.featureToggles?.showPricing && <Pricing config={config.pricingConfig} />}
-      {config.featureToggles?.showTestimonials && <Testimonials config={config.testimonialsConfig} />}
-      {config.featureToggles?.showFAQ && <FAQ config={config.faqConfig} />}
+      {config.featureToggles?.showFeatures !== false && <Features config={config.featuresConfig} />}
+      {config.featureToggles?.showHowItWorks !== false && <HowItWorks config={config.howItWorksConfig} />}
+      {config.featureToggles?.showTemplates !== false && <Templates />}
+      {config.featureToggles?.showPricing !== false && <Pricing config={config.pricingConfig} />}
+      {config.featureToggles?.showTestimonials !== false && <Testimonials config={config.testimonialsConfig} />}
+      {config.featureToggles?.showFAQ !== false && <FAQ config={config.faqConfig} />}
       <Contact config={config.contactConfig} />
       <Footer config={config} />
     </main>

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Category from '@/models/Category';
-import { connectDB } from '@/lib/mongodb';
+import pool from '@/lib/db';
 import { requireAuth } from '@/server/middleware/auth';
+import { RowDataPacket } from 'mysql2';
+import crypto from 'crypto';
 
 function createSlug(value: string) {
   return value
@@ -15,11 +16,12 @@ export async function GET(request: NextRequest) {
   try {
     const auth = await requireAuth(request, ['super_admin']);
     if (auth instanceof Response) return auth;
-    await connectDB();
-    const categories = await Category.find({
-      $or: [{ type: 'business' }, { type: { $exists: false } }]
-    }).sort({ createdAt: -1 }).lean();
-    return NextResponse.json({ success: true, data: categories });
+    
+    const [categories] = await pool.execute<RowDataPacket[]>(
+      'SELECT id as _id, name, slug, description, icon, isActive, type, createdAt, updatedAt FROM categories WHERE type = "business" OR type IS NULL ORDER BY createdAt DESC'
+    );
+
+    return NextResponse.json({ success: true, data: categories.map(c => ({ ...c, isActive: Boolean(c.isActive) })) });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: error.message === 'Unauthorized' ? 401 : 500 });
   }
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await requireAuth(request, ['super_admin']);
     if (auth instanceof Response) return auth;
-    await connectDB();
+
     const body = await request.json();
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     if (!name) {
@@ -44,31 +46,34 @@ export async function POST(request: NextRequest) {
         ? createSlug(body.slug)
         : createSlug(name);
 
-    const existing = await Category.findOne({
-      type: 'business',
-      $or: [{ name: { $regex: `^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } }, { slug }],
-    }).lean();
+    const [existing] = await pool.execute<RowDataPacket[]>(
+      'SELECT id as _id, name, slug, description, icon, isActive, type, createdAt, updatedAt FROM categories WHERE (name = ? OR slug = ?) AND type = "business"',
+      [name, slug]
+    );
 
-    if (existing) {
+    if (existing.length > 0) {
       return NextResponse.json({
         success: true,
-        data: existing,
+        data: { ...existing[0], isActive: Boolean(existing[0].isActive) },
         alreadyExists: true,
         message: 'Category already exists',
       });
     }
 
-    const category = await Category.create({
-      name,
-      slug,
-      description: typeof body.description === 'string' ? body.description.trim() : '',
-      icon: typeof body.icon === 'string' ? body.icon.trim() : '',
-      isActive: body.isActive !== false,
-      type: 'business',
-    });
-    return NextResponse.json({ success: true, data: category });
+    const id = crypto.randomUUID();
+    const description = typeof body.description === 'string' ? body.description.trim() : '';
+    const icon = typeof body.icon === 'string' ? body.icon.trim() : '';
+    const isActive = body.isActive !== false ? 1 : 0;
+
+    await pool.execute(
+      'INSERT INTO categories (id, name, slug, description, icon, isActive, type) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, name, slug, description, icon, isActive, 'business']
+    );
+
+    const [created] = await pool.execute<RowDataPacket[]>('SELECT id as _id, name, slug, description, icon, isActive, type, createdAt, updatedAt FROM categories WHERE id = ?', [id]);
+    return NextResponse.json({ success: true, data: { ...created[0], isActive: Boolean(created[0].isActive) } });
   } catch (error: any) {
-    if (error.code === 11000) {
+    if (error.code === 'ER_DUP_ENTRY') {
       return NextResponse.json(
         {
           success: false,

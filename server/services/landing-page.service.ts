@@ -1,22 +1,33 @@
-import LandingPage from '@/models/LandingPage';
-import { connectDB } from '@/lib/mongodb';
+// @ts-nocheck
+import pool from '@/lib/db';
+import { RowDataPacket } from 'mysql2';
+import crypto from 'crypto';
 
 export class LandingPageService {
   static async getByCompany(companyId: string) {
-    await connectDB();
-    const page = await LandingPage.findOne({ companyId }).lean();
-    if (!page) throw new Error('Landing page not found');
-    return page;
+    const [pages] = await pool.execute<RowDataPacket[]>('SELECT * FROM landing_pages WHERE companyId = ?', [companyId]);
+    if (pages.length === 0) throw new Error('Landing page not found');
+    const page = pages[0];
+    return {
+      ...page,
+      _id: page.id,
+      sections: typeof page.sections === 'string' ? JSON.parse(page.sections) : (page.sections || []),
+      pages: typeof page.pages === 'string' ? JSON.parse(page.pages) : (page.pages || []),
+      isPublished: Boolean(page.isPublished)
+    };
   }
 
   static async update(companyId: string, sections: Array<Record<string, unknown>>) {
-    await connectDB();
-    const page = await LandingPage.findOneAndUpdate(
-      { companyId },
-      { sections },
-      { new: true, upsert: true },
-    );
-    return page;
+    const [pages] = await pool.execute<RowDataPacket[]>('SELECT * FROM landing_pages WHERE companyId = ?', [companyId]);
+    
+    if (pages.length === 0) {
+      const id = crypto.randomUUID();
+      await pool.execute('INSERT INTO landing_pages (id, companyId, sections) VALUES (?, ?, ?)', [id, companyId, JSON.stringify(sections)]);
+    } else {
+      await pool.execute('UPDATE landing_pages SET sections = ? WHERE companyId = ?', [JSON.stringify(sections), companyId]);
+    }
+    
+    return await this.getByCompany(companyId);
   }
 
   static async updateSection(
@@ -24,15 +35,15 @@ export class LandingPageService {
     sectionId: string,
     data: Record<string, unknown>,
   ) {
-    await connectDB();
-    const page = await LandingPage.findOne({ companyId });
-    if (!page) throw new Error('Landing page not found');
+    const page = await this.getByCompany(companyId);
 
-    const sectionIndex = page.sections.findIndex((s) => s.id === sectionId);
+    const sectionIndex = page.sections.findIndex((s: any) => s.id === sectionId);
     if (sectionIndex === -1) throw new Error('Section not found');
 
     page.sections[sectionIndex] = { ...page.sections[sectionIndex], ...data };
-    await page.save();
+    
+    await pool.execute('UPDATE landing_pages SET sections = ? WHERE companyId = ?', [JSON.stringify(page.sections), companyId]);
+    
     return page;
   }
 }

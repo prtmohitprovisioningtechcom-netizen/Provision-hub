@@ -546,7 +546,7 @@ export function CompanyLanding({
 }: CompanyLandingProps) {
   const visibleSections = [...sections]
     .filter((section) => {
-      if (!section.isVisible) return false;
+      if (section.isVisible === false) return false;
       if (section.type === 'navbar') return false;
       if (section.type === 'services') return Boolean(section.items?.length);
       if (section.type === 'products') return Boolean(section.items?.length);
@@ -669,8 +669,8 @@ export function CompanyLanding({
             const displayRating =
               Number.isFinite(manualScore) && manualScore > 0
                 ? Math.min(5, manualScore)
-                : rating > 0
-                  ? rating
+                : Number(rating) > 0
+                  ? Number(rating)
                   : 0;
             const badges = (section.items || [])
               .map((item) => ({

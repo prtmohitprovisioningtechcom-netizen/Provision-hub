@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { CompanyProfileView } from '@/components/company/CompanyProfileView';
+import { ThemeRenderer } from '@/components/themes/ThemeRenderer';
 import { siteConfig } from '@/config/site';
 import { getCompanyBySlug } from '@/lib/company';
 import {
@@ -33,7 +33,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const title = seo?.title || company.name;
     const description =
-      seo?.description || company.description || `${company.name} - ${company.category} in ${company.address.city}`;
+      seo?.description ||
+      company.description ||
+      `${company.name} - ${company.category} in ${company.address.city}`;
     const ogImage = seo?.ogImage || company.banner || company.logo || siteConfig.ogImage;
 
     return {
@@ -74,9 +76,14 @@ export default async function CompanyPage({ params }: PageProps) {
     const reviews = serialize<IReview[]>(result.reviews);
     const blogs = serialize<IBlog[]>(result.blogs || []);
     const landingPage = result.landingPage
-      ? serialize<{ sections?: ILandingPageSection[]; isPublished?: boolean }>({
+      ? serialize<{
+          sections?: ILandingPageSection[];
+          isPublished?: boolean;
+          templateId?: string;
+        }>({
           sections: (result.landingPage as { sections?: ILandingPageSection[] }).sections,
           isPublished: (result.landingPage as { isPublished?: boolean }).isPublished,
+          templateId: (result.landingPage as { templateId?: string }).templateId,
         })
       : null;
     const gallery = result.gallery
@@ -84,7 +91,8 @@ export default async function CompanyPage({ params }: PageProps) {
       : null;
 
     return (
-      <CompanyProfileView
+      <ThemeRenderer
+        templateId={landingPage?.templateId}
         company={company}
         products={products}
         services={services}

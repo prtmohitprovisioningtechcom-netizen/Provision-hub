@@ -33,7 +33,7 @@ import {
   IService,
 } from '@/types';
 import { useCompany } from '@/hooks/useCompany';
-import { CompanyLanding } from '@/components/company/CompanyLanding';
+import { ThemeRenderer } from '@/components/themes/ThemeRenderer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -361,6 +361,7 @@ const SECTION_LINK_OPTIONS = [
 
 export default function WebsiteBuilder() {
   const { companyId, companySlug } = useCompany();
+  const [templateId, setTemplateId] = useState<string | null>(null);
   const [sections, setSections] = useState<ILandingPageSection[]>([]);
   const [customPages, setCustomPages] = useState<ILandingCustomPage[]>([]);
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
@@ -373,6 +374,14 @@ export default function WebsiteBuilder() {
   const [companyName, setCompanyName] = useState('');
   const [companyLogo, setCompanyLogo] = useState('');
   const [companyPhone, setCompanyPhone] = useState('');
+  const [companyEmail, setCompanyEmail] = useState('');
+  const [companyDescription, setCompanyDescription] = useState('');
+  const [companyAddress, setCompanyAddress] = useState({
+    city: '',
+    state: '',
+    country: '',
+    street: '',
+  });
   const [companyWhatsapp, setCompanyWhatsapp] = useState('');
   const [companyRating, setCompanyRating] = useState(0);
   const [companyReviewCount, setCompanyReviewCount] = useState(0);
@@ -446,6 +455,7 @@ export default function WebsiteBuilder() {
           return section;
         });
         setSections(sectionsWithGallery);
+        setTemplateId(data.data?.templateId || null);
         setCustomPages(
           Array.isArray(data.data?.pages)
             ? (data.data.pages as ILandingCustomPage[]).filter((page) => {
@@ -464,6 +474,15 @@ export default function WebsiteBuilder() {
           setCompanyName(brandingResponse.data?.name || '');
           setCompanyLogo(brandingResponse.data?.logo || '');
           setCompanyPhone(brandingResponse.data?.phone || '');
+          setCompanyEmail(brandingResponse.data?.email || '');
+          setCompanyDescription(brandingResponse.data?.description || '');
+          const addr = brandingResponse.data?.address || {};
+          setCompanyAddress({
+            city: String(addr.city || ''),
+            state: String(addr.state || ''),
+            country: String(addr.country || ''),
+            street: String(addr.street || ''),
+          });
           setCompanyWhatsapp(
             brandingResponse.data?.socialLinks?.whatsapp ||
               brandingResponse.data?.phone ||
@@ -836,6 +855,8 @@ export default function WebsiteBuilder() {
       const { data } = await api.post('/api/dashboard/landing-page', {
         sections: normalized,
         pages: migratedPages,
+        templateId,
+        isPublished: true,
       });
       if (!data.success) throw new Error(data.message || 'Publish failed');
 
@@ -857,7 +878,11 @@ export default function WebsiteBuilder() {
       setSections(normalized);
       setCustomPages(migratedPages);
       setSaved(true);
-      toast.success('Website published successfully');
+      toast.success(
+        companySlug
+          ? 'Published! Click “View live site” to open the full website.'
+          : 'Website published successfully',
+      );
     } catch (error: unknown) {
       const status = (error as { response?: { status?: number; data?: { message?: string } } })
         ?.response?.status;
@@ -985,10 +1010,20 @@ export default function WebsiteBuilder() {
               <Button asChild variant="secondary">
                 <Link href={`/${companySlug}`} target="_blank">
                   <Globe className="h-4 w-4" />
-                  Preview
+                  View live site
                 </Link>
               </Button>
             )}
+            <Button
+              asChild
+              variant="secondary"
+              className="bg-white/15 text-white hover:bg-white/25"
+            >
+              <Link href="/dashboard/select-theme">
+                <LayoutTemplate className="h-4 w-4" />
+                Change theme
+              </Link>
+            </Button>
             <Button
               onClick={handleSave}
               disabled={saving || uploading !== null || saved}
@@ -1414,7 +1449,7 @@ export default function WebsiteBuilder() {
                     />
                   </div>
                 )}
-                {['about', 'services', 'products', 'why-choose-us', 'gallery', 'contact', 'footer'].includes(
+                {['hero', 'about', 'services', 'products', 'why-choose-us', 'gallery', 'contact', 'footer', 'testimonials', 'faq', 'blogs'].includes(
                   selected.type,
                 ) && (
                   <div className="space-y-2 sm:col-span-2">
@@ -1425,7 +1460,11 @@ export default function WebsiteBuilder() {
                         updateSection(selected.id, { eyebrow: event.target.value })
                       }
                       placeholder={
-                        selected.type === 'footer' ? 'Links heading' : 'Short label above the title'
+                        selected.type === 'footer'
+                          ? 'Links heading'
+                          : selected.type === 'hero'
+                            ? 'Short line above the main headline'
+                            : 'Short label above the title'
                       }
                     />
                   </div>
@@ -2679,25 +2718,37 @@ export default function WebsiteBuilder() {
                   </div>
                 </div>
               )}
-              <CompanyLanding 
-                sections={previewSections} 
-                companyId={companyId || ''} 
-                companyName={companyName} 
+              <ThemeRenderer
+                templateId={templateId}
+                company={{
+                  _id: companyId || '',
+                  name: companyName,
+                  slug: companySlug || '',
+                  phone: companyPhone,
+                  email: companyEmail,
+                  address: companyAddress,
+                  logo: companyLogo,
+                  description: companyDescription,
+                  rating: companyRating,
+                  reviewCount: companyReviewCount,
+                  theme: { primaryColor } as any,
+                  socialLinks: socialLinks as any,
+                } as any}
                 products={catalogProducts}
                 services={catalogServices}
+                reviews={[]}
                 blogs={publishedBlogs}
-                rating={companyRating}
-                reviewCount={companyReviewCount}
-                primaryColor={primaryColor || '#0b2a5b'}
-                accentColor={primaryColor || '#0b2a5b'}
-                phone={companyPhone}
-                socialLinks={socialLinks}
-                whatsappUrl={
-                  companyWhatsapp
-                    ? `https://wa.me/${companyWhatsapp.replace(/\D/g, '')}`
-                    : null
-                }
-                showFloatingContact
+                landingPage={{ sections: previewSections, isPublished: true, templateId }}
+                gallery={{
+                  images:
+                    previewSections
+                      .find((s) => s.type === 'gallery')
+                      ?.items?.map((i) => ({
+                        url: String((i as any).image || ''),
+                        caption: String((i as any).title || ''),
+                      }))
+                      .filter((img) => img.url) || [],
+                }}
               />
             </div>
           </div>

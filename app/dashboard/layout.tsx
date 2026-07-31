@@ -22,8 +22,10 @@ import {
   Menu,
   X,
   ChevronLeft,
+  Clock,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import api from '@/services/api';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { BrandLogo } from '@/components/BrandLogo';
@@ -53,16 +55,67 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const { companySlug } = useCompany();
+
+  useEffect(() => {
+    // If the user is a company owner and not already on the select-theme page, check if they have a theme
+    if (user?.role === 'company_admin' && pathname !== '/dashboard/select-theme') {
+      api.get('/api/dashboard/landing-page')
+        .then(res => {
+          if (res.data?.success) {
+             const landingPage = res.data.data;
+             if (!landingPage?.templateId) {
+               router.push('/dashboard/select-theme');
+             }
+          }
+        })
+        .catch(err => {
+          // Ignore 404s as it might just mean they haven't created one yet
+          if (err.response?.status === 404) {
+            router.push('/dashboard/select-theme');
+          } else {
+            console.error('Failed to check theme configuration:', err);
+          }
+        });
+    }
+  }, [user, pathname, router]);
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     await logout();
-    router.replace('/login');
-    router.refresh();
+    window.location.href = '/login';
   };
+
+  const companyRef = typeof user?.companyId === 'object' ? (user.companyId as any) : null;
+  const companyStatus = companyRef?.status || 'pending';
+
+  if (!isLoading && user?.role === 'company_admin' && companyStatus !== 'approved') {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 p-8 text-center">
+          <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Clock className="w-8 h-8" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+            Account Pending Verification
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+            Your account is currently under review by our administration team. You will gain full access to the dashboard once your profile is verified.
+          </p>
+          <Button onClick={handleLogout} className="w-full h-11" variant="outline" disabled={isLoggingOut}>
+            {isLoggingOut ? 'Signing out...' : (
+              <>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

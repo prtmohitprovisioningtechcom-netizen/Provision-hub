@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Requirement from '@/models/Requirement';
-import { connectDB } from '@/lib/mongodb';
+import crypto from 'crypto';
+import pool from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
     const body = await request.json();
     
     // Basic validation
@@ -15,8 +14,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const requirement = await Requirement.create(body);
-    return NextResponse.json({ success: true, data: requirement }, { status: 201 });
+    const id = crypto.randomUUID();
+    await pool.execute(
+      'INSERT INTO requirements (id, customerName, email, phone, title, description, budget, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, body.customerName, body.email, body.phone, body.title, body.description, body.budget || null, body.status || 'new']
+    );
+
+    const [rows] = await pool.execute<any[]>('SELECT * FROM requirements WHERE id = ?', [id]);
+    return NextResponse.json({ success: true, data: { ...rows[0], _id: rows[0].id } }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message },

@@ -1,5 +1,5 @@
-import { connectDB } from '@/lib/mongodb';
-import Media from '@/models/Media';
+import pool from '@/lib/db';
+import crypto from 'crypto';
 
 const MAX_STORE_BYTES = 1.8 * 1024 * 1024;
 
@@ -15,16 +15,12 @@ export async function saveMediaBuffer(options: {
     throw new Error('Image is too large after compression. Try a smaller file.');
   }
 
-  await connectDB();
-  const media = await Media.create({
-    companyId,
-    mimeType,
-    filename,
-    size: buffer.length,
-    data: buffer,
-  });
+  const id = crypto.randomUUID();
+  await pool.execute(
+    'INSERT INTO media (id, companyId, mimeType, filename, size, data) VALUES (?, ?, ?, ?, ?, ?)',
+    [id, companyId, mimeType, filename || null, buffer.length, buffer]
+  );
 
-  const id = String(media._id);
   return {
     id,
     url: `/api/media/${id}`,
@@ -34,11 +30,10 @@ export async function saveMediaBuffer(options: {
 
 export async function deleteMediaById(mediaId: string): Promise<void> {
   if (!mediaId) return;
-  await connectDB();
-  await Media.findByIdAndDelete(mediaId);
+  await pool.execute('DELETE FROM media WHERE id = ?', [mediaId]);
 }
 
-/** Accept data URL or raw base64 and store in MongoDB. */
+/** Accept data URL or raw base64 and store in DB. */
 export async function saveMediaFromDataUrl(
   companyId: string,
   imageData: string,

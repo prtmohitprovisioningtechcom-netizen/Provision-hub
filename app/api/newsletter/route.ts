@@ -1,12 +1,11 @@
 import { NextRequest } from 'next/server';
-import mongoose from 'mongoose';
 import { z } from 'zod';
-import { connectDB } from '@/lib/mongodb';
+import pool from '@/lib/db';
 import { getClientIp, rateLimit } from '@/lib/rate-limit';
-import Company from '@/models/Company';
-import NewsletterSubscriber from '@/models/NewsletterSubscriber';
 import { apiError, apiSuccess } from '@/server/utils/api-response';
 import { requireAuth } from '@/server/middleware/auth';
+import { RowDataPacket } from 'mysql2';
+import crypto from 'crypto';
 
 const subscribeSchema = z.object({
   companyId: z.string().min(1),
@@ -19,15 +18,11 @@ export async function GET(request: NextRequest) {
     if (auth instanceof Response) return auth;
     if (!auth.companyId) return apiError('No company associated', 400);
 
-    await connectDB();
-    const subscribers = await NewsletterSubscriber.find({
-      companyId: auth.companyId,
-      isActive: true,
-    })
-      .select('email createdAt')
-      .sort({ createdAt: -1 })
-      .limit(500)
-      .lean();
+    const [subscribers] = await pool.execute<RowDataPacket[]>(
+      'SELECT email, createdAt FROM newsletter_subscribers WHERE companyId = ? AND isActive = 1 ORDER BY createdAt DESC LIMIT 500',
+      [auth.companyId]
+    );
+
     return apiSuccess(subscribers);
   } catch {
     return apiError('Could not load subscribers', 500);
@@ -42,22 +37,18 @@ export async function POST(request: NextRequest) {
     }
 
     const { companyId, email } = subscribeSchema.parse(await request.json());
-    if (!mongoose.isValidObjectId(companyId)) {
-      return apiError('Invalid company', 400);
+
+    const [companies] = await pool.execute<RowDataPacket[]>('SELECT id FROM companies WHERE id = ? AND status = "approved"', [companyId]);
+    if (companies.length === 0) return apiError('Company not found', 404);
+
+    const normalizedEmail = email.toLowerCase();
+    const [existing] = await pool.execute<RowDataPacket[]>('SELECT id FROM newsletter_subscribers WHERE companyId = ? AND email = ?', [companyId, normalizedEmail]);
+
+    if (existing.length > 0) {
+      await pool.execute('UPDATE newsletter_subscribers SET isActive = 1 WHERE id = ?', [existing[0].id]);
+    } else {
+      await pool.execute('INSERT INTO newsletter_subscribers (id, companyId, email, isActive) VALUES (?, ?, ?, 1)', [crypto.randomUUID(), companyId, normalizedEmail]);
     }
-
-    await connectDB();
-    const companyExists = await Company.exists({
-      _id: companyId,
-      status: 'approved',
-    });
-    if (!companyExists) return apiError('Company not found', 404);
-
-    await NewsletterSubscriber.findOneAndUpdate(
-      { companyId, email: email.toLowerCase() },
-      { $set: { isActive: true } },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
-    );
 
     return apiSuccess(null, 'You are subscribed successfully');
   } catch (error) {

@@ -132,7 +132,7 @@ export function CompanyProfileView({
   const hasLanding =
     landingPage?.isPublished !== false &&
     landingPage?.sections &&
-    landingPage.sections.some((s) => s.isVisible);
+    landingPage.sections.some((s) => s.isVisible !== false);
 
   const enrichedSections = hasLanding
     ? landingPage!.sections!.map((section) => {
@@ -361,7 +361,7 @@ export function CompanyProfileView({
             <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-gray-600 dark:text-gray-400 font-medium">
               <span className="flex items-center gap-1.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-500 px-3 py-1 rounded-full">
                 <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                {company.rating.toFixed(1)} ({company.reviewCount} reviews)
+                {Number(company.rating || 0).toFixed(1)} ({company.reviewCount ?? 0} reviews)
               </span>
               <span className="flex items-center gap-1.5">
                 <MapPin className="h-4 w-4 text-gray-400" />

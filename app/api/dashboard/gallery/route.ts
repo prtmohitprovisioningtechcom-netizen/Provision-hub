@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/server/middleware/auth';
 import { apiSuccess, apiError, parseBody } from '@/server/utils/api-response';
-import { connectDB } from '@/lib/mongodb';
-import Gallery from '@/models/Gallery';
+import { GalleryService } from '@/server/services/gallery.service';
+import pool from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,8 +10,7 @@ export async function GET(request: NextRequest) {
     if (auth instanceof Response) return auth;
     if (!auth.companyId) return apiError('No company associated', 400);
 
-    await connectDB();
-    const gallery = await Gallery.findOne({ companyId: auth.companyId }).lean();
+    const gallery = await GalleryService.getByCompany(auth.companyId);
     
     return apiSuccess(gallery || { images: [] });
   } catch (error) {
@@ -33,13 +32,14 @@ export async function POST(request: NextRequest) {
       return apiError('Invalid images data', 400);
     }
 
-    await connectDB();
-    const gallery = await Gallery.findOneAndUpdate(
-      { companyId: auth.companyId },
-      { images },
-      { new: true, upsert: true }
-    ).lean();
+    const [existing] = await pool.execute<any[]>('SELECT id FROM galleries WHERE companyId = ?', [auth.companyId]);
+    if (existing.length === 0) {
+      await pool.execute('INSERT INTO galleries (id, companyId, images) VALUES (UUID(), ?, ?)', [auth.companyId, JSON.stringify(images)]);
+    } else {
+      await pool.execute('UPDATE galleries SET images = ? WHERE companyId = ?', [JSON.stringify(images), auth.companyId]);
+    }
 
+    const gallery = await GalleryService.getByCompany(auth.companyId);
     return apiSuccess(gallery);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to save gallery';

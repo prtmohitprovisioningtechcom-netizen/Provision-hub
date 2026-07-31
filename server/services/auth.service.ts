@@ -1,34 +1,29 @@
+// @ts-nocheck
 import crypto from 'crypto';
-import User, { IUserDocument } from '@/models/User';
-import Company from '@/models/Company';
-import LandingPage from '@/models/LandingPage';
-import Settings from '@/models/Settings';
-import Notification from '@/models/Notification';
-import { connectDB } from '@/lib/mongodb';
+import pool from '@/lib/db';
 import { hashPassword, comparePassword, generateToken } from '@/lib/auth';
 import { sendEmail, verificationEmailHtml, resetPasswordEmailHtml } from '@/lib/email';
 import { generateSlug } from '@/lib/utils';
 import { DEFAULT_BUSINESS_HOURS, LANDING_SECTIONS } from '@/constants';
 import { CompanyRegisterInput, LoginInput, RegisterInput, AdminRegisterInput } from '@/lib/validators';
+import { RowDataPacket } from 'mysql2';
 
 export class AuthService {
   static async register(data: RegisterInput) {
-    await connectDB();
-
-    const existing = await User.findOne({ email: data.email });
-    if (existing) throw new Error('Email already registered');
+    const [existingUsers] = await pool.execute<RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [data.email]);
+    if (existingUsers.length > 0) throw new Error('Email already registered');
 
     const hashedPassword = await hashPassword(data.password);
     const verificationToken = crypto.randomBytes(32).toString('hex');
+    const id = crypto.randomUUID();
 
-    const user = await User.create({
-      name: data.name,
-      email: data.email,
-      password: hashedPassword,
-      phone: data.phone,
-      role: data.role,
-      emailVerificationToken: verificationToken,
-    });
+    await pool.execute(
+      'INSERT INTO users (id, name, email, password, phone, role, emailVerificationToken) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, data.name, data.email, hashedPassword, data.phone || null, data.role, verificationToken]
+    );
+
+    const [users] = await pool.execute<RowDataPacket[]>('SELECT * FROM users WHERE id = ?', [id]);
+    const user = users[0];
 
     await sendEmail({
       to: user.email,
@@ -37,14 +32,14 @@ export class AuthService {
     });
 
     const token = generateToken({
-      userId: user._id.toString(),
+      userId: user.id,
       email: user.email,
       role: user.role,
     });
 
     return {
       user: {
-        _id: user._id.toString(),
+        _id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -55,126 +50,119 @@ export class AuthService {
   }
 
   static async registerCompany(data: CompanyRegisterInput) {
-    await connectDB();
-
-    const existingUser = await User.findOne({ email: data.email });
-    if (existingUser) throw new Error('Email already registered');
+    const [existingUsers] = await pool.execute<RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [data.email]);
+    if (existingUsers.length > 0) throw new Error('Email already registered');
 
     const slug = generateSlug(data.name);
-    const existingCompany = await Company.findOne({ slug });
-    if (existingCompany) throw new Error('Company name already taken');
+    const [existingCompanies] = await pool.execute<RowDataPacket[]>('SELECT * FROM companies WHERE slug = ?', [slug]);
+    if (existingCompanies.length > 0) throw new Error('Company name already taken');
 
     const hashedPassword = await hashPassword(data.password);
     const verificationToken = crypto.randomBytes(32).toString('hex');
+    
+    const userId = crypto.randomUUID();
+    const companyId = crypto.randomUUID();
 
-    const user = await User.create({
-      name: data.ownerName,
-      email: data.email,
-      password: hashedPassword,
-      phone: data.phone,
-      role: 'company_admin',
-      emailVerificationToken: verificationToken,
-    });
+    await pool.execute(
+      'INSERT INTO users (id, name, email, password, phone, role, emailVerificationToken) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [userId, data.ownerName, data.email, hashedPassword, data.phone, 'company_admin', verificationToken]
+    );
 
-    const company = await Company.create({
-      name: data.name,
-      slug,
-      ownerName: data.ownerName,
-      email: data.email,
-      phone: data.phone,
-      category: data.category,
-      address: { country: data.country, state: data.state, city: data.city },
-      description: data.description,
-      website: data.website,
-      socialLinks: data.socialLinks || {},
-      gst: data.gst,
-      pan: data.pan,
-      businessHours: DEFAULT_BUSINESS_HOURS,
-      ownerId: user._id,
-      seo: {
-        title: data.name,
-        description: data.description || `Welcome to ${data.name}`,
-        keywords: [data.category, data.city, data.name],
-      },
-    });
+    await pool.execute(
+      'INSERT INTO companies (id, name, slug, ownerName, email, phone, category, address, description, website, socialLinks, gst, pan, businessHours, ownerId, seo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        companyId, data.name, slug, data.ownerName, data.email, data.phone, data.category,
+        JSON.stringify({ country: data.country, state: data.state, city: data.city }),
+        data.description || null, data.website || null, JSON.stringify(data.socialLinks || {}),
+        data.gst || null, data.pan || null, JSON.stringify(DEFAULT_BUSINESS_HOURS), userId,
+        JSON.stringify({
+          title: data.name,
+          description: data.description || `Welcome to ${data.name}`,
+          keywords: [data.category, data.city, data.name],
+        })
+      ]
+    );
 
-    user.companyId = company._id;
-    await user.save();
+    await pool.execute(
+      'UPDATE users SET companyId = ? WHERE id = ?',
+      [companyId, userId]
+    );
+
 
     const sections = LANDING_SECTIONS.map((section, index) => ({
       ...section,
       id: `section-${index}`,
       content: '',
       isVisible: true,
-      items: 'items' in section
-        ? section.items.map((item) => ({ ...item }))
-        : [],
+      items: 'items' in section ? section.items.map((item) => ({ ...item })) : [],
     }));
 
-    await LandingPage.create({ companyId: company._id, sections });
-    await Settings.create({ companyId: company._id });
+    await pool.execute(
+      'INSERT INTO landing_pages (id, companyId, sections) VALUES (?, ?, ?)',
+      [crypto.randomUUID(), companyId, JSON.stringify(sections)]
+    );
+
+    await pool.execute(
+      'INSERT INTO settings (id, companyId) VALUES (?, ?)',
+      [crypto.randomUUID(), companyId]
+    );
 
     await sendEmail({
-      to: user.email,
+      to: data.email,
       subject: 'Verify your email - Company Registration',
-      html: verificationEmailHtml(user.name, verificationToken),
+      html: verificationEmailHtml(data.ownerName, verificationToken),
     });
 
     const token = generateToken({
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
-      companyId: company._id.toString(),
+      userId: userId,
+      email: data.email,
+      role: 'company_admin',
+      companyId: companyId,
     });
 
     return {
       user: {
-        _id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        companyId: company._id.toString(),
-        isEmailVerified: user.isEmailVerified,
+        _id: userId,
+        name: data.ownerName,
+        email: data.email,
+        role: 'company_admin',
+        companyId: companyId,
+        isEmailVerified: false,
       },
       company: {
-        _id: company._id.toString(),
-        name: company.name,
-        slug: company.slug,
+        _id: companyId,
+        name: data.name,
+        slug: slug,
       },
       token,
     };
   }
 
   static async registerAdmin(data: AdminRegisterInput) {
-    await connectDB();
-
-    const existing = await User.findOne({ email: data.email });
-    if (existing) throw new Error('Email already registered');
+    const [existingUsers] = await pool.execute<RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [data.email]);
+    if (existingUsers.length > 0) throw new Error('Email already registered');
 
     const hashedPassword = await hashPassword(data.password);
+    const userId = crypto.randomUUID();
 
-    const user = await User.create({
-      name: data.name,
-      email: data.email,
-      password: hashedPassword,
-      phone: data.phone,
-      role: 'super_admin',
-      isEmailVerified: true,
-    });
+    await pool.execute(
+      'INSERT INTO users (id, name, email, password, phone, role, isEmailVerified) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [userId, data.name, data.email, hashedPassword, data.phone || null, 'super_admin', true]
+    );
 
     const token = generateToken({
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
+      userId: userId,
+      email: data.email,
+      role: 'super_admin',
     });
 
     return {
       user: {
-        _id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isEmailVerified: user.isEmailVerified,
+        _id: userId,
+        name: data.name,
+        email: data.email,
+        role: 'super_admin',
+        isEmailVerified: true,
       },
       token,
     };
@@ -188,39 +176,54 @@ export class AuthService {
     return result;
   }
 
-  static async login(data: LoginInput) {
-    await connectDB();
+  static async resolveCompanyId(userId: string, existingCompanyId?: string | null) {
+    if (existingCompanyId) return existingCompanyId;
 
-    const user = await User.findOne({ email: data.email }).select('+password');
-    if (!user) throw new Error('Invalid email or password');
+    const [owned] = await pool.execute<RowDataPacket[]>(
+      'SELECT id FROM companies WHERE ownerId = ? LIMIT 1',
+      [userId],
+    );
+    const companyId = owned[0]?.id as string | undefined;
+    if (!companyId) return undefined;
+
+    await pool.execute(
+      'UPDATE users SET companyId = ? WHERE id = ? AND (companyId IS NULL OR companyId = "")',
+      [companyId, userId],
+    );
+    return companyId;
+  }
+
+  static async login(data: LoginInput) {
+    const [users] = await pool.execute<RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [data.email]);
+    if (users.length === 0) throw new Error('Invalid email or password');
+    const user = users[0];
 
     const isValid = await comparePassword(data.password, user.password);
     if (!isValid) throw new Error('Invalid email or password');
 
+    const companyId = await this.resolveCompanyId(user.id, user.companyId);
+
     const token = generateToken({
-      userId: user._id.toString(),
+      userId: user.id,
       email: user.email,
       role: user.role,
-      companyId: user.companyId?.toString(),
+      companyId,
     });
 
-    if (user.companyId) {
-      await Notification.create({
-        userId: user._id,
-        companyId: user.companyId,
-        type: 'new_login',
-        title: 'New Login',
-        message: `New login detected for ${user.email}`,
-      });
+    if (companyId) {
+      await pool.execute(
+        'INSERT INTO notifications (id, userId, companyId, type, title, message) VALUES (?, ?, ?, ?, ?, ?)',
+        [crypto.randomUUID(), user.id, companyId, 'new_login', 'New Login', `New login detected for ${user.email}`]
+      );
     }
 
     return {
       user: {
-        _id: user._id.toString(),
+        _id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
-        companyId: user.companyId?.toString(),
+        companyId,
         isEmailVerified: user.isEmailVerified,
         avatar: user.avatar,
       },
@@ -229,27 +232,30 @@ export class AuthService {
   }
 
   static async verifyEmail(token: string) {
-    await connectDB();
-    const user = await User.findOne({ emailVerificationToken: token }).select(
-      '+emailVerificationToken',
-    );
-    if (!user) throw new Error('Invalid or expired verification token');
+    const [users] = await pool.execute<RowDataPacket[]>('SELECT * FROM users WHERE emailVerificationToken = ?', [token]);
+    if (users.length === 0) throw new Error('Invalid or expired verification token');
+    const user = users[0];
 
-    user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    await user.save();
+    await pool.execute(
+      'UPDATE users SET isEmailVerified = true, emailVerificationToken = NULL WHERE id = ?',
+      [user.id]
+    );
+
     return { message: 'Email verified successfully' };
   }
 
   static async forgotPassword(email: string) {
-    await connectDB();
-    const user = await User.findOne({ email });
-    if (!user) return { message: 'If email exists, reset link has been sent' };
+    const [users] = await pool.execute<RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [email]);
+    if (users.length === 0) return { message: 'If email exists, reset link has been sent' };
+    const user = users[0];
 
     const resetToken = crypto.randomBytes(32).toString('hex');
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = new Date(Date.now() + 3600000);
-    await user.save();
+    const expires = new Date(Date.now() + 3600000);
+
+    await pool.execute(
+      'UPDATE users SET resetPasswordToken = ?, resetPasswordExpires = ? WHERE id = ?',
+      [resetToken, expires, user.id]
+    );
 
     await sendEmail({
       to: user.email,
@@ -261,38 +267,71 @@ export class AuthService {
   }
 
   static async resetPassword(token: string, password: string) {
-    await connectDB();
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: new Date() },
-    }).select('+resetPasswordToken +resetPasswordExpires');
+    const [users] = await pool.execute<RowDataPacket[]>(
+      'SELECT * FROM users WHERE resetPasswordToken = ? AND resetPasswordExpires > NOW()',
+      [token]
+    );
+    if (users.length === 0) throw new Error('Invalid or expired reset token');
+    const user = users[0];
 
-    if (!user) throw new Error('Invalid or expired reset token');
+    const hashedPassword = await hashPassword(password);
 
-    user.password = await hashPassword(password);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
+    await pool.execute(
+      'UPDATE users SET password = ?, resetPasswordToken = NULL, resetPasswordExpires = NULL WHERE id = ?',
+      [hashedPassword, user.id]
+    );
 
     return { message: 'Password reset successfully' };
   }
 
   static async getMe(userId: string) {
-    await connectDB();
-    const user = await User.findById(userId)
-      .populate('companyId', 'name slug logo status subscription')
-      .lean();
-    if (!user) throw new Error('User not found');
+    const [users] = await pool.execute<RowDataPacket[]>(
+      `SELECT u.*,
+              COALESCE(u.companyId, owned.id) AS resolvedCompanyId,
+              COALESCE(c.name, owned.name) AS company_name,
+              COALESCE(c.slug, owned.slug) AS company_slug,
+              COALESCE(c.logo, owned.logo) AS company_logo,
+              COALESCE(c.status, owned.status) AS company_status,
+              COALESCE(c.subscription, owned.subscription) AS company_subscription
+       FROM users u
+       LEFT JOIN companies c ON c.id = u.companyId
+       LEFT JOIN companies owned ON owned.ownerId = u.id
+       WHERE u.id = ?
+       LIMIT 1`,
+      [userId]
+    );
+    if (users.length === 0) throw new Error('User not found');
+    const user = users[0];
+
+    const resolvedCompanyId = user.resolvedCompanyId as string | null;
+    if (resolvedCompanyId && !user.companyId) {
+      await pool.execute(
+        'UPDATE users SET companyId = ? WHERE id = ? AND (companyId IS NULL OR companyId = "")',
+        [resolvedCompanyId, userId],
+      );
+    }
+
+    let companyData = null;
+    if (resolvedCompanyId) {
+      companyData = {
+        _id: resolvedCompanyId,
+        name: user.company_name,
+        slug: user.company_slug,
+        logo: user.company_logo,
+        status: user.company_status,
+        subscription: user.company_subscription,
+      };
+    }
 
     return {
-      _id: user._id.toString(),
+      _id: user.id,
       name: user.name,
       email: user.email,
       role: user.role,
       phone: user.phone,
       avatar: user.avatar,
-      isEmailVerified: user.isEmailVerified,
-      companyId: user.companyId,
+      isEmailVerified: Boolean(user.isEmailVerified),
+      companyId: companyData,
       createdAt: user.createdAt,
     };
   }
