@@ -11,7 +11,11 @@ export async function POST(request: NextRequest) {
     const auth = await requireAuth(request, ['company_admin', 'super_admin']);
     if (auth instanceof Response) return auth;
 
-    const { companyId } = auth;
+    let { companyId } = auth;
+    if (typeof companyId === 'object' && companyId !== null) {
+      companyId = (companyId as any)._id || (companyId as any).id || String(companyId);
+    }
+    
     if (!companyId) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }

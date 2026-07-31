@@ -58,10 +58,26 @@ export async function requireAuth(
     return apiError('Forbidden', 403);
   }
 
-  if (!user.companyId && user.role === 'company_admin') {
-    const companyId = await resolveCompanyIdForUser(user.userId, user.companyId);
-    if (companyId) {
-      return { ...user, companyId };
+  // Ensure user still exists in database (prevents stale token issues)
+  const [users] = await pool.execute<RowDataPacket[]>('SELECT id FROM users WHERE id = ?', [user.userId]);
+  if (users.length === 0) {
+    return apiError('Unauthorized', 401);
+  }
+
+  if (user.role === 'company_admin') {
+    const resolvedCompanyId = user.companyId || await resolveCompanyIdForUser(user.userId, user.companyId);
+    
+    if (!resolvedCompanyId) {
+      return apiError('Unauthorized', 401);
+    }
+    
+    const [companies] = await pool.execute<RowDataPacket[]>('SELECT id FROM companies WHERE id = ?', [resolvedCompanyId]);
+    if (companies.length === 0) {
+      return apiError('Unauthorized', 401);
+    }
+    
+    if (!user.companyId) {
+      user.companyId = resolvedCompanyId;
     }
   }
 
