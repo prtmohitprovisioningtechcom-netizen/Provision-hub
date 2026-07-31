@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { resolveThemePage } from '@/lib/resolve-theme-page';
 import { ContactForm } from '@/components/company/ContactForm';
 import { NewsletterForm } from '@/components/company/NewsletterForm';
+import { getServiceImage } from '@/components/themes/layouts/service-image';
 
 interface Props {
   company: ICompany;
@@ -179,17 +180,28 @@ export function BoldLaunchTheme(props: Props) {
               </div>
               
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10">
-                {page.services.items.map((service, i) => (
-                  <div key={service._id || i} className="bg-[#0a0a0a] p-10 group hover:bg-[#111] transition duration-300">
-                    <div className="text-4xl font-black text-white/10 mb-8 font-mono">0{i + 1}</div>
-                    <h3 className="text-2xl font-bold mb-4 uppercase">{service.name}</h3>
-                    <p className="text-gray-400 mb-12">{service.description}</p>
-                    <div className="flex justify-between items-center pt-8 border-t border-white/10">
-                      <span className="font-mono text-xl text-white">{formatCurrency(service.price)}</span>
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{service.duration}</span>
+                {page.services.items.map((service, i) => {
+                  const img = getServiceImage(service);
+                  return (
+                    <div key={service._id || i} className="bg-[#0a0a0a] group hover:bg-[#111] transition duration-300 overflow-hidden">
+                      {img ? (
+                        <img src={img} alt={service.name} className="aspect-[16/10] w-full object-cover" />
+                      ) : (
+                        <div className="px-10 pt-10">
+                          <div className="text-4xl font-black text-white/10 font-mono">0{i + 1}</div>
+                        </div>
+                      )}
+                      <div className="p-10">
+                        <h3 className="text-2xl font-bold mb-4 uppercase">{service.name}</h3>
+                        <p className="text-gray-400 mb-12">{service.description}</p>
+                        <div className="flex justify-between items-center pt-8 border-t border-white/10">
+                          <span className="font-mono text-xl text-white">{formatCurrency(service.price)}</span>
+                          <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{service.duration}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -208,7 +220,7 @@ export function BoldLaunchTheme(props: Props) {
                 {page.products.items.map((product, i) => (
                   <div key={product._id || i} className="group">
                     <div className="relative aspect-[3/4] overflow-hidden mb-6 bg-gray-100">
-                      <img src={product.images[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-500" />
+                      <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-500" />
                       {product.offerPrice && (
                         <div className="absolute top-4 right-4 bg-black text-white text-xs font-bold px-3 py-1 uppercase tracking-widest">Sale</div>
                       )}

@@ -4,6 +4,7 @@ export type ThemeLandingPage = {
   sections?: ILandingPageSection[];
   isPublished?: boolean;
   templateId?: string | null;
+  layoutId?: string | null;
 } | null;
 
 export type ThemeGallery = {

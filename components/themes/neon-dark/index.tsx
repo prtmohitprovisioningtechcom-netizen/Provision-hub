@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { resolveThemePage } from '@/lib/resolve-theme-page';
 import { ContactForm } from '@/components/company/ContactForm';
 import { NewsletterForm } from '@/components/company/NewsletterForm';
+import { getServiceImage } from '@/components/themes/layouts/service-image';
 
 interface Props {
   company: ICompany;
@@ -176,18 +177,29 @@ export function NeonDarkTheme(props: Props) {
               </div>
               
               <div className="grid lg:grid-cols-3 gap-6">
-                {page.services.items.map((service, i) => (
-                  <div key={service._id || i} className="bg-[#0a0a0a] border border-white/5 p-10 hover:border-white/20 transition-all duration-300 group relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" style={{ backgroundColor: primary }}></div>
-                    <div className="text-5xl font-black mb-8 opacity-10 group-hover:opacity-30 transition-opacity" style={{ color: primary }}>0{i + 1}</div>
-                    <h3 className="text-2xl font-bold mb-4 text-white uppercase tracking-tight">{service.name}</h3>
-                    <p className="text-gray-500 mb-12 font-sans font-light leading-relaxed">{service.description}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xl font-bold text-white">{formatCurrency(service.price)}</span>
-                      <span className="text-xs uppercase tracking-widest text-gray-600 bg-white/5 px-3 py-1">{service.duration}</span>
+                {page.services.items.map((service, i) => {
+                  const img = getServiceImage(service);
+                  return (
+                    <div key={service._id || i} className="bg-[#0a0a0a] border border-white/5 hover:border-white/20 transition-all duration-300 group relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 z-10" style={{ backgroundColor: primary }}></div>
+                      {img ? (
+                        <img src={img} alt={service.name} className="aspect-[16/10] w-full object-cover" />
+                      ) : (
+                        <div className="px-10 pt-10">
+                          <div className="text-5xl font-black opacity-10 group-hover:opacity-30 transition-opacity" style={{ color: primary }}>0{i + 1}</div>
+                        </div>
+                      )}
+                      <div className="p-10">
+                        <h3 className="text-2xl font-bold mb-4 text-white uppercase tracking-tight">{service.name}</h3>
+                        <p className="text-gray-500 mb-12 font-sans font-light leading-relaxed">{service.description}</p>
+                        <div className="flex justify-between items-center">
+                          <span className="text-xl font-bold text-white">{formatCurrency(service.price)}</span>
+                          <span className="text-xs uppercase tracking-widest text-gray-600 bg-white/5 px-3 py-1">{service.duration}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -208,7 +220,7 @@ export function NeonDarkTheme(props: Props) {
                 {page.products.items.map((product, i) => (
                   <div key={product._id || i} className="group relative">
                     <div className="relative aspect-[3/4] overflow-hidden bg-[#050505] border border-white/5 mb-4 group-hover:border-white/20 transition-colors">
-                      <img src={product.images[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition duration-700" />
+                      <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition duration-700" />
                       {product.offerPrice && (
                         <div className="absolute top-4 left-4 text-black text-xs font-bold uppercase tracking-widest px-3 py-1" style={{ backgroundColor: primary, boxShadow: `0 0 10px ${primary}80` }}>
                           SALE

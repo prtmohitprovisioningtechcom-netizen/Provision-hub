@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { resolveThemePage } from '@/lib/resolve-theme-page';
 import { ContactForm } from '@/components/company/ContactForm';
 import { NewsletterForm } from '@/components/company/NewsletterForm';
+import { getServiceImage } from '@/components/themes/layouts/service-image';
 
 interface Props {
   company: ICompany;
@@ -169,17 +170,28 @@ export function ElegantSerifTheme(props: Props) {
               </div>
               
               <div className="grid lg:grid-cols-3 gap-12">
-                {page.services.items.map((service, i) => (
-                  <div key={service._id || i} className="bg-white p-12 border border-[#e8e2d2] hover:border-[#c5a059] transition-colors duration-500">
-                    <div className="text-5xl font-light mb-8 opacity-20" style={{ color: primary }}>0{i + 1}</div>
-                    <h3 className="text-3xl mb-6">{service.name}</h3>
-                    <p className="text-gray-600 mb-12 font-sans font-light leading-relaxed">{service.description}</p>
-                    <div className="flex justify-between items-end border-t border-[#e8e2d2] pt-8">
-                      <span className="text-2xl">{formatCurrency(service.price)}</span>
-                      <span className="text-sm uppercase tracking-widest text-gray-400">{service.duration}</span>
+                {page.services.items.map((service, i) => {
+                  const img = getServiceImage(service);
+                  return (
+                    <div key={service._id || i} className="bg-white border border-[#e8e2d2] hover:border-[#c5a059] transition-colors duration-500 overflow-hidden">
+                      {img ? (
+                        <img src={img} alt={service.name} className="aspect-[16/10] w-full object-cover" />
+                      ) : (
+                        <div className="px-12 pt-12">
+                          <div className="text-5xl font-light opacity-20" style={{ color: primary }}>0{i + 1}</div>
+                        </div>
+                      )}
+                      <div className="p-12">
+                        <h3 className="text-3xl mb-6">{service.name}</h3>
+                        <p className="text-gray-600 mb-12 font-sans font-light leading-relaxed">{service.description}</p>
+                        <div className="flex justify-between items-end border-t border-[#e8e2d2] pt-8">
+                          <span className="text-2xl">{formatCurrency(service.price)}</span>
+                          <span className="text-sm uppercase tracking-widest text-gray-400">{service.duration}</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -200,7 +212,7 @@ export function ElegantSerifTheme(props: Props) {
                 {page.products.items.map((product, i) => (
                   <div key={product._id || i} className="group">
                     <div className="relative aspect-[4/5] overflow-hidden mb-8 bg-[#fdfbf7]">
-                      <img src={product.images[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover transition duration-1000 group-hover:scale-105" />
+                      <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover transition duration-1000 group-hover:scale-105" />
                       {product.offerPrice && (
                         <div className="absolute top-6 right-6 text-white text-xs uppercase tracking-widest px-4 py-2" style={{ backgroundColor: primary }}>
                           Sale

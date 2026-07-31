@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { resolveThemePage } from '@/lib/resolve-theme-page';
 import { ContactForm } from '@/components/company/ContactForm';
 import { NewsletterForm } from '@/components/company/NewsletterForm';
+import { getServiceImage } from '@/components/themes/layouts/service-image';
 
 interface Props {
   company: ICompany;
@@ -175,19 +176,30 @@ export function SleekGlassTheme(props: Props) {
               </div>
               
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {page.services.items.map((service, i) => (
-                  <div key={service._id || i} className="bg-white/70 backdrop-blur-xl border border-white/80 rounded-3xl p-8 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 group">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 bg-gradient-to-br from-white to-slate-100 border border-white shadow-sm text-blue-500 group-hover:scale-110 transition-transform duration-500">
-                      <Check className="w-6 h-6" style={{ color: primary }} />
+                {page.services.items.map((service, i) => {
+                  const img = getServiceImage(service);
+                  return (
+                    <div key={service._id || i} className="bg-white/70 backdrop-blur-xl border border-white/80 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 group">
+                      {img ? (
+                        <img src={img} alt={service.name} className="aspect-[16/10] w-full object-cover" />
+                      ) : (
+                        <div className="px-8 pt-8">
+                          <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br from-white to-slate-100 border border-white shadow-sm text-blue-500 group-hover:scale-110 transition-transform duration-500">
+                            <Check className="w-6 h-6" style={{ color: primary }} />
+                          </div>
+                        </div>
+                      )}
+                      <div className="p-8">
+                        <h3 className="text-2xl font-semibold mb-3 text-slate-900">{service.name}</h3>
+                        <p className="text-slate-500 mb-8 leading-relaxed">{service.description}</p>
+                        <div className="flex justify-between items-center pt-6 border-t border-slate-200/50">
+                          <span className="text-xl font-bold text-slate-900">{formatCurrency(service.price)}</span>
+                          <span className="text-sm font-medium text-slate-400 bg-slate-100/50 px-3 py-1 rounded-full">{service.duration}</span>
+                        </div>
+                      </div>
                     </div>
-                    <h3 className="text-2xl font-semibold mb-3 text-slate-900">{service.name}</h3>
-                    <p className="text-slate-500 mb-8 leading-relaxed">{service.description}</p>
-                    <div className="flex justify-between items-center pt-6 border-t border-slate-200/50">
-                      <span className="text-xl font-bold text-slate-900">{formatCurrency(service.price)}</span>
-                      <span className="text-sm font-medium text-slate-400 bg-slate-100/50 px-3 py-1 rounded-full">{service.duration}</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -208,7 +220,7 @@ export function SleekGlassTheme(props: Props) {
                 {page.products.items.map((product, i) => (
                   <div key={product._id || i} className="bg-white/70 backdrop-blur-xl border border-white/80 rounded-3xl p-4 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                     <div className="relative aspect-square rounded-2xl overflow-hidden mb-4 bg-slate-100">
-                      <img src={product.images[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       {product.offerPrice && (
                         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md border border-white/50 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm" style={{ color: primary }}>
                           SALE

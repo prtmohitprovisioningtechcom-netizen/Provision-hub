@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { resolveThemePage } from '@/lib/resolve-theme-page';
 import { ContactForm } from '@/components/company/ContactForm';
 import { NewsletterForm } from '@/components/company/NewsletterForm';
+import { getServiceImage } from '@/components/themes/layouts/service-image';
 
 interface Props {
   company: ICompany;
@@ -165,21 +166,27 @@ export function PremiumShowcaseTheme(props: Props) {
               </div>
               
               <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
-                {page.services.items.map((service, i) => (
-                  <div key={service._id || i} className="group cursor-pointer">
-                    <div className="flex gap-8 items-start pb-12 border-b border-white/10 group-hover:border-white/30 transition duration-500">
-                      <div className="text-3xl font-serif text-white/20 group-hover:text-white transition duration-500">0{i + 1}</div>
-                      <div className="flex-1">
-                        <h3 className="text-2xl font-serif text-white mb-4">{service.name}</h3>
-                        <p className="text-gray-400 mb-8 font-light leading-relaxed">{service.description}</p>
-                        <div className="flex justify-between items-center text-sm tracking-widest uppercase">
-                          <span style={{ color: primary }}>{formatCurrency(service.price)}</span>
-                          <span className="text-gray-600">{service.duration}</span>
+                {page.services.items.map((service, i) => {
+                  const img = getServiceImage(service);
+                  return (
+                    <div key={service._id || i} className="group cursor-pointer">
+                      <div className="flex gap-8 items-start pb-12 border-b border-white/10 group-hover:border-white/30 transition duration-500">
+                        <div className="text-3xl font-serif text-white/20 group-hover:text-white transition duration-500">0{i + 1}</div>
+                        <div className="flex-1">
+                          {img && (
+                            <img src={img} alt={service.name} className="aspect-[16/10] w-full object-cover mb-6" />
+                          )}
+                          <h3 className="text-2xl font-serif text-white mb-4">{service.name}</h3>
+                          <p className="text-gray-400 mb-8 font-light leading-relaxed">{service.description}</p>
+                          <div className="flex justify-between items-center text-sm tracking-widest uppercase">
+                            <span style={{ color: primary }}>{formatCurrency(service.price)}</span>
+                            <span className="text-gray-600">{service.duration}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -200,7 +207,7 @@ export function PremiumShowcaseTheme(props: Props) {
                 {page.products.items.map((product, i) => (
                   <div key={product._id || i} className="group">
                     <div className="relative aspect-[3/4] overflow-hidden mb-8">
-                      <img src={product.images[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover transition duration-1000 group-hover:scale-105" />
+                      <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover transition duration-1000 group-hover:scale-105" />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition duration-500"></div>
                     </div>
                     <h3 className="text-xl font-serif text-white mb-3">{product.name}</h3>

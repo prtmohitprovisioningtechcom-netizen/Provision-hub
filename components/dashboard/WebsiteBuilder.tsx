@@ -45,6 +45,7 @@ import { toGoogleMapsEmbedUrl } from '@/lib/maps';
 import { filterNavFooterItems, isPlaceholderBrandLabel } from '@/lib/nav-links';
 import { compressDataUrl, compressImageFile } from '@/lib/compress-image';
 import { LANDING_SECTIONS } from '@/constants';
+import { LAYOUT_OPTIONS, normalizeLayoutId, type LayoutId } from '@/lib/layout-id';
 
 type BuilderItem = Record<string, unknown>;
 
@@ -362,6 +363,8 @@ const SECTION_LINK_OPTIONS = [
 export default function WebsiteBuilder() {
   const { companyId, companySlug } = useCompany();
   const [templateId, setTemplateId] = useState<string | null>(null);
+  const [layoutId, setLayoutId] = useState<LayoutId>('1');
+  const [savingLayout, setSavingLayout] = useState(false);
   const [sections, setSections] = useState<ILandingPageSection[]>([]);
   const [customPages, setCustomPages] = useState<ILandingCustomPage[]>([]);
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
@@ -456,6 +459,7 @@ export default function WebsiteBuilder() {
         });
         setSections(sectionsWithGallery);
         setTemplateId(data.data?.templateId || null);
+        setLayoutId(normalizeLayoutId(data.data?.layoutId));
         setCustomPages(
           Array.isArray(data.data?.pages)
             ? (data.data.pages as ILandingCustomPage[]).filter((page) => {
@@ -856,6 +860,7 @@ export default function WebsiteBuilder() {
         sections: normalized,
         pages: migratedPages,
         templateId,
+        layoutId,
         isPublished: true,
       });
       if (!data.success) throw new Error(data.message || 'Publish failed');
@@ -1024,6 +1029,41 @@ export default function WebsiteBuilder() {
                 Change theme
               </Link>
             </Button>
+            <div className="flex overflow-hidden rounded-md border border-white/25 bg-white/10">
+              {LAYOUT_OPTIONS.map((layout) => (
+                <button
+                  key={layout.id}
+                  type="button"
+                  disabled={savingLayout}
+                  onClick={async () => {
+                    if (layout.id === layoutId) return;
+                    setLayoutId(layout.id);
+                    if (!templateId) return;
+                    setSavingLayout(true);
+                    try {
+                      const res = await fetch('/api/dashboard/landing-page/theme', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ templateId, layoutId: layout.id }),
+                      });
+                      if (!res.ok) throw new Error('Failed to save layout');
+                      toast.success(`Layout ${layout.id} applied`);
+                    } catch {
+                      toast.error('Could not change layout');
+                    } finally {
+                      setSavingLayout(false);
+                    }
+                  }}
+                  className={cn(
+                    'px-3 py-2 text-xs font-semibold text-white transition',
+                    layoutId === layout.id ? 'bg-white text-indigo-700' : 'hover:bg-white/15',
+                  )}
+                  title={layout.name}
+                >
+                  L{layout.id}
+                </button>
+              ))}
+            </div>
             <Button
               onClick={handleSave}
               disabled={saving || uploading !== null || saved}
@@ -1366,6 +1406,43 @@ export default function WebsiteBuilder() {
               </div>
             </div>
             <CardContent className="min-h-0 flex-1 space-y-7 overflow-y-auto overscroll-contain bg-white p-5 text-gray-900 sm:p-7 dark:bg-gray-900 dark:text-gray-100">
+              
+              {/* Design Variant Selector for All Sections */}
+              {true && (
+                <div className="space-y-3 rounded-2xl border border-indigo-100 bg-indigo-50/30 p-5 dark:border-indigo-900/50 dark:bg-indigo-900/10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-base font-bold text-indigo-950 dark:text-indigo-300">Design Layout</Label>
+                      <p className="text-xs text-gray-500 mt-1">Choose how this section looks across themes.</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: 'variant-1', name: 'Layout 1' },
+                      { id: 'variant-2', name: 'Layout 2' },
+                      { id: 'variant-3', name: 'Layout 3' }
+                    ].map((v) => (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => updateSection(selected.id, { designVariant: v.id as any })}
+                        className={cn(
+                          "relative flex flex-col items-center justify-center rounded-xl border-2 p-3 text-sm font-semibold transition-all",
+                          (selected.designVariant || 'variant-1') === v.id
+                            ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-900/40 dark:text-indigo-300 shadow-sm"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-indigo-300 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400"
+                        )}
+                      >
+                        {v.name}
+                        {(selected.designVariant || 'variant-1') === v.id && (
+                          <Check className="absolute top-2 right-2 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="section-title">
@@ -2720,6 +2797,7 @@ export default function WebsiteBuilder() {
               )}
               <ThemeRenderer
                 templateId={templateId}
+                layoutId={layoutId}
                 company={{
                   _id: companyId || '',
                   name: companyName,
@@ -2738,7 +2816,12 @@ export default function WebsiteBuilder() {
                 services={catalogServices}
                 reviews={[]}
                 blogs={publishedBlogs}
-                landingPage={{ sections: previewSections, isPublished: true, templateId }}
+                landingPage={{
+                  sections: previewSections,
+                  isPublished: true,
+                  templateId,
+                  layoutId,
+                }}
                 gallery={{
                   images:
                     previewSections

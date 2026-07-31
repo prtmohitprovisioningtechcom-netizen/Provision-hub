@@ -123,6 +123,7 @@ CREATE TABLE `landing_pages` (
   `companyId` VARCHAR(36) NOT NULL UNIQUE,
   `sections` JSON,
   `templateId` VARCHAR(255),
+  `layoutId` VARCHAR(16) NOT NULL DEFAULT '1',
   `pages` JSON,
   `isPublished` BOOLEAN DEFAULT TRUE,
   `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,

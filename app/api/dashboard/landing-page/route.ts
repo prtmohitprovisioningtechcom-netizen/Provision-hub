@@ -5,6 +5,8 @@ import { RowDataPacket } from 'mysql2';
 import crypto from 'crypto';
 import { LANDING_SECTIONS } from '@/constants';
 import { buildDefaultSections } from '@/lib/theme-content';
+import { normalizeLayoutId } from '@/lib/layout-id';
+import { ensureLandingPageLayoutColumn } from '@/lib/ensure-layout-column';
 
 function parseJsonField<T>(value: unknown, fallback: T): T {
   if (value == null) return fallback;
@@ -28,8 +30,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
+    await ensureLandingPageLayoutColumn();
+
     const [pages] = await pool.execute<RowDataPacket[]>(
-      'SELECT id as _id, companyId, sections, pages, isPublished, templateId FROM landing_pages WHERE companyId = ?',
+      'SELECT id as _id, companyId, sections, pages, isPublished, templateId, layoutId FROM landing_pages WHERE companyId = ?',
       [companyId],
     );
 
@@ -41,6 +45,7 @@ export async function GET(request: NextRequest) {
           pages: [],
           isPublished: false,
           templateId: null,
+          layoutId: '1',
         },
       });
     }
@@ -53,6 +58,7 @@ export async function GET(request: NextRequest) {
         sections: parseJsonField(row.sections, []),
         pages: parseJsonField(row.pages, []),
         isPublished: Boolean(row.isPublished),
+        layoutId: normalizeLayoutId(row.layoutId),
       },
     });
   } catch (error: unknown) {
@@ -70,10 +76,13 @@ export async function POST(request: NextRequest) {
     if (!companyId) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
+
+    await ensureLandingPageLayoutColumn();
+
     const body = await request.json();
 
     const [existing] = await pool.execute<RowDataPacket[]>(
-      'SELECT id, templateId FROM landing_pages WHERE companyId = ?',
+      'SELECT id, templateId, layoutId FROM landing_pages WHERE companyId = ?',
       [companyId],
     );
 
@@ -84,17 +93,21 @@ export async function POST(request: NextRequest) {
       typeof body.templateId === 'string' && body.templateId
         ? body.templateId
         : existing[0]?.templateId || null;
+    const layoutId =
+      body.layoutId !== undefined && body.layoutId !== null && body.layoutId !== ''
+        ? normalizeLayoutId(body.layoutId)
+        : normalizeLayoutId(existing[0]?.layoutId);
 
     if (existing.length > 0) {
       await pool.execute(
-        'UPDATE landing_pages SET sections = ?, pages = ?, isPublished = ?, templateId = COALESCE(?, templateId), updatedAt = NOW() WHERE companyId = ?',
-        [sectionsStr, pagesStr, isPublished, templateId, companyId],
+        'UPDATE landing_pages SET sections = ?, pages = ?, isPublished = ?, templateId = COALESCE(?, templateId), layoutId = ?, updatedAt = NOW() WHERE companyId = ?',
+        [sectionsStr, pagesStr, isPublished, templateId, layoutId, companyId],
       );
     } else {
       const id = crypto.randomUUID();
       await pool.execute(
-        'INSERT INTO landing_pages (id, companyId, templateId, sections, pages, isPublished) VALUES (?, ?, ?, ?, ?, ?)',
-        [id, companyId, templateId, sectionsStr, pagesStr, isPublished],
+        'INSERT INTO landing_pages (id, companyId, templateId, layoutId, sections, pages, isPublished) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [id, companyId, templateId, layoutId, sectionsStr, pagesStr, isPublished],
       );
     }
 
@@ -103,6 +116,7 @@ export async function POST(request: NextRequest) {
       data: {
         ...body,
         templateId,
+        layoutId,
         isPublished: Boolean(isPublished),
       },
     });

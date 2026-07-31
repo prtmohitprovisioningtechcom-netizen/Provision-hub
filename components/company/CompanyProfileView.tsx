@@ -43,6 +43,7 @@ interface LandingPageData {
 }
 
 interface CompanyProfileViewProps {
+  templateId?: string | null;
   company: ICompany;
   products: IProduct[];
   services: IService[];
@@ -107,6 +108,7 @@ function BusinessHoursTable({ hours }: { hours: BusinessHours[] }) {
 }
 
 export function CompanyProfileView({
+  templateId = 'default',
   company,
   products,
   services,
@@ -180,12 +182,35 @@ export function CompanyProfileView({
     .filter(Boolean)
     .join(', ');
 
+  const getThemeWrapperClass = (id?: string | null) => {
+    switch (id || 'default') {
+      case 'elegant-serif':
+        return 'font-serif bg-stone-50 text-stone-900';
+      case 'neon-dark':
+        return 'font-mono bg-zinc-950 text-zinc-100 dark';
+      case 'warm-showcase':
+        return 'font-serif bg-amber-50/50 text-stone-900';
+      case 'creative-studio':
+        return 'font-sans bg-slate-50 text-slate-900';
+      case 'bold-launch':
+        return 'font-sans bg-gray-900 text-gray-100 dark';
+      case 'premium-showcase':
+        return 'font-sans bg-zinc-900 text-zinc-100 dark';
+      case 'clean-presence':
+        return 'font-sans bg-white text-gray-900';
+      case 'sleek-glass':
+        return 'font-sans bg-slate-50 text-slate-900';
+      default:
+        return 'font-sans bg-white text-gray-900';
+    }
+  };
+
   if (hasLanding) {
     const navy = company.theme?.primaryColor || '#0b2a5b';
     const accentColor = navy;
 
     return (
-      <div className="min-h-screen bg-white text-gray-900">
+      <div className={cn("min-h-screen transition-colors duration-500", getThemeWrapperClass(templateId))}>
         <div className="text-white" style={{ backgroundColor: navy }}>
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-xs sm:px-6 sm:text-sm">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -317,7 +342,7 @@ export function CompanyProfileView({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className={cn("min-h-screen transition-colors duration-500", getThemeWrapperClass(templateId))}>
       {/* Banner */}
       <div className="relative h-72 overflow-hidden bg-gray-900 sm:h-96 md:h-112">
         {company.banner && (

@@ -80,10 +80,12 @@ export default async function CompanyPage({ params }: PageProps) {
           sections?: ILandingPageSection[];
           isPublished?: boolean;
           templateId?: string;
+          layoutId?: string;
         }>({
           sections: (result.landingPage as { sections?: ILandingPageSection[] }).sections,
           isPublished: (result.landingPage as { isPublished?: boolean }).isPublished,
           templateId: (result.landingPage as { templateId?: string }).templateId,
+          layoutId: (result.landingPage as { layoutId?: string }).layoutId,
         })
       : null;
     const gallery = result.gallery
@@ -93,6 +95,7 @@ export default async function CompanyPage({ params }: PageProps) {
     return (
       <ThemeRenderer
         templateId={landingPage?.templateId}
+        layoutId={landingPage?.layoutId}
         company={company}
         products={products}
         services={services}

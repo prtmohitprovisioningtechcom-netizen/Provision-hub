@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { resolveThemePage } from '@/lib/resolve-theme-page';
 import { ContactForm } from '@/components/company/ContactForm';
 import { NewsletterForm } from '@/components/company/NewsletterForm';
+import { getServiceImage } from '@/components/themes/layouts/service-image';
 
 interface Props {
   company: ICompany;
@@ -165,22 +166,32 @@ export function WarmShowcaseTheme(props: Props) {
               </div>
               
               <div className="grid md:grid-cols-2 gap-12">
-                {page.services.items.map((service, i) => (
-                  <div key={service._id || i} className="flex gap-6 items-start bg-white p-8 rounded-xl border border-[#f3e8d6]">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${primary}15`, color: primary }}>
-                      <Check className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold mb-3">{service.name}</h3>
-                      <p className="text-[#6b5a4a] mb-4">{service.description}</p>
-                      <div className="flex gap-4 items-center text-sm font-sans">
-                        <span className="font-bold text-lg" style={{ color: primary }}>{formatCurrency(service.price)}</span>
-                        <span className="text-[#8c7b6a]">•</span>
-                        <span className="text-[#8c7b6a]">{service.duration}</span>
+                {page.services.items.map((service, i) => {
+                  const img = getServiceImage(service);
+                  return (
+                    <div key={service._id || i} className="bg-white rounded-xl border border-[#f3e8d6] overflow-hidden">
+                      {img && (
+                        <img src={img} alt={service.name} className="aspect-[16/10] w-full object-cover" />
+                      )}
+                      <div className="flex gap-6 items-start p-8">
+                        {!img && (
+                          <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: `${primary}15`, color: primary }}>
+                            <Check className="w-6 h-6" />
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="text-2xl font-bold mb-3">{service.name}</h3>
+                          <p className="text-[#6b5a4a] mb-4">{service.description}</p>
+                          <div className="flex gap-4 items-center text-sm font-sans">
+                            <span className="font-bold text-lg" style={{ color: primary }}>{formatCurrency(service.price)}</span>
+                            <span className="text-[#8c7b6a]">•</span>
+                            <span className="text-[#8c7b6a]">{service.duration}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -200,7 +211,7 @@ export function WarmShowcaseTheme(props: Props) {
                 {page.products.items.map((product, i) => (
                   <div key={product._id || i} className="bg-[#3a3027] rounded-lg overflow-hidden group border border-[#4a3f35]">
                     <div className="relative h-72 overflow-hidden">
-                      <img src={product.images[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover group-hover:opacity-80 transition duration-500" />
+                      <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover group-hover:opacity-80 transition duration-500" />
                     </div>
                     <div className="p-6 text-center">
                       <h3 className="text-xl font-bold mb-2">{product.name}</h3>

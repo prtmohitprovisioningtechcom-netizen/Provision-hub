@@ -12,6 +12,7 @@ import { resolveThemePage } from '@/lib/resolve-theme-page';
 import { ContactForm } from '@/components/company/ContactForm';
 import { NewsletterForm } from '@/components/company/NewsletterForm';
 import { ReviewForm } from '@/components/company/ReviewForm';
+import { getServiceImage } from '@/components/themes/layouts/service-image';
 
 interface Props {
   company: ICompany;
@@ -194,19 +195,30 @@ export function CreativeStudioTheme(props: Props) {
                 <p className="text-xl text-gray-500">{page.services.subtitle}</p>
               </div>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {page.services.items.map((service, i) => (
-                  <div key={service._id || i} className="group bg-white rounded-3xl p-8 shadow-sm hover:shadow-2xl transition-all duration-300 translate-y-0 hover:-translate-y-2">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6" style={{ backgroundColor: `${primary}15`, color: primary }}>
-                      <Check className="w-8 h-8" />
+                {page.services.items.map((service, i) => {
+                  const img = getServiceImage(service);
+                  return (
+                    <div key={service._id || i} className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 translate-y-0 hover:-translate-y-2">
+                      {img ? (
+                        <img src={img} alt={service.name} className="aspect-[16/10] w-full object-cover" />
+                      ) : (
+                        <div className="px-8 pt-8">
+                          <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${primary}15`, color: primary }}>
+                            <Check className="w-8 h-8" />
+                          </div>
+                        </div>
+                      )}
+                      <div className="p-8">
+                        <h3 className="text-2xl font-bold mb-4">{service.name}</h3>
+                        <p className="text-gray-600 mb-6">{service.description}</p>
+                        <div className="flex justify-between items-center mt-auto pt-6 border-t border-gray-100">
+                          <span className="font-black text-xl" style={{ color: primary }}>{formatCurrency(service.price)}</span>
+                          <span className="text-sm font-bold text-gray-400 bg-gray-50 px-3 py-1 rounded-full">{service.duration}</span>
+                        </div>
+                      </div>
                     </div>
-                    <h3 className="text-2xl font-bold mb-4">{service.name}</h3>
-                    <p className="text-gray-600 mb-6">{service.description}</p>
-                    <div className="flex justify-between items-center mt-auto pt-6 border-t border-gray-100">
-                      <span className="font-black text-xl" style={{ color: primary }}>{formatCurrency(service.price)}</span>
-                      <span className="text-sm font-bold text-gray-400 bg-gray-50 px-3 py-1 rounded-full">{service.duration}</span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -226,7 +238,7 @@ export function CreativeStudioTheme(props: Props) {
                 {page.products.items.map((product, i) => (
                   <div key={product._id || i} className="bg-gray-800 rounded-3xl overflow-hidden group">
                     <div className="relative h-64 overflow-hidden">
-                      <img src={product.images[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     </div>
                     <div className="p-6">
                       <h3 className="text-xl font-bold mb-2">{product.name}</h3>

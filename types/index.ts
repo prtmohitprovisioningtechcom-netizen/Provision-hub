@@ -136,6 +136,7 @@ export interface ILandingPageSection {
   items?: Record<string, unknown>[];
   isVisible: boolean;
   order: number;
+  designVariant?: 'variant-1' | 'variant-2' | 'variant-3';
 }
 
 /** Extra pages linked from the company navbar, served at /{companySlug}/p/{pageSlug} */

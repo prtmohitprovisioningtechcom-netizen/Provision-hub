@@ -7,9 +7,24 @@ import { ContactForm } from './ContactForm';
 import { NewsletterForm } from './NewsletterForm';
 import { FloatingContactButtons } from './FloatingContactButtons';
 import { SocialIcons, hasSocialLinks } from './SocialIcons';
+import { AboutSection } from '@/components/sections/About';
+import { ServicesSection } from '@/components/sections/Services';
+import { WhyChooseUsSection } from '@/components/sections/WhyChooseUs';
+import { ProductsSection } from '@/components/sections/Products';
+import { GallerySection } from '@/components/sections/Gallery';
+import { BlogsSection } from '@/components/sections/Blogs';
+import { TestimonialsSection } from '@/components/sections/Testimonials';
+import { FAQSection } from '@/components/sections/FAQ';
+import { SubscribeSection } from '@/components/sections/Subscribe';
+import { ContactSection } from '@/components/sections/Contact';
+import { FooterSection } from '@/components/sections/Footer';
+import { RatingSection } from '@/components/sections/Rating';
 import { cn, formatCurrency } from '@/lib/utils';
 import { toGoogleMapsEmbedUrl } from '@/lib/maps';
 import { filterNavFooterItems } from '@/lib/nav-links';
+import { SectionShell, SectionHead, staggerGrid, cardReveal, sectionReveal, ease } from '@/components/company/SectionShell';
+import { WaveDivider } from '@/components/company/WaveDivider';
+
 import {
   ChevronDown,
   Headphones,
@@ -45,33 +60,7 @@ interface CompanyLandingProps {
   showFloatingContact?: boolean;
 }
 
-const ease = [0.22, 1, 0.36, 1] as const;
 
-const sectionReveal: Variants = {
-  hidden: { opacity: 0, y: 36 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease },
-  },
-};
-
-const staggerGrid: Variants = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.08, delayChildren: 0.12 },
-  },
-};
-
-const cardReveal: Variants = {
-  hidden: { opacity: 0, y: 28, scale: 0.98 },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.55, ease },
-  },
-};
 
 const WHY_ICONS = [Headphones, Shield, Sparkles, Wallet];
 
@@ -99,76 +88,6 @@ function safeLandingLink(link: string | undefined, fallback: string) {
   return fallback;
 }
 
-function WaveDivider({ fill, flip = false }: { fill: string; flip?: boolean }) {
-  return (
-    <div className={cn('pointer-events-none leading-none', flip && 'rotate-180')} aria-hidden>
-      <svg viewBox="0 0 1440 64" className="block h-10 w-full md:h-14" preserveAspectRatio="none">
-        <path
-          fill={fill}
-          d="M0,32 C240,64 480,0 720,24 C960,48 1200,64 1440,24 L1440,64 L0,64 Z"
-        />
-      </svg>
-    </div>
-  );
-}
-
-function SectionShell({
-  id,
-  tone = 'white',
-  navy,
-  children,
-  className,
-  withTopWave = false,
-  withBottomWave = false,
-  compact = false,
-}: {
-  id: string;
-  tone?: 'white' | 'soft' | 'navy' | 'navySoft';
-  navy: string;
-  children: ReactNode;
-  className?: string;
-  withTopWave?: boolean;
-  withBottomWave?: boolean;
-  compact?: boolean;
-}) {
-  const bg =
-    tone === 'soft'
-      ? '#f4f7fb'
-      : tone === 'navy'
-        ? navy
-        : tone === 'navySoft'
-          ? undefined
-          : '#ffffff';
-
-  return (
-    <motion.section
-      id={id}
-      variants={sectionReveal}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: '-80px' }}
-      className={cn('relative scroll-mt-24', className)}
-      style={
-        tone === 'navySoft'
-          ? { background: `linear-gradient(180deg, ${navy}0f 0%, #ffffff 70%)` }
-          : { backgroundColor: bg }
-      }
-    >
-      {withTopWave && <WaveDivider fill={tone === 'soft' ? '#ffffff' : '#f4f7fb'} />}
-      <div
-        className={cn(
-          'relative mx-auto max-w-7xl px-4 sm:px-6',
-          compact ? 'py-5 md:py-7' : 'py-16 md:py-24',
-        )}
-      >
-        {children}
-      </div>
-      {withBottomWave && (
-        <WaveDivider fill={tone === 'white' ? '#f4f7fb' : '#ffffff'} flip />
-      )}
-    </motion.section>
-  );
-}
 
 function HeroSlideshow({
   images,
@@ -476,56 +395,6 @@ function GalleryGrid({
   );
 }
 
-function SectionHead({
-  eyebrow,
-  title,
-  subtitle,
-  accent,
-  light = false,
-}: {
-  eyebrow?: string;
-  title: string;
-  subtitle?: string;
-  accent: string;
-  light?: boolean;
-}) {
-  return (
-    <motion.div
-      variants={cardReveal}
-      className="mx-auto mb-12 max-w-3xl text-center md:mb-16"
-    >
-      {eyebrow && (
-        <p
-          className="mb-3 inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em]"
-          style={{ color: accent, backgroundColor: light ? 'rgba(255,255,255,0.12)' : `${accent}18` }}
-        >
-          {eyebrow}
-        </p>
-      )}
-      <h2
-        className={cn(
-          'text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl',
-          light ? 'text-white' : 'text-gray-950',
-        )}
-      >
-        {title}
-      </h2>
-      {subtitle && (
-        <p className={cn('mx-auto mt-4 max-w-2xl text-base sm:text-lg', light ? 'text-white/75' : 'text-gray-500')}>
-          {subtitle}
-        </p>
-      )}
-      <motion.div
-        initial={{ scaleX: 0 }}
-        whileInView={{ scaleX: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.2, ease }}
-        className="mx-auto mt-5 h-1 w-16 origin-center rounded-full"
-        style={{ backgroundColor: accent }}
-      />
-    </motion.div>
-  );
-}
 
 export function CompanyLanding({
   sections,
@@ -533,6 +402,7 @@ export function CompanyLanding({
   companyName,
   products = [],
   services = [],
+  blogs = [],
   primaryColor = '#0b2a5b',
   accentColor = '#0b2a5b',
   rating = 0,
@@ -548,7 +418,9 @@ export function CompanyLanding({
     .filter((section) => {
       if (section.isVisible === false) return false;
       if (section.type === 'navbar') return false;
-      if (section.type === 'services') return Boolean(section.items?.length);
+      if (section.type === 'services') {
+        return Boolean(section.items?.length || services.length);
+      }
       if (section.type === 'products') return Boolean(section.items?.length);
       if (section.type === 'gallery') {
         return Boolean(section.items?.length || section.images?.length);
@@ -600,6 +472,7 @@ export function CompanyLanding({
                 className="relative min-h-[88vh] scroll-mt-24 overflow-hidden"
               >
                 <HeroSlideshow images={heroImages} title={section.title} navy={navy} gold={gold} />
+                <div className="absolute inset-0 z-[1] bg-gradient-to-r from-black/65 via-black/40 to-black/20" />
                 <div className="relative z-10 mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-center px-4 py-28 sm:px-6">
                   <motion.p
                     initial={{ opacity: 0, y: 16 }}
@@ -607,7 +480,7 @@ export function CompanyLanding({
                     transition={{ duration: 0.6, ease }}
                     className="mb-4 text-sm font-bold uppercase tracking-[0.3em] text-white [text-shadow:0_2px_12px_rgba(0,0,0,0.55)]"
                   >
-                    {companyName}
+                    {section.eyebrow?.trim() || companyName}
                   </motion.p>
                   <motion.h1
                     initial={{ opacity: 0, y: 28 }}
@@ -649,851 +522,145 @@ export function CompanyLanding({
                           section.buttonLink,
                           hasContactSection ? '#contact' : '#services',
                         )}
-                        className="inline-flex items-center rounded-full px-8 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-[0_18px_40px_rgba(0,0,0,0.25)] transition hover:-translate-y-1"
-                        style={{ backgroundColor: gold }}
+                        className="inline-flex items-center rounded-full bg-white px-8 py-3.5 text-sm font-bold uppercase tracking-wide shadow-[0_18px_40px_rgba(0,0,0,0.25)] transition hover:-translate-y-1"
+                        style={{ color: navy }}
                       >
                         {section.buttonText}
                       </a>
                     )}
                   </motion.div>
                 </div>
-                <div className="absolute inset-x-0 bottom-0">
+                <div className="absolute inset-x-0 bottom-0 z-10">
                   <WaveDivider fill="#ffffff" />
                 </div>
               </section>
             );
           }
 
-          case 'rating': {
-            const manualScore = Number.parseFloat(String(section.note || '').trim());
-            const displayRating =
-              Number.isFinite(manualScore) && manualScore > 0
-                ? Math.min(5, manualScore)
-                : Number(rating) > 0
-                  ? Number(rating)
-                  : 0;
-            const badges = (section.items || [])
-              .map((item) => ({
-                label: readField(item as Record<string, string>, 'label'),
-                link: readField(item as Record<string, string>, 'link'),
-              }))
-              .filter((item) => item.label);
-            const brandName = section.title?.trim() || companyName;
-            const fullStars = Math.floor(displayRating);
-            const partial = Math.max(0, Math.min(1, displayRating - fullStars));
 
-            return (
-              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy} compact>
-                <motion.div
-                  variants={cardReveal}
-                  className="mx-auto max-w-3xl text-center"
-                >
-                  <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
-                    {badges.length > 0 && (
-                      <div className="flex flex-wrap items-center justify-center gap-x-1.5">
-                        {badges.map((badge, index) => (
-                          <span key={`${badge.label}-${index}`} className="flex items-center gap-1.5">
-                            {index > 0 && (
-                              <span className="text-sm text-gray-300" aria-hidden>
-                                |
-                              </span>
-                            )}
-                            {badge.link ? (
-                              <a
-                                href={safeLandingLink(badge.link, '#')}
-                                target={badge.link.startsWith('http') ? '_blank' : undefined}
-                                rel={
-                                  badge.link.startsWith('http')
-                                    ? 'noopener noreferrer'
-                                    : undefined
-                                }
-                                className={cn(
-                                  'text-xl font-bold tracking-tight sm:text-2xl',
-                                  /google/i.test(badge.label)
-                                    ? 'bg-linear-to-r from-[#4285F4] via-[#EA4335] to-[#34A853] bg-clip-text text-transparent'
-                                    : /facebook/i.test(badge.label)
-                                      ? 'text-[#1877F2]'
-                                      : 'text-gray-800',
-                                )}
-                                style={
-                                  !/google|facebook/i.test(badge.label)
-                                    ? { color: navy }
-                                    : undefined
-                                }
-                              >
-                                {badge.label}
-                              </a>
-                            ) : (
-                              <span
-                                className={cn(
-                                  'text-xl font-bold tracking-tight sm:text-2xl',
-                                  /google/i.test(badge.label)
-                                    ? 'bg-linear-to-r from-[#4285F4] via-[#EA4335] to-[#34A853] bg-clip-text text-transparent'
-                                    : /facebook/i.test(badge.label)
-                                      ? 'text-[#1877F2]'
-                                      : 'text-gray-800',
-                                )}
-                                style={
-                                  !/google|facebook/i.test(badge.label)
-                                    ? { color: navy }
-                                    : undefined
-                                }
-                              >
-                                {badge.label}
-                              </span>
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {displayRating > 0 && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-extrabold tracking-tight text-gray-950 sm:text-3xl">
-                          {displayRating.toFixed(1)}
-                          <span className="text-lg font-bold text-gray-500 sm:text-xl">/5</span>
-                        </span>
-                        <div className="flex items-center gap-0.5" aria-label={`${displayRating} out of 5`}>
-                          {[1, 2, 3, 4, 5].map((star) => {
-                            const fill =
-                              star <= fullStars ? 1 : star === fullStars + 1 ? partial : 0;
-                            return (
-                              <span key={star} className="relative inline-block h-5 w-5 sm:h-6 sm:w-6">
-                                <Star className="absolute inset-0 h-full w-full text-gray-200" />
-                                <span
-                                  className="absolute inset-0 overflow-hidden"
-                                  style={{ width: `${fill * 100}%` }}
-                                >
-                                  <Star className="h-full w-full fill-[#f5b301] text-[#f5b301]" />
-                                </span>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <h2
-                    className="mt-3 text-3xl font-black uppercase tracking-wide sm:mt-4 sm:text-4xl md:text-5xl"
-                    style={{ color: navy }}
-                  >
-                    {brandName}
-                  </h2>
-                  {section.subtitle?.trim() && (
-                    <p className="mx-auto mt-1.5 max-w-2xl font-serif text-base text-gray-800 sm:mt-2 sm:text-lg">
-                      {section.subtitle}
-                    </p>
-                  )}
-                  {section.content?.trim() && (
-                    <p className="mx-auto mt-1 max-w-xl text-sm text-gray-500">
-                      {section.content}
-                    </p>
-                  )}
-                </motion.div>
-              </SectionShell>
-            );
-          }
 
           case 'services':
             return (
-              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy} withBottomWave>
-                <SectionHead
-                  eyebrow={section.eyebrow}
-                  title={section.title}
-                  subtitle={section.subtitle}
-                  accent={gold}
-                />
-                <motion.div
-                  variants={staggerGrid}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true, margin: '-40px' }}
-                  className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                >
-                  {items.map((item, i) => {
-                    const name = readField(item, 'name');
-                    const description = readField(item, 'description');
-                    const image = readField(item, 'image');
-                    const price = readNumber(item, 'price');
-                    const itemLink = readField(item, 'link') || section.buttonLink || '';
-                    const itemCta = readField(item, 'buttonText') || section.buttonText || '';
-                    return (
-                      <motion.article
-                        key={i}
-                        variants={cardReveal}
-                        whileHover={{ y: -8 }}
-                        className="group overflow-hidden rounded-2xl bg-white shadow-[0_10px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
-                      >
-                        <div className="relative aspect-4/3 overflow-hidden bg-gray-100">
-                          {image ? (
-                            <Image
-                              src={image}
-                              alt={name}
-                              fill
-                              sizes="(max-width: 768px) 100vw, 25vw"
-                              className="object-cover transition duration-700 group-hover:scale-110"
-                            />
-                          ) : (
-                            <div
-                              className="flex h-full items-center justify-center text-4xl font-black text-white/40"
-                              style={{ backgroundColor: navy }}
-                            >
-                              {name.charAt(0)}
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/15 to-transparent" />
-                          <h3 className="absolute bottom-3 left-3 right-3 text-lg font-bold text-white">
-                            {name}
-                          </h3>
-                        </div>
-                        <div className="p-5">
-                          <p className="line-clamp-3 text-sm leading-relaxed text-gray-600">
-                            {description}
-                          </p>
-                          <div className="mt-4 flex items-center justify-between">
-                            {price > 0 ? (
-                              <span className="font-bold" style={{ color: navy }}>
-                                {formatCurrency(price)}
-                              </span>
-                            ) : (
-                              <span />
-                            )}
-                            {itemCta && itemLink && (
-                              <a
-                                href={safeLandingLink(itemLink, '#contact')}
-                                className="text-sm font-bold uppercase tracking-wide transition group-hover:translate-x-0.5"
-                                style={{ color: gold }}
-                              >
-                                {itemCta}
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      </motion.article>
-                    );
-                  })}
-                </motion.div>
-              </SectionShell>
+              <ServicesSection 
+                key={section.id} 
+                section={section} 
+                services={services} 
+                primaryColor={navy} 
+              />
             );
 
           case 'products':
             return (
-              <SectionShell id={sectionId} key={section.id} tone="soft" navy={navy}>
-                <SectionHead
-                  eyebrow={section.eyebrow}
-                  title={section.title}
-                  subtitle={section.subtitle}
-                  accent={gold}
-                />
-                <motion.div
-                  variants={staggerGrid}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true }}
-                  className="grid gap-7 md:grid-cols-2 lg:grid-cols-3"
-                >
-                  {items.map((item, i) => {
-                    const name = readField(item, 'name');
-                    const description = readField(item, 'description');
-                    const images = Array.isArray(item.images) ? (item.images as string[]) : [];
-                    const price = readNumber(item, 'price');
-                    const offerPrice =
-                      item.offerPrice != null ? readNumber(item, 'offerPrice') : undefined;
-                    const itemLink = readField(item, 'link') || section.buttonLink || '';
-                    const itemCta = readField(item, 'buttonText') || section.buttonText || '';
-                    return (
-                      <motion.article
-                        key={i}
-                        variants={cardReveal}
-                        whileHover={{ y: -8 }}
-                        className="overflow-hidden rounded-2xl bg-white shadow-[0_14px_40px_rgba(15,23,42,0.08)] ring-1 ring-gray-100"
-                      >
-                        <div className="relative aspect-16/10 overflow-hidden bg-gray-100">
-                          {images[0] ? (
-                            <Image
-                              src={images[0]}
-                              alt={name}
-                              fill
-                              className="object-cover transition duration-700 hover:scale-105"
-                              sizes="33vw"
-                            />
-                          ) : null}
-                        </div>
-                        <div className="p-6">
-                          <h3 className="text-xl font-bold text-gray-950">{name}</h3>
-                          <p className="mt-2 line-clamp-3 text-sm text-gray-600">{description}</p>
-                          <div className="mt-5 flex items-center justify-between gap-3">
-                            <div>
-                              {offerPrice ? (
-                                <>
-                                  <span className="text-xl font-black" style={{ color: navy }}>
-                                    {formatCurrency(offerPrice)}
-                                  </span>
-                                  <span className="ml-2 text-sm text-gray-400 line-through">
-                                    {formatCurrency(price)}
-                                  </span>
-                                </>
-                              ) : price > 0 ? (
-                                <span className="text-xl font-black" style={{ color: navy }}>
-                                  {formatCurrency(price)}
-                                </span>
-                              ) : null}
-                            </div>
-                            {itemCta && itemLink && (
-                              <a
-                                href={safeLandingLink(itemLink, '#contact')}
-                                className="rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition hover:brightness-110"
-                                style={{ backgroundColor: gold }}
-                              >
-                                {itemCta}
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      </motion.article>
-                    );
-                  })}
-                </motion.div>
-              </SectionShell>
+              <ProductsSection
+                key={section.id}
+                section={section}
+                primaryColor={navy}
+              />
             );
 
           case 'why-choose-us':
             return (
-              <SectionShell id={sectionId} key={section.id} tone="navySoft" navy={navy} withTopWave>
-                <SectionHead
-                  eyebrow={section.eyebrow}
-                  title={section.title}
-                  subtitle={section.subtitle}
-                  accent={gold}
-                />
-                <motion.div
-                  variants={staggerGrid}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true }}
-                  className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
-                >
-                  {items.map((item, itemIndex) => {
-                    const Icon = WHY_ICONS[itemIndex % WHY_ICONS.length];
-                    return (
-                      <motion.article
-                        key={itemIndex}
-                        variants={cardReveal}
-                        whileHover={{ y: -6 }}
-                        className="rounded-2xl border border-white/70 bg-white/90 p-7 text-center shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur"
-                      >
-                        <div
-                          className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg"
-                          style={{ background: `linear-gradient(145deg, ${navy}, #1a4a8c)` }}
-                        >
-                          <Icon className="h-6 w-6" />
-                        </div>
-                        <h3 className="mt-5 text-lg font-bold text-gray-950">
-                          {readField(item, 'title')}
-                        </h3>
-                        <p className="mt-2 text-sm leading-relaxed text-gray-500">
-                          {readField(item, 'description')}
-                        </p>
-                      </motion.article>
-                    );
-                  })}
-                </motion.div>
-              </SectionShell>
+              <WhyChooseUsSection
+                key={section.id}
+                section={section}
+                primaryColor={navy}
+              />
             );
 
           case 'about':
             return (
-              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy}>
-                <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-                  <motion.div variants={cardReveal}>
-                    {section.eyebrow?.trim() && (
-                      <p
-                        className="inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em]"
-                        style={{ color: gold, backgroundColor: `${gold}18` }}
-                      >
-                        {section.eyebrow}
-                      </p>
-                    )}
-                    <h2 className="mt-4 text-3xl font-extrabold text-gray-950 sm:text-4xl md:text-5xl">
-                      {section.title}
-                    </h2>
-                    <div className="mt-4 h-1 w-16 rounded-full" style={{ backgroundColor: gold }} />
-                    {section.subtitle && (
-                      <p className="mt-5 text-lg font-semibold" style={{ color: navy }}>
-                        {section.subtitle}
-                      </p>
-                    )}
-                    <p className="mt-4 text-base leading-relaxed text-gray-600">{section.content}</p>
-                    {section.buttonText?.trim() && (
-                      <a
-                        href={safeLandingLink(section.buttonLink, '#contact')}
-                        className="mt-8 inline-flex rounded-full px-7 py-3 text-sm font-bold uppercase tracking-wide text-white transition hover:-translate-y-0.5"
-                        style={{ backgroundColor: gold }}
-                      >
-                        {section.buttonText}
-                      </a>
-                    )}
-                  </motion.div>
-                  {section.image && (
-                    <motion.div
-                      variants={cardReveal}
-                      className="relative aspect-4/3 overflow-hidden rounded-4xl shadow-[0_30px_80px_rgba(11,42,91,0.2)]"
-                    >
-                      <Image
-                        src={section.image}
-                        alt={section.title}
-                        fill
-                        sizes="(max-width: 1024px) 100vw, 50vw"
-                        className="object-cover"
-                      />
-                      <div
-                        className="absolute -bottom-6 -left-6 h-28 w-28 rounded-full opacity-80 blur-2xl"
-                        style={{ backgroundColor: gold }}
-                      />
-                    </motion.div>
-                  )}
-                </div>
-              </SectionShell>
+              <AboutSection 
+                key={section.id} 
+                section={section} 
+                primaryColor={navy} 
+              />
             );
 
-          case 'gallery': {
-            const galleryItems: GalleryCardItem[] = (
-              section.items?.length
-                ? (section.items as Array<Record<string, unknown>>)
-                : (section.images || []).map((image) => ({
-                    image,
-                    title: '',
-                    description: '',
-                  }))
-            ).map((item) => ({
-              image: readField(item, 'image'),
-              title:
-                readField(item, 'title') ||
-                readField(item, 'name') ||
-                '',
-              description: readField(item, 'description'),
-              link: readField(item, 'link'),
-              buttonText: readField(item, 'buttonText'),
-            }));
+          case 'gallery':
             return (
-              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy} withBottomWave>
-                <SectionHead
-                  eyebrow={section.eyebrow}
-                  title={section.title}
-                  subtitle={section.subtitle}
-                  accent={gold}
-                />
-                <GalleryGrid
-                  items={galleryItems}
-                  sectionTitle={section.title}
-                  navy={navy}
-                  gold={gold}
-                  sectionButtonLink={section.buttonLink || ''}
-                  sectionButtonText={section.buttonText || ''}
-                />
-              </SectionShell>
+              <GallerySection
+                key={section.id}
+                section={section}
+                primaryColor={navy}
+              />
             );
-          }
 
           case 'blogs':
             return (
-              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy}>
-                <SectionHead title={section.title} subtitle={section.subtitle} accent={gold} />
-                <motion.div
-                  variants={staggerGrid}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true }}
-                  className="grid gap-6 md:grid-cols-3"
-                >
-                  {items.map((item, itemIndex) => (
-                    <motion.article
-                      key={itemIndex}
-                      variants={cardReveal}
-                      whileHover={{ y: -6 }}
-                      className="overflow-hidden rounded-2xl bg-white shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
-                    >
-                      {item.image && (
-                        <div className="relative aspect-16/10 overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={readField(item, 'image')}
-                            alt={readField(item, 'title')}
-                            className="h-full w-full object-cover transition duration-500 hover:scale-105"
-                          />
-                        </div>
-                      )}
-                      <div className="p-6">
-                        <h3 className="text-lg font-bold text-gray-950">
-                          {readField(item, 'title')}
-                        </h3>
-                        <p className="mt-2 text-sm text-gray-500">
-                          {readField(item, 'description')}
-                        </p>
-                      </div>
-                    </motion.article>
-                  ))}
-                </motion.div>
-              </SectionShell>
+              <BlogsSection
+                key={section.id}
+                section={section}
+                primaryColor={navy}
+                blogs={blogs || []}
+              />
             );
 
           case 'testimonials':
             return (
-              <section id={sectionId} key={section.id} className="relative scroll-mt-24">
-                <WaveDivider fill={navy} />
-                <motion.div
-                  variants={sectionReveal}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true, margin: '-60px' }}
-                  className="px-4 py-20 sm:px-6 md:py-24"
-                  style={{ backgroundColor: navy }}
-                >
-                  <div className="mx-auto max-w-7xl">
-                    <SectionHead
-                      title={section.title}
-                      subtitle={section.subtitle}
-                      accent={gold}
-                      light
-                    />
-                    <motion.div
-                      variants={staggerGrid}
-                      initial="hidden"
-                      whileInView="show"
-                      viewport={{ once: true }}
-                      className="grid gap-6 md:grid-cols-3"
-                    >
-                      {items.map((item, i) => (
-                        <motion.blockquote
-                          key={i}
-                          variants={cardReveal}
-                          whileHover={{ y: -6 }}
-                          className="rounded-2xl bg-white/95 p-7 shadow-2xl backdrop-blur"
-                        >
-                          <div className="mb-4 flex gap-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className="h-4 w-4"
-                                style={{ color: navy, fill: navy }}
-                              />
-                            ))}
-                          </div>
-                          <p className="text-sm leading-relaxed text-gray-700 italic">
-                            “{item.quote || item.comment}”
-                          </p>
-                          <footer className="mt-6 flex items-center gap-3">
-                            <div
-                              className="flex h-11 w-11 items-center justify-center rounded-full font-bold text-white"
-                              style={{ backgroundColor: gold }}
-                            >
-                              {(item.name || item.author || 'A').charAt(0)}
-                            </div>
-                            <div>
-                              <p className="font-bold text-gray-950">
-                                {item.name || item.author}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {item.role || 'Customer'}
-                              </p>
-                            </div>
-                          </footer>
-                        </motion.blockquote>
-                      ))}
-                    </motion.div>
-                  </div>
-                </motion.div>
-                <WaveDivider fill="#ffffff" flip />
-              </section>
+              <TestimonialsSection
+                key={section.id}
+                section={section}
+                primaryColor={navy}
+              />
             );
 
           case 'faq':
             return (
-              <SectionShell id={sectionId} key={section.id} tone="white" navy={navy}>
-                <SectionHead title={section.title} subtitle={section.subtitle} accent={gold} />
-                <motion.div
-                  variants={cardReveal}
-                  className="mx-auto max-w-3xl rounded-2xl bg-white px-6 shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
-                >
-                  {items.map((item, i) => (
-                    <FAQItem
-                      key={i}
-                      question={String(item.question || item.title || '')}
-                      answer={String(item.answer || item.content || '')}
-                    />
-                  ))}
-                </motion.div>
-              </SectionShell>
+              <FAQSection
+                key={section.id}
+                section={section}
+                primaryColor={navy}
+              />
             );
 
           case 'subscribe':
             return (
-              <section id={sectionId} key={section.id} className="relative scroll-mt-24">
-                <WaveDivider fill={navy} />
-                <motion.div
-                  variants={sectionReveal}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true }}
-                  className="relative overflow-hidden px-4 py-20 text-center text-white sm:px-6"
-                  style={{ backgroundColor: navy }}
-                >
-                  <div
-                    className="pointer-events-none absolute -top-20 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full opacity-30 blur-3xl"
-                    style={{ backgroundColor: gold }}
-                  />
-                  <div className="relative mx-auto max-w-3xl">
-                    <h2 className="text-3xl font-extrabold sm:text-4xl md:text-5xl">
-                      {section.title}
-                    </h2>
-                    {section.subtitle && (
-                      <p className="mx-auto mt-4 max-w-2xl text-white/75">{section.subtitle}</p>
-                    )}
-                    <NewsletterForm
-                      companyId={companyId}
-                      buttonText={section.buttonText || undefined}
-                      placeholder={section.placeholder || undefined}
-                      primaryColor={gold}
-                    />
-                    {section.note?.trim() && (
-                      <p className="mt-3 text-xs text-white/50">{section.note}</p>
-                    )}
-                  </div>
-                </motion.div>
-                <WaveDivider fill="#f4f7fb" flip />
-              </section>
+              <SubscribeSection
+                key={section.id}
+                section={section}
+                primaryColor={navy}
+                companyId={companyId}
+              />
             );
 
-          case 'contact': {
-            const mapSrc = toGoogleMapsEmbedUrl(section.mapUrl || addressLine);
-            const leftHeading = section.note?.trim() || companyName;
-            const leftIntro = section.content?.trim() || '';
+          case 'contact':
             return (
-              <SectionShell id="contact" key={section.id} tone="soft" navy={navy}>
-                <SectionHead
-                  eyebrow={section.eyebrow}
-                  title={section.title}
-                  subtitle={section.subtitle}
-                  accent={gold}
-                />
-                <motion.div
-                  variants={staggerGrid}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true }}
-                  className="grid gap-6 lg:grid-cols-2 lg:gap-8"
-                >
-                  <motion.div
-                    variants={cardReveal}
-                    className="flex flex-col rounded-2xl bg-white p-7 shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100 sm:p-8"
-                  >
-                    <h3 className="text-xl font-extrabold text-gray-950 sm:text-2xl">
-                      {leftHeading}
-                    </h3>
-                    {leftIntro && (
-                      <p className="mt-2 text-sm leading-relaxed text-gray-500">{leftIntro}</p>
-                    )}
-
-                    <div className="mt-7 space-y-4">
-                      {addressLine && (
-                        <div className="flex gap-3 rounded-xl bg-[#f4f7fb] p-3.5">
-                          <span
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white"
-                            style={{ backgroundColor: navy }}
-                          >
-                            <MapPin className="h-4 w-4" />
-                          </span>
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                              Address
-                            </p>
-                            <p className="mt-0.5 text-sm font-medium text-gray-800">{addressLine}</p>
-                          </div>
-                        </div>
-                      )}
-                      {phone && (
-                        <a
-                          href={callUrl || '#'}
-                          className="flex gap-3 rounded-xl bg-[#f4f7fb] p-3.5 transition hover:bg-gray-100"
-                        >
-                          <span
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white"
-                            style={{ backgroundColor: navy }}
-                          >
-                            <Phone className="h-4 w-4" />
-                          </span>
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                              Phone
-                            </p>
-                            <p className="mt-0.5 text-sm font-medium text-gray-800">{phone}</p>
-                          </div>
-                        </a>
-                      )}
-                      {email && (
-                        <a
-                          href={`mailto:${email}`}
-                          className="flex gap-3 rounded-xl bg-[#f4f7fb] p-3.5 transition hover:bg-gray-100"
-                        >
-                          <span
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white"
-                            style={{ backgroundColor: navy }}
-                          >
-                            <Mail className="h-4 w-4" />
-                          </span>
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                              Email
-                            </p>
-                            <p className="mt-0.5 break-all text-sm font-medium text-gray-800">
-                              {email}
-                            </p>
-                          </div>
-                        </a>
-                      )}
-                    </div>
-
-                    <div className="mt-auto flex flex-wrap gap-2 pt-7">
-                      {callUrl && (
-                        <a
-                          href={callUrl}
-                          className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-white transition hover:-translate-y-0.5"
-                          style={{ backgroundColor: navy }}
-                        >
-                          <Phone className="h-3.5 w-3.5" />
-                          Call
-                        </a>
-                      )}
-                      {whatsappUrl && (
-                        <a
-                          href={whatsappUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-white transition hover:-translate-y-0.5"
-                        >
-                          <MessageCircle className="h-3.5 w-3.5" />
-                          {section.buttonText?.trim() || 'WhatsApp'}
-                        </a>
-                      )}
-                      {email && (
-                        <a
-                          href={`mailto:${email}`}
-                          className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-gray-700 transition hover:-translate-y-0.5 hover:bg-gray-50"
-                        >
-                          <Mail className="h-3.5 w-3.5" />
-                          Email
-                        </a>
-                      )}
-                    </div>
-
-                    {hasSocialLinks(socialLinks) && (
-                      <div className="mt-6 border-t border-gray-100 pt-5">
-                        <SocialIcons links={socialLinks} />
-                      </div>
-                    )}
-                  </motion.div>
-
-                  <motion.div
-                    variants={cardReveal}
-                    className="rounded-2xl bg-white p-7 shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100 sm:p-8"
-                  >
-                    {section.placeholder?.trim() && (
-                      <h3 className="mb-5 text-xl font-extrabold text-gray-950">
-                        {section.placeholder}
-                      </h3>
-                    )}
-                    <ContactForm
-                      companyId={companyId}
-                      services={serviceNames}
-                      primaryColor={navy}
-                    />
-                  </motion.div>
-                </motion.div>
-                {mapSrc && (
-                  <motion.div
-                    variants={cardReveal}
-                    initial="hidden"
-                    whileInView="show"
-                    viewport={{ once: true }}
-                    className="mt-8 overflow-hidden rounded-2xl bg-white shadow-[0_12px_40px_rgba(15,23,42,0.06)] ring-1 ring-gray-100"
-                  >
-                    <iframe
-                      title={`${companyName} location map`}
-                      src={mapSrc}
-                      className="h-72 w-full border-0 md:h-96"
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      allowFullScreen
-                    />
-                  </motion.div>
-                )}
-              </SectionShell>
+              <ContactSection
+                key={section.id}
+                section={section}
+                primaryColor={navy}
+                companyId={companyId}
+                companyName={companyName}
+                addressLine={addressLine}
+                phone={phone}
+                email={email}
+              />
             );
-          }
 
           case 'footer':
             return (
-              <footer id={sectionId} key={section.id} className="relative text-white">
-                <WaveDivider fill={navy} />
-                <div className="px-4 py-14 sm:px-6" style={{ backgroundColor: navy }}>
-                  <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-2 lg:grid-cols-3">
-                    <div>
-                      <p className="text-lg font-extrabold">{companyName}</p>
-                      {section.subtitle?.trim() && (
-                        <p className="mt-3 text-sm leading-relaxed text-white/70">
-                          {section.subtitle}
-                        </p>
-                      )}
-                    </div>
-                    {items.length > 0 && (
-                      <div>
-                        {section.eyebrow?.trim() && (
-                          <h4 className="font-bold text-white">{section.eyebrow}</h4>
-                        )}
-                        <nav className={cn('flex flex-col gap-2', section.eyebrow?.trim() && 'mt-4')}>
-                          {items.map((item, itemIndex) => (
-                            <a
-                              key={itemIndex}
-                              href={safeLandingLink(readField(item, 'link'), '/')}
-                              className="text-sm text-white/75 transition hover:text-white"
-                            >
-                              {readField(item, 'label')}
-                            </a>
-                          ))}
-                        </nav>
-                      </div>
-                    )}
-                    <div>
-                      {section.title?.trim() && (
-                        <h4 className="font-bold text-white">{section.title}</h4>
-                      )}
-                      <div className={cn('space-y-2 text-sm text-white/75', section.title?.trim() && 'mt-4')}>
-                        {addressLine && <p>{addressLine}</p>}
-                        {phone && <p>{phone}</p>}
-                        {email && <p>{email}</p>}
-                      </div>
-                      {section.buttonText?.trim() && callUrl && (
-                        <a
-                          href={callUrl}
-                          className="mt-4 inline-flex rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition hover:-translate-y-0.5 hover:bg-white/20"
-                        >
-                          {section.buttonText}
-                        </a>
-                      )}
-                      {hasSocialLinks(socialLinks) && (
-                        <div className={cn(section.title?.trim() || addressLine || phone || email ? 'mt-5' : '')}>
-                          <SocialIcons links={socialLinks} tone="light" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 text-center text-xs text-white/50">
-                    {section.content?.trim() ||
-                      `© ${new Date().getFullYear()} ${companyName}`}
-                  </div>
-                </div>
-              </footer>
+              <FooterSection
+                key={section.id}
+                section={section}
+                primaryColor={navy}
+                companyName={companyName}
+                phone={phone}
+                email={email}
+                addressLine={addressLine}
+                socialLinks={socialLinks}
+                callUrl={callUrl}
+              />
+            );
+
+          case 'rating':
+            return (
+              <RatingSection
+                key={section.id}
+                section={section}
+                primaryColor={navy}
+                companyName={companyName}
+                rating={rating}
+              />
             );
 
           default:
