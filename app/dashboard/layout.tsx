@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
-  BarChart3,
   Globe,
   Package,
   Wrench,
@@ -15,7 +14,6 @@ import {
   Mail,
   Star,
   Settings,
-  CreditCard,
   Bell,
   User,
   LogOut,
@@ -36,7 +34,6 @@ import { getInitials } from '@/lib/utils';
 
 const sidebarLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/website', label: 'Website Builder', icon: Globe },
   { href: '/dashboard/products', label: 'Products', icon: Package },
   { href: '/dashboard/blogs', label: 'Blogs', icon: FileText },
@@ -44,7 +41,6 @@ const sidebarLinks = [
   { href: '/dashboard/messages', label: 'Messages', icon: MessageSquare },
   { href: '/dashboard/subscribers', label: 'Subscribers', icon: Mail },
   { href: '/dashboard/reviews', label: 'Reviews', icon: Star },
-  { href: '/dashboard/subscription', label: 'Subscription', icon: CreditCard },
   { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
   { href: '/dashboard/profile', label: 'Profile', icon: User },

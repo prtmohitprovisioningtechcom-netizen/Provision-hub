@@ -8,6 +8,7 @@ import {
   Check, 
   ChevronRight,
   ChevronLeft,
+  CircleAlert,
   Eye, 
   EyeOff, 
   Globe, 
@@ -67,6 +68,50 @@ const SECTION_HELP: Record<ILandingPageSection['type'], string> = {
 };
 
 const IMAGE_SECTIONS: ILandingPageSection['type'][] = ['about'];
+
+const SECTION_LABELS: Record<string, string> = {
+  navbar: 'Navbar',
+  hero: 'Hero',
+  rating: 'Rating',
+  about: 'About',
+  'why-choose-us': 'Why us',
+  services: 'Services',
+  products: 'Products',
+  gallery: 'Gallery',
+  blogs: 'Blogs',
+  testimonials: 'Reviews',
+  faq: 'FAQ',
+  subscribe: 'Subscribe',
+  contact: 'Contact',
+  footer: 'Footer',
+};
+
+function isSectionFilled(section: ILandingPageSection): boolean {
+  if (section.type === 'navbar') {
+    return Boolean(section.title?.trim() || section.items?.length);
+  }
+  if (section.type === 'hero') {
+    return Boolean(
+      section.title?.trim() ||
+        section.images?.length ||
+        section.image ||
+        section.buttonText?.trim(),
+    );
+  }
+  if (section.type === 'rating') {
+    return Boolean(section.title?.trim() || section.note?.trim() || section.items?.length);
+  }
+  if (['services', 'products', 'gallery', 'why-choose-us', 'testimonials', 'faq', 'blogs'].includes(section.type)) {
+    return Boolean(section.items?.length || section.title?.trim());
+  }
+  if (section.type === 'about' || section.type === 'contact' || section.type === 'subscribe') {
+    return Boolean(section.title?.trim() || section.content?.trim() || section.subtitle?.trim());
+  }
+  if (section.type === 'footer') {
+    return Boolean(section.items?.length || section.title?.trim() || section.content?.trim());
+  }
+  return Boolean(section.title?.trim());
+}
 
 /** Old travel/tour defaults → generic section names (only if still exactly the old text). */
 const LEGACY_SECTION_COPY: Record<
@@ -539,6 +584,32 @@ export default function WebsiteBuilder() {
   );
   const previewSections = useMemo(() => sections, [sections]);
 
+  const orderedSections = useMemo(
+    () => [...sections].sort((a, b) => a.order - b.order),
+    [sections],
+  );
+  const selectedIndex = selected
+    ? orderedSections.findIndex((section) => section.id === selected.id)
+    : -1;
+  const filledCount = useMemo(
+    () => orderedSections.filter((s) => s.isVisible && isSectionFilled(s)).length,
+    [orderedSections],
+  );
+  const visibleCount = useMemo(
+    () => orderedSections.filter((s) => s.isVisible).length,
+    [orderedSections],
+  );
+
+  const scrollToPreview = () => {
+    document.getElementById('live-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const openSection = (sectionId: string) => {
+    setSelectedId(sectionId);
+    setEditingPageId(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const updateSection = (
     id: string,
     update: Partial<ILandingPageSection>,
@@ -888,6 +959,7 @@ export default function WebsiteBuilder() {
           ? 'Published! Click “View live site” to open the full website.'
           : 'Website published successfully',
       );
+      setTimeout(scrollToPreview, 250);
     } catch (error: unknown) {
       const status = (error as { response?: { status?: number; data?: { message?: string } } })
         ?.response?.status;
@@ -988,17 +1060,15 @@ export default function WebsiteBuilder() {
     return (
       <div className="space-y-5">
         <Skeleton className="h-24 w-full rounded-2xl" />
-        <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
-          <Skeleton className="h-145 rounded-2xl" />
-          <Skeleton className="h-145 rounded-2xl" />
-        </div>
+        <Skeleton className="h-80 w-full rounded-2xl" />
+        <Skeleton className="h-125 w-full rounded-2xl" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100dvh-7.5rem)] min-h-125 flex-col gap-4 overflow-hidden text-gray-900">
-      <div className="shrink-0 overflow-hidden rounded-2xl border border-indigo-100 bg-linear-to-r from-indigo-600 via-violet-600 to-purple-600 p-4 text-white shadow-lg shadow-indigo-500/10 sm:p-5">
+    <div className={cn('space-y-5 text-gray-900', saved ? 'pb-10' : 'pb-24')}>
+      <div className="overflow-hidden rounded-2xl border border-indigo-100 bg-linear-to-r from-indigo-600 via-violet-600 to-purple-600 p-4 text-white shadow-lg shadow-indigo-500/10 sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="mb-2 flex items-center gap-2 text-sm font-medium text-indigo-100">
@@ -1007,7 +1077,7 @@ export default function WebsiteBuilder() {
             </div>
             <h1 className="text-2xl font-bold sm:text-3xl">Design your company website</h1>
             <p className="mt-1 max-w-2xl text-sm text-indigo-100">
-              Edit content, arrange sections, upload sharp images, and publish a responsive page.
+              Upar section edit karo → neeche live preview dekho → Publish dabao.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1047,7 +1117,8 @@ export default function WebsiteBuilder() {
                         body: JSON.stringify({ templateId, layoutId: layout.id }),
                       });
                       if (!res.ok) throw new Error('Failed to save layout');
-                      toast.success(`Layout ${layout.id} applied`);
+                      toast.success(`${layout.name.split('—')[0].trim()} applied`);
+                      setTimeout(scrollToPreview, 200);
                     } catch {
                       toast.error('Could not change layout');
                     } finally {
@@ -1058,12 +1129,21 @@ export default function WebsiteBuilder() {
                     'px-3 py-2 text-xs font-semibold text-white transition',
                     layoutId === layout.id ? 'bg-white text-indigo-700' : 'hover:bg-white/15',
                   )}
-                  title={layout.name}
+                  title={layout.description}
                 >
-                  L{layout.id}
+                  {layout.id === '1' ? 'Signature' : layout.id === '2' ? 'Split' : 'Classic'}
                 </button>
               ))}
             </div>
+            <Button
+              type="button"
+              variant="secondary"
+              className="bg-white/15 text-white hover:bg-white/25"
+              onClick={scrollToPreview}
+            >
+              <Monitor className="h-4 w-4" />
+              Preview
+            </Button>
             <Button
               onClick={handleSave}
               disabled={saving || uploading !== null || saved}
@@ -1081,102 +1161,133 @@ export default function WebsiteBuilder() {
             </Button>
           </div>
         </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-white/15 pt-3 text-xs text-indigo-100">
+          <span className="rounded-full bg-white/15 px-2.5 py-1 font-medium">
+            Progress: {filledCount}/{visibleCount || orderedSections.length} sections ready
+          </span>
+          {!saved && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2.5 py-1 font-medium text-amber-100">
+              <CircleAlert className="h-3.5 w-3.5" />
+              Unpublished changes — Publish dabao
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 gap-5 lg:grid-cols-[400px_minmax(0,1fr)]">
-        {/* Left Side: Editor */}
-        <div className="flex min-h-0 flex-col overflow-hidden">
+      <div className="flex flex-col gap-5">
+        {/* Full-width editor */}
+        <div className="w-full">
           {!selected && !editingPageId ? (
-          <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div className="shrink-0 border-b bg-gray-50 px-4 py-3 dark:bg-gray-900">
-              <div className="flex items-center gap-2 font-semibold">
-                <LayoutTemplate className="h-4 w-4 text-indigo-600" />
-                Website sections
+          <Card className="w-full overflow-hidden">
+            <div className="border-b bg-gray-50 px-5 py-4 dark:bg-gray-900 sm:px-6">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 text-lg font-semibold">
+                    <LayoutTemplate className="h-5 w-5 text-indigo-600" />
+                    Website sections
+                  </div>
+                  <p className="mt-1 max-w-3xl text-sm text-gray-500">
+                    Har card pe click karke content bharo. Eye icon se section hide/show hota hai —
+                    hide wale live site pe nahi dikhenge.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs text-indigo-800 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200">
+                  Tip: pehle <strong>Hero</strong> images + title, phir <strong>Services</strong> /
+                  <strong> Contact</strong>
+                </div>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
-                Edit any section. Hide ones you don’t need — they won’t show on your live site.
-              </p>
             </div>
-            <CardContent className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain p-2 text-gray-900 dark:text-gray-100">
-              {[...sections]
-                .sort((a, b) => a.order - b.order)
-                .map((section, index) => (
+            <CardContent className="space-y-6 p-4 text-gray-900 sm:p-6 dark:text-gray-100">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {orderedSections.map((section, index) => {
+                const filled = isSectionFilled(section);
+                return (
                   <div
                     key={section.id}
                     className={cn(
-                      'group flex w-full items-center gap-1 rounded-xl border px-2 py-2 transition',
+                      'flex flex-col rounded-2xl border p-4 transition',
                       section.isVisible
-                        ? 'border-transparent hover:border-gray-200 hover:bg-gray-50'
-                        : 'border-dashed border-gray-200 bg-gray-50/80 opacity-75',
+                        ? 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-950'
+                        : 'border-dashed border-gray-200 bg-gray-50/80 opacity-80 dark:border-gray-800 dark:bg-gray-900/50',
                     )}
                   >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedId(section.id);
-                        setEditingPageId(null);
-                      }}
-                      className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left"
-                    >
+                    <div className="mb-3 flex items-start justify-between gap-2">
                       <span
                         className={cn(
-                          'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold',
+                          'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold',
                           section.isVisible
-                            ? 'bg-white text-indigo-600 shadow-sm'
+                            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
                             : 'bg-gray-200 text-gray-400',
                         )}
                       >
                         {index + 1}
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium capitalize">
-                          {section.type === 'navbar'
-                            ? 'Navbar'
-                            : section.type === 'footer'
-                              ? 'Footer'
-                              : section.title || section.type}
+                      <div className="flex items-center gap-1">
+                        <span
+                          className={cn(
+                            'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
+                            !section.isVisible
+                              ? 'bg-gray-200 text-gray-500'
+                              : filled
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'bg-amber-50 text-amber-700',
+                          )}
+                        >
+                          {!section.isVisible ? 'Hidden' : filled ? 'Ready' : 'Fill'}
                         </span>
-                        <span className="block truncate text-xs text-gray-500">
-                          {section.type === 'navbar'
-                            ? section.title || 'Brand name'
-                            : section.type === 'footer'
-                              ? 'Links & copyright'
-                              : section.type}
-                          {!section.isVisible ? ' · removed from site' : ''}
-                        </span>
-                      </span>
-                      <ChevronRight className="h-4 w-4 opacity-40" />
-                    </button>
-                    <Button
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0"
+                          title={
+                            section.isVisible
+                              ? 'Hide from website'
+                              : 'Show on website'
+                          }
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            updateSection(section.id, { isVisible: !section.isVisible });
+                          }}
+                        >
+                          {section.isVisible ? (
+                            <Eye className="h-4 w-4 text-emerald-600" />
+                          ) : (
+                            <EyeOff className="h-4 w-4 text-gray-400" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 shrink-0"
-                      title={
-                        section.isVisible
-                          ? 'Remove from website'
-                          : 'Add back to website'
-                      }
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        updateSection(section.id, { isVisible: !section.isVisible });
-                      }}
+                      onClick={() => openSection(section.id)}
+                      className="flex min-w-0 flex-1 flex-col text-left"
                     >
-                      {section.isVisible ? (
-                        <Eye className="h-4 w-4 text-emerald-600" />
-                      ) : (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
-                      )}
-                    </Button>
+                      <span className="text-base font-semibold capitalize text-gray-900 dark:text-white">
+                        {SECTION_LABELS[section.type] || section.title || section.type}
+                      </span>
+                      <span className="mt-0.5 truncate text-xs text-gray-500">
+                        {section.title?.trim() || SECTION_HELP[section.type]}
+                      </span>
+                      <span className="mt-2 line-clamp-2 text-sm text-gray-500">
+                        {SECTION_HELP[section.type] || 'Click to edit this section.'}
+                      </span>
+                      <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-indigo-700">
+                        {filled ? 'Edit again' : 'Start filling'}
+                        <ChevronRight className="h-4 w-4" />
+                      </span>
+                    </button>
                   </div>
-                ))}
+                );
+              })}
+              </div>
 
-              <div className="mt-4 border-t pt-3">
-                <div className="mb-2 flex items-center justify-between px-2">
+              <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-4 dark:border-sky-900 dark:bg-sky-950/20 sm:p-5">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold">Custom pages</p>
-                    <p className="text-xs text-gray-500">
-                      Routes like /{companySlug || 'your-slug'}/p/about
+                    <p className="text-base font-semibold text-sky-950 dark:text-sky-100">Custom pages</p>
+                    <p className="text-sm text-sky-800/70 dark:text-sky-300/70">
+                      Extra pages for navbar — e.g. /{companySlug || 'your-slug'}/p/about
                     </p>
                   </div>
                   <Button type="button" size="sm" variant="outline" onClick={addCustomPage}>
@@ -1185,10 +1296,11 @@ export default function WebsiteBuilder() {
                   </Button>
                 </div>
                 {customPages.length === 0 && (
-                  <p className="px-2 py-4 text-center text-xs text-gray-500">
-                    Create pages for navbar (About, Privacy, Offers, etc.).
+                  <p className="rounded-xl border border-dashed border-sky-200 bg-white/70 px-4 py-6 text-center text-sm text-gray-500 dark:border-sky-900 dark:bg-gray-950/40">
+                    About, Privacy, Offers jaise pages yahan banao — phir Navbar me link add karo.
                   </p>
                 )}
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {customPages.map((page) => (
                   <button
                     key={page.id}
@@ -1197,9 +1309,9 @@ export default function WebsiteBuilder() {
                       setEditingPageId(page.id);
                       setSelectedId(null);
                     }}
-                    className="group mb-1 flex w-full items-center gap-2 rounded-xl border border-transparent px-3 py-3 text-left transition hover:border-gray-200 hover:bg-gray-50"
+                    className="group flex w-full items-center gap-3 rounded-xl border border-white bg-white px-4 py-3 text-left shadow-sm transition hover:border-sky-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-950"
                   >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-xs font-bold text-sky-700">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-xs font-bold text-sky-700">
                       P
                     </span>
                     <span className="min-w-0 flex-1">
@@ -1212,6 +1324,7 @@ export default function WebsiteBuilder() {
                     <ChevronRight className="h-4 w-4 opacity-40" />
                   </button>
                 ))}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1220,8 +1333,8 @@ export default function WebsiteBuilder() {
               const page = customPages.find((item) => item.id === editingPageId);
               if (!page) return null;
               return (
-                <Card className="flex min-h-0 flex-1 flex-col overflow-hidden border-sky-200 shadow-xl">
-                  <div className="flex shrink-0 items-center gap-3 border-b bg-sky-50/60 px-4 py-3">
+                <Card className="w-full overflow-hidden border-sky-200 shadow-xl">
+                  <div className="flex items-center gap-3 border-b bg-sky-50/60 px-4 py-3 sm:px-6">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -1229,11 +1342,11 @@ export default function WebsiteBuilder() {
                       className="h-8 gap-1 pl-1.5"
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      Back
+                      Back to sections
                     </Button>
                     <span className="text-sm font-semibold text-sky-900">Edit custom page</span>
                   </div>
-                  <CardContent className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-4">
+                  <CardContent className="mx-auto max-w-3xl space-y-4 p-4 sm:p-6">
                     <div className="space-y-2">
                       <Label>Page title</Label>
                       <Input
@@ -1331,8 +1444,8 @@ export default function WebsiteBuilder() {
               );
             })()
           ) : selected ? (
-            <Card className="flex min-h-0 flex-1 flex-col overflow-hidden border-indigo-200 shadow-xl dark:border-indigo-800">
-            <div className="shrink-0 flex items-center gap-3 border-b bg-indigo-50/50 px-4 py-3 dark:bg-indigo-950/20">
+            <Card className="w-full overflow-hidden border-indigo-200 shadow-xl dark:border-indigo-800">
+            <div className="flex flex-wrap items-center gap-2 border-b bg-indigo-50/50 px-4 py-3 sm:px-6 dark:bg-indigo-950/20">
               <Button
                 variant="ghost"
                 size="sm"
@@ -1340,14 +1453,46 @@ export default function WebsiteBuilder() {
                 className="h-8 gap-1 pl-1.5 text-gray-600 hover:bg-gray-200/50 dark:text-gray-400"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Back
+                Back to sections
               </Button>
               <div className="h-4 w-px bg-gray-300 dark:bg-gray-700" />
               <span className="text-sm font-semibold capitalize text-indigo-900 dark:text-indigo-300">
-                Edit {selected.type} section
+                Edit {SECTION_LABELS[selected.type] || selected.type}
               </span>
+              <div className="ml-auto flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={selectedIndex <= 0}
+                  onClick={() => {
+                    const prev = orderedSections[selectedIndex - 1];
+                    if (prev) openSection(prev.id);
+                  }}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Prev
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={selectedIndex < 0 || selectedIndex >= orderedSections.length - 1}
+                  onClick={() => {
+                    const next = orderedSections[selectedIndex + 1];
+                    if (next) openSection(next.id);
+                  }}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button type="button" size="sm" variant="secondary" onClick={scrollToPreview}>
+                  <Monitor className="h-4 w-4" />
+                  See preview
+                </Button>
+              </div>
             </div>
-            <div className="shrink-0 flex flex-col gap-3 border-b bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between dark:bg-gray-900">
+            <div className="flex flex-col gap-3 border-b bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 dark:bg-gray-900">
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-bold capitalize">{selected.title || selected.type}</h2>
@@ -1405,35 +1550,46 @@ export default function WebsiteBuilder() {
                 </Button>
               </div>
             </div>
-            <CardContent className="min-h-0 flex-1 space-y-7 overflow-y-auto overscroll-contain bg-white p-5 text-gray-900 sm:p-7 dark:bg-gray-900 dark:text-gray-100">
+            <CardContent className="mx-auto max-w-4xl space-y-7 bg-white p-5 text-gray-900 sm:p-7 dark:bg-gray-900 dark:text-gray-100">
+              <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 px-4 py-3 text-sm text-indigo-900 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200">
+                <p className="font-semibold capitalize">Filling guide — {selected.type}</p>
+                <p className="mt-1 text-indigo-800/80 dark:text-indigo-300/80">
+                  {SECTION_HELP[selected.type]}
+                </p>
+              </div>
               
-              {/* Design Variant Selector for All Sections */}
-              {true && (
-                <div className="space-y-3 rounded-2xl border border-indigo-100 bg-indigo-50/30 p-5 dark:border-indigo-900/50 dark:bg-indigo-900/10">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-base font-bold text-indigo-950 dark:text-indigo-300">Design Layout</Label>
-                      <p className="text-xs text-gray-500 mt-1">Choose how this section looks across themes.</p>
-                    </div>
+              {/* Per-section style (not the page Layout L1/L2/L3) */}
+              {['hero', 'about', 'services', 'products', 'gallery', 'why-choose-us', 'testimonials', 'faq', 'subscribe', 'contact'].includes(
+                selected.type,
+              ) && (
+                <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-800 dark:bg-slate-900/40">
+                  <div>
+                    <Label className="text-base font-bold text-slate-900 dark:text-slate-100">
+                      Section style
+                    </Label>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Sirf is section ka look — upar wale page Layout (L1/L2/L3) se alag hai.
+                    </p>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { id: 'variant-1', name: 'Layout 1' },
-                      { id: 'variant-2', name: 'Layout 2' },
-                      { id: 'variant-3', name: 'Layout 3' }
+                      { id: 'variant-1', name: 'Style A', hint: 'Cards' },
+                      { id: 'variant-2', name: 'Style B', hint: 'Media' },
+                      { id: 'variant-3', name: 'Style C', hint: 'Minimal' },
                     ].map((v) => (
                       <button
                         key={v.id}
                         type="button"
                         onClick={() => updateSection(selected.id, { designVariant: v.id as any })}
                         className={cn(
-                          "relative flex flex-col items-center justify-center rounded-xl border-2 p-3 text-sm font-semibold transition-all",
+                          'relative flex flex-col items-center justify-center rounded-xl border-2 p-3 text-sm font-semibold transition-all',
                           (selected.designVariant || 'variant-1') === v.id
-                            ? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-900/40 dark:text-indigo-300 shadow-sm"
-                            : "border-gray-200 bg-white text-gray-600 hover:border-indigo-300 hover:bg-gray-50 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400"
+                            ? 'border-indigo-600 bg-white text-indigo-700 shadow-sm dark:border-indigo-500 dark:bg-indigo-900/40 dark:text-indigo-300'
+                            : 'border-gray-200 bg-white text-gray-600 hover:border-indigo-300 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400',
                         )}
                       >
-                        {v.name}
+                        <span>{v.name}</span>
+                        <span className="mt-0.5 text-[10px] font-medium text-gray-400">{v.hint}</span>
                         {(selected.designVariant || 'variant-1') === v.id && (
                           <Check className="absolute top-2 right-2 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                         )}
@@ -2701,100 +2857,75 @@ export default function WebsiteBuilder() {
           ) : null}
         </div>
 
-        {/* Right Side: Live Preview */}
-        <div className="hidden min-h-0 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-inner lg:flex dark:border-gray-800 dark:bg-gray-950">
-          <div className="flex h-12 shrink-0 items-center gap-2 border-b bg-white px-4 dark:bg-gray-900">
-            <div className="flex gap-1.5">
-              <div className="h-3 w-3 rounded-full bg-red-400" />
-              <div className="h-3 w-3 rounded-full bg-amber-400" />
-              <div className="h-3 w-3 rounded-full bg-emerald-400" />
+        {/* Live preview — full width below editor */}
+        <div
+          id="live-preview"
+          className="flex min-h-[70vh] w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-inner dark:border-gray-800 dark:bg-gray-950"
+        >
+          <div className="flex flex-wrap items-center gap-3 border-b bg-white px-4 py-3 dark:bg-gray-900 sm:px-5">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1.5">
+                <div className="h-3 w-3 rounded-full bg-red-400" />
+                <div className="h-3 w-3 rounded-full bg-amber-400" />
+                <div className="h-3 w-3 rounded-full bg-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">Live preview</p>
+                <p className="text-xs text-gray-500">
+                  Neeche aapka site ka preview — edit karke yahan turant dikhega
+                </p>
+              </div>
             </div>
-            <div className="mx-auto flex h-7 items-center rounded-md bg-gray-100 px-3 text-xs text-gray-500 dark:bg-gray-800">
-              <Globe className="mr-1.5 h-3 w-3" />
-              {companySlug ? `${companySlug}.tenant.hub` : 'Live Preview'}
-            </div>
-            <div className="flex rounded-lg border p-0.5">
-              <button
-                type="button"
-                onClick={() => setPreviewDevice('desktop')}
-                className={cn(
-                  'rounded-md p-1.5',
-                  previewDevice === 'desktop'
-                    ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
-                    : 'text-gray-400',
-                )}
-                aria-label="Desktop preview"
-              >
-                <Monitor className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewDevice('mobile')}
-                className={cn(
-                  'rounded-md p-1.5',
-                  previewDevice === 'mobile'
-                    ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
-                    : 'text-gray-400',
-                )}
-                aria-label="Mobile preview"
-              >
-                <Smartphone className="h-3.5 w-3.5" />
-              </button>
+            <div className="ml-auto flex items-center gap-2">
+              <div className="hidden h-8 items-center rounded-md bg-gray-100 px-3 text-xs text-gray-500 sm:flex dark:bg-gray-800">
+                <Globe className="mr-1.5 h-3 w-3" />
+                {companySlug ? `/${companySlug}` : 'Live Preview'}
+              </div>
+              <div className="flex rounded-lg border p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('desktop')}
+                  className={cn(
+                    'rounded-md p-1.5',
+                    previewDevice === 'desktop'
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                      : 'text-gray-400',
+                  )}
+                  aria-label="Desktop preview"
+                >
+                  <Monitor className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('mobile')}
+                  className={cn(
+                    'rounded-md p-1.5',
+                    previewDevice === 'mobile'
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                      : 'text-gray-400',
+                  )}
+                  aria-label="Mobile preview"
+                >
+                  <Smartphone className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              {companySlug && (
+                <Button asChild size="sm" variant="outline">
+                  <Link href={`/${companySlug}`} target="_blank">
+                    <Globe className="h-3.5 w-3.5" />
+                    Open live
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-gray-100 p-2 dark:bg-gray-950">
+          <div className="max-h-[80vh] overflow-y-auto overscroll-contain bg-gray-100 p-3 dark:bg-gray-950 sm:p-4">
             <div
               className={cn(
-                'mx-auto min-h-full overflow-hidden bg-white shadow-sm transition-all',
-                previewDevice === 'mobile' ? 'max-w-sm' : 'max-w-none',
+                'mx-auto min-h-[60vh] overflow-hidden bg-white shadow-sm transition-all',
+                previewDevice === 'mobile' ? 'max-w-sm' : 'max-w-6xl',
               )}
             >
-              {previewNavbar?.isVisible !== false && (
-                <div className="sticky top-0 z-20 border-b bg-white/95 backdrop-blur">
-                  <div className="flex h-16 items-center justify-between px-5">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gray-50 font-bold text-sky-600">
-                        {companyLogo ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={companyLogo} alt="" className="h-full w-full object-contain p-1" />
-                        ) : (
-                          companyName.charAt(0) || 'C'
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                      <p className="truncate text-sm font-bold">
-                        {previewNavbar?.title?.trim() ||
-                          companyName ||
-                          'Your company'}
-                      </p>
-                        {previewNavbar?.subtitle && (
-                          <p className="truncate text-[10px] text-gray-500">
-                            {previewNavbar.subtitle}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {(previewNavbar?.items || []).slice(0, 4).map((raw, index) => {
-                        const item = raw as BuilderItem;
-                        if (!item.label) return null;
-                        return (
-                          <span key={index} className="hidden text-xs font-medium text-gray-500 md:inline">
-                            {String(item.label)}
-                          </span>
-                        );
-                      })}
-                      <button
-                        type="button"
-                        className="rounded-md px-4 py-2 text-xs font-bold uppercase tracking-wide text-white"
-                        style={{ backgroundColor: primaryColor || '#0b2a5b' }}
-                      >
-                        {previewNavbar?.buttonText || 'Button'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
               <ThemeRenderer
                 templateId={templateId}
                 layoutId={layoutId}
@@ -2837,6 +2968,31 @@ export default function WebsiteBuilder() {
           </div>
         </div>
       </div>
+
+      {/* Sticky helper when there are unpublished edits */}
+      {!saved && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-amber-200 bg-white/95 px-4 py-3 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur dark:border-amber-900 dark:bg-gray-950/95">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              Changes draft me hain — live site update ke liye <strong>Publish</strong> zaroori hai.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" size="sm" variant="outline" onClick={scrollToPreview}>
+                Preview
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleSave}
+                disabled={saving || uploading !== null}
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                Publish now
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
