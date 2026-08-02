@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { requireAuth } from '@/server/middleware/auth';
+import { coerceCompanyId, requireAuth } from '@/server/middleware/auth';
 import { RowDataPacket } from 'mysql2';
 import crypto from 'crypto';
 import { LANDING_SECTIONS } from '@/constants';
@@ -13,15 +13,9 @@ export async function POST(request: NextRequest) {
     const auth = await requireAuth(request, ['company_admin', 'super_admin']);
     if (auth instanceof Response) return auth;
 
-    let { companyId } = auth;
-    if (typeof companyId === 'object' && companyId !== null) {
-      companyId = (companyId as { _id?: string; id?: string })._id
-        || (companyId as { id?: string }).id
-        || String(companyId);
-    }
-
+    const companyId = coerceCompanyId(auth.companyId);
     if (!companyId) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'No company associated' }, { status: 400 });
     }
 
     await ensureLandingPageLayoutColumn();

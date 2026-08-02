@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { requireAuth } from '@/server/middleware/auth';
+import { coerceCompanyId, requireAuth } from '@/server/middleware/auth';
 import { RowDataPacket } from 'mysql2';
 
 export async function GET(request: NextRequest) {
@@ -8,13 +8,14 @@ export async function GET(request: NextRequest) {
     const auth = await requireAuth(request);
     if (auth instanceof Response) return auth;
     
-    if (!auth.companyId) {
-      return NextResponse.json({ success: false, error: 'Company not found' }, { status: 404 });
+    const companyId = coerceCompanyId(auth.companyId);
+    if (!companyId) {
+      return NextResponse.json({ success: false, error: 'No company associated' }, { status: 400 });
     }
 
     const [rows] = await pool.execute<RowDataPacket[]>(
       'SELECT name, logo, phone, email, address, description, rating, reviewCount, theme, socialLinks FROM companies WHERE id = ?',
-      [auth.companyId]
+      [companyId]
     );
 
     if (rows.length === 0) {
@@ -44,8 +45,9 @@ export async function PUT(request: NextRequest) {
     const auth = await requireAuth(request);
     if (auth instanceof Response) return auth;
 
-    if (!auth.companyId) {
-      return NextResponse.json({ success: false, error: 'Company not found' }, { status: 404 });
+    const companyId = coerceCompanyId(auth.companyId);
+    if (!companyId) {
+      return NextResponse.json({ success: false, error: 'No company associated' }, { status: 400 });
     }
 
     const body = await request.json();
@@ -53,7 +55,7 @@ export async function PUT(request: NextRequest) {
     // Get current company data to merge JSON fields
     const [rows] = await pool.execute<RowDataPacket[]>(
       'SELECT theme, socialLinks FROM companies WHERE id = ?',
-      [auth.companyId]
+      [companyId]
     );
 
     if (rows.length === 0) {
@@ -84,7 +86,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (updates.length > 0) {
-      values.push(auth.companyId);
+      values.push(companyId);
       await pool.execute(
         `UPDATE companies SET ${updates.join(', ')} WHERE id = ?`,
         values
@@ -93,7 +95,7 @@ export async function PUT(request: NextRequest) {
 
     const [updatedRows] = await pool.execute<RowDataPacket[]>(
       'SELECT name, logo, phone, email, address, description, rating, reviewCount, theme, socialLinks FROM companies WHERE id = ?',
-      [auth.companyId]
+      [companyId]
     );
     
     const updatedCompany = updatedRows[0];

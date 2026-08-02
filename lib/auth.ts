@@ -22,9 +22,26 @@ export function generateToken(payload: AuthPayload): string {
 
 export async function verifyToken(token: string): Promise<AuthPayload | null> {
   try {
-    const secret = new TextEncoder().encode(JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
-    return payload as unknown as AuthPayload;
+    // Prefer jsonwebtoken (same lib that signs) for consistent claim parsing.
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & Partial<AuthPayload>;
+      const userId = String(decoded.userId || decoded.sub || '');
+      const email = String(decoded.email || '');
+      const role = decoded.role as UserRole | undefined;
+      if (!userId || !email || !role) return null;
+      const companyId = decoded.companyId ? String(decoded.companyId) : undefined;
+      return { userId, email, role, companyId };
+    } catch {
+      // Fallback for tokens verified via jose
+      const secret = new TextEncoder().encode(JWT_SECRET);
+      const { payload } = await jwtVerify(token, secret);
+      const userId = String(payload.userId || payload.sub || '');
+      const email = String(payload.email || '');
+      const role = payload.role as UserRole | undefined;
+      if (!userId || !email || !role) return null;
+      const companyId = payload.companyId ? String(payload.companyId) : undefined;
+      return { userId, email, role, companyId };
+    }
   } catch {
     return null;
   }

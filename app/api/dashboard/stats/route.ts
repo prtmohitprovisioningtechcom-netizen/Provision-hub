@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/server/middleware/auth';
 import { CompanyService } from '@/server/services/company.service';
 import { apiSuccess, apiError } from '@/server/utils/api-response';
+import { dbErrorMessage } from '@/lib/db-errors';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
     const stats = await CompanyService.getDashboardStats(auth.companyId);
     return apiSuccess(stats);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to get stats';
-    return apiError(message, 400);
+    console.error('Dashboard stats failed:', error);
+    return apiError(dbErrorMessage(error, 'Failed to get stats'), 500);
   }
 }

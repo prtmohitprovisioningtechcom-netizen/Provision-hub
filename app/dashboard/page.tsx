@@ -35,8 +35,15 @@ export default function DashboardPage() {
   useEffect(() => {
     axios
       .get('/api/dashboard/stats')
-      .then((res) => setData(res.data.data))
-      .catch(console.error)
+      .then((res) => {
+        if (res.data?.success) setData(res.data.data);
+      })
+      .catch((err) => {
+        // Avoid noisy console AxiosError for expected auth/company edge cases
+        if (err?.response?.status !== 400 && err?.response?.status !== 401) {
+          console.error(err);
+        }
+      })
       .finally(() => setLoading(false));
   }, []);
 

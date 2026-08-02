@@ -191,6 +191,25 @@ const SKINS: Record<string, ThemeSkin> = {
     radius: '0.35rem',
     dark: true,
   },
+  'royal-glow': {
+    id: 'royal-glow',
+    primary: '#800020',
+    accent: '#D4AF37',
+    onPrimary: '#ffffff',
+    bg: '#FFFFF0',
+    surface: '#ffffff',
+    fg: '#1a1a1a',
+    muted: '#6b5a5e',
+    inverseBg: '#1a1a1a',
+    inverseFg: '#FFFFF0',
+    border: 'rgba(128,0,32,0.12)',
+    displayFont: "'Cinzel', 'Playfair Display', Georgia, serif",
+    bodyFont: "'Poppins', 'Mukta', system-ui, sans-serif",
+    googleFontsUrl:
+      'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&family=Mukta:wght@300;400;500;600&display=swap',
+    radius: '0.75rem',
+    dark: false,
+  },
 };
 
 export function getThemeSkin(templateId?: string | null, primaryOverride?: string): ThemeSkin {

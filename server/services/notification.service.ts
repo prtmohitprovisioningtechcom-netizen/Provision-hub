@@ -1,6 +1,6 @@
 // @ts-nocheck
 import pool from '@/lib/db';
-import { getPaginationMeta } from '@/lib/utils';
+import { getPaginationMeta, sqlLimitOffset } from '@/lib/utils';
 import { RowDataPacket } from 'mysql2';
 
 export class NotificationService {
@@ -10,7 +10,10 @@ export class NotificationService {
     const [[countResult], [unreadResult], [notifications]] = await Promise.all([
       pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM notifications WHERE userId = ?', [userId]),
       pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM notifications WHERE userId = ? AND isRead = 0', [userId]),
-      pool.execute<RowDataPacket[]>('SELECT * FROM notifications WHERE userId = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?', [userId, limit, skip])
+      pool.execute<RowDataPacket[]>(
+        `SELECT * FROM notifications WHERE userId = ? ORDER BY createdAt DESC ${sqlLimitOffset(limit, skip)}`,
+        [userId],
+      ),
     ]);
 
     const total = countResult[0].count;

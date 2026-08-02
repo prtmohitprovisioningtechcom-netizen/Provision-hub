@@ -4,6 +4,7 @@ import { ProductService } from '@/server/services/product.service';
 import { productSchema } from '@/lib/validators';
 import { apiSuccess, apiError, apiPaginated, parseBody } from '@/server/utils/api-response';
 import { revalidateCompanyPage } from '@/lib/revalidate-company';
+import { dbErrorMessage } from '@/lib/db-errors';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,8 +17,7 @@ export async function GET(request: NextRequest) {
     const result = await ProductService.getByCompany(companyId, page, limit);
     return apiPaginated(result.products, result.pagination);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to get products';
-    return apiError(message, 400);
+    return apiError(dbErrorMessage(error, 'Failed to get products'), 400);
   }
 }
 

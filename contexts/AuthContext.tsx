@@ -32,8 +32,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const { data } = await axios.get('/api/auth/me');
-      if (data.success) {
+      const { data } = await axios.get('/api/auth/me', { withCredentials: true });
+      if (data.success && data.data) {
         dispatch(setUser({ user: data.data, token: '' }));
       } else {
         dispatch(clearUser());
@@ -49,10 +49,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      const { data } = await axios.post('/api/auth', { action: 'login', email, password });
+      const { data } = await axios.post(
+        '/api/auth',
+        { action: 'login', email, password },
+        { withCredentials: true },
+      );
       if (data.success) {
-        const { data: me } = await axios.get('/api/auth/me');
-        const user = (me.success ? me.data : data.data.user) as IUser;
+        const { data: me } = await axios.get('/api/auth/me', { withCredentials: true });
+        const user = (me.success && me.data ? me.data : data.data.user) as IUser;
         dispatch(setUser({ user, token: data.data.token }));
         return user;
       } else {
@@ -68,7 +72,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await axios.post('/api/auth/logout', undefined, { timeout: 10000 });
+      await axios.post('/api/auth/logout', undefined, {
+        timeout: 10000,
+        withCredentials: true,
+      });
     } catch {
       // Always clear local auth state; protected routes will reject stale sessions.
     } finally {

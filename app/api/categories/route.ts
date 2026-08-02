@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
       data: categories.map((c) => ({ ...c, isActive: Boolean(c.isActive) })),
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch categories';
+    const { dbErrorMessage } = await import('@/lib/db-errors');
+    const message = dbErrorMessage(error, 'Failed to fetch categories');
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

@@ -31,7 +31,11 @@ export default function AdminLoginPage() {
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true);
     try {
-      const { data: res } = await axios.post('/api/auth', { action: 'login-admin', ...data });
+      const { data: res } = await axios.post(
+        '/api/auth',
+        { action: 'login-admin', ...data },
+        { withCredentials: true },
+      );
       if (res.success) {
         dispatch(setUser({ user: res.data.user, token: res.data.token }));
         toast.success('Welcome Admin!');

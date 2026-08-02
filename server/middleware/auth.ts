@@ -13,12 +13,38 @@ export function getTokenFromRequest(request: NextRequest): string | null {
   return request.cookies.get('auth-token')?.value || null;
 }
 
+/** Normalize JWT / object company refs into a plain id string. */
+export function coerceCompanyId(value: unknown): string | undefined {
+  if (value == null || value === '') return undefined;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === 'undefined' || trimmed === 'null') return undefined;
+    return trimmed;
+  }
+  if (typeof value === 'object') {
+    const obj = value as { _id?: unknown; id?: unknown };
+    return coerceCompanyId(obj._id ?? obj.id);
+  }
+  return undefined;
+}
+
+async function companyExists(companyId: string): Promise<boolean> {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    'SELECT id FROM companies WHERE id = ? LIMIT 1',
+    [companyId],
+  );
+  return rows.length > 0;
+}
+
 /** Resolve company id from users.companyId or companies.ownerId, and backfill when needed. */
 export async function resolveCompanyIdForUser(
   userId: string,
   tokenCompanyId?: string | null,
 ): Promise<string | undefined> {
-  if (tokenCompanyId) return tokenCompanyId;
+  const fromToken = coerceCompanyId(tokenCompanyId);
+  if (fromToken && (await companyExists(fromToken))) {
+    return fromToken;
+  }
 
   const [rows] = await pool.execute<RowDataPacket[]>(
     `SELECT COALESCE(u.companyId, c.id) AS companyId
@@ -29,7 +55,7 @@ export async function resolveCompanyIdForUser(
     [userId],
   );
 
-  const companyId = rows[0]?.companyId as string | null | undefined;
+  const companyId = coerceCompanyId(rows[0]?.companyId);
   if (!companyId) return undefined;
 
   await pool.execute(
@@ -59,26 +85,26 @@ export async function requireAuth(
   }
 
   // Ensure user still exists in database (prevents stale token issues)
-  const [users] = await pool.execute<RowDataPacket[]>('SELECT id FROM users WHERE id = ?', [user.userId]);
+  const [users] = await pool.execute<RowDataPacket[]>(
+    'SELECT id FROM users WHERE id = ?',
+    [user.userId],
+  );
   if (users.length === 0) {
     return apiError('Unauthorized', 401);
   }
 
   if (user.role === 'company_admin') {
-    const resolvedCompanyId = user.companyId || await resolveCompanyIdForUser(user.userId, user.companyId);
-    
+    const resolvedCompanyId = await resolveCompanyIdForUser(user.userId, user.companyId);
+
     if (!resolvedCompanyId) {
-      return apiError('Unauthorized', 401);
+      // Keep 400 so dashboard clients can show a clear "no company" state
+      return apiError('No company associated', 400);
     }
-    
-    const [companies] = await pool.execute<RowDataPacket[]>('SELECT id FROM companies WHERE id = ?', [resolvedCompanyId]);
-    if (companies.length === 0) {
-      return apiError('Unauthorized', 401);
-    }
-    
-    if (!user.companyId) {
-      user.companyId = resolvedCompanyId;
-    }
+
+    user.companyId = resolvedCompanyId;
+  } else {
+    // Normalize any non-string companyId from older tokens
+    user.companyId = coerceCompanyId(user.companyId);
   }
 
   return user;

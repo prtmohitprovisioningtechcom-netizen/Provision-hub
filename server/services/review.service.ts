@@ -1,6 +1,6 @@
 // @ts-nocheck
 import pool from '@/lib/db';
-import { getPaginationMeta } from '@/lib/utils';
+import { getPaginationMeta, sqlLimitOffset } from '@/lib/utils';
 import { RowDataPacket } from 'mysql2';
 import crypto from 'crypto';
 
@@ -48,11 +48,11 @@ export class ReviewService {
       params.push(status);
     }
 
-    queryStr += ' ORDER BY createdAt DESC LIMIT ? OFFSET ?';
+    queryStr += ` ORDER BY createdAt DESC ${sqlLimitOffset(limit, skip)}`;
 
     const [[countResult], [reviews]] = await Promise.all([
       pool.execute<RowDataPacket[]>(countQueryStr, params),
-      pool.execute<RowDataPacket[]>(queryStr, [...params, limit, skip])
+      pool.execute<RowDataPacket[]>(queryStr, params),
     ]);
 
     return { 

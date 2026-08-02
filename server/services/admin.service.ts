@@ -1,5 +1,6 @@
 // @ts-nocheck
 import pool from '@/lib/db';
+import { sqlLimitOffset } from '@/lib/utils';
 import { RowDataPacket } from 'mysql2';
 import crypto from 'crypto';
 
@@ -40,7 +41,9 @@ export class AdminService {
     
     const [[countResult], [users]] = await Promise.all([
       pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM users'),
-      pool.execute<RowDataPacket[]>('SELECT id as _id, name, email, phone, role, avatar, isEmailVerified, companyId, createdAt, updatedAt FROM users ORDER BY createdAt DESC LIMIT ? OFFSET ?', [limit, skip]),
+      pool.execute<RowDataPacket[]>(
+        `SELECT id as _id, name, email, phone, role, avatar, isEmailVerified, companyId, createdAt, updatedAt FROM users ORDER BY createdAt DESC ${sqlLimitOffset(limit, skip)}`,
+      ),
     ]);
 
     const total = countResult[0].count;

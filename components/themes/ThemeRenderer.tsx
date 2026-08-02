@@ -9,6 +9,7 @@ import { PremiumShowcaseTheme } from '@/components/themes/premium-showcase';
 import { ElegantSerifTheme } from '@/components/themes/elegant-serif';
 import { SleekGlassTheme } from '@/components/themes/sleek-glass';
 import { NeonDarkTheme } from '@/components/themes/neon-dark';
+import { RoyalGlowTheme } from '@/components/themes/royal-glow';
 import { LAYOUT_MAP } from '@/components/themes/layouts';
 import { getThemeSkin } from '@/lib/theme-skins';
 import { normalizeLayoutId } from '@/lib/layout-id';
@@ -94,6 +95,14 @@ export const THEME_OPTIONS = [
       'https://images.unsplash.com/photo-1555680202-c86f0e12f086?auto=format&fit=crop&w=800&q=80',
     tags: ['Dark', 'Neon', 'Cyberpunk'],
   },
+  {
+    id: 'royal-glow',
+    name: 'Royal Glow',
+    description: 'Bridal luxury — maroon & gold, full-bleed hero, package cards.',
+    previewImg:
+      'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&q=80',
+    tags: ['Bridal', 'Luxury', 'Maroon'],
+  },
 ] as const;
 
 export type ThemeTemplateId = (typeof THEME_OPTIONS)[number]['id'];
@@ -165,6 +174,8 @@ export function ThemeRenderer({
         return <SleekGlassTheme {...shared} />;
       case 'neon-dark':
         return <NeonDarkTheme {...shared} />;
+      case 'royal-glow':
+        return <RoyalGlowTheme {...shared} />;
       default:
         return <CompanyProfileView {...shared} templateId={id} />;
     }

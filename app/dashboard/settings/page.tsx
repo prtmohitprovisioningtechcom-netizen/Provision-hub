@@ -143,15 +143,15 @@ export default function SettingsPage() {
       return;
     }
 
-    Promise.all([
+    Promise.allSettled([
       api.get(`/api/companies/${companySlug}`),
       api.get('/api/dashboard/company-branding'),
       api.get('/api/dashboard/settings'),
       api.get('/api/categories'),
     ])
       .then(([companyRes, brandRes, settingsRes, categoriesRes]) => {
-        if (companyRes.data.success) {
-          const c = companyRes.data.data.company;
+        if (companyRes.status === 'fulfilled' && companyRes.value.data.success) {
+          const c = companyRes.value.data.data.company;
           const seo = c.seo || {};
           reset({
             name: c.name || '',
@@ -174,10 +174,12 @@ export default function SettingsPage() {
           });
           setBusinessHours(normalizeHours(c.businessHours));
           if (c.logo) setLogo(c.logo);
+        } else if (companyRes.status === 'rejected') {
+          toast.error('Failed to load company details');
         }
 
-        if (brandRes.data.success) {
-          const b = brandRes.data.data;
+        if (brandRes.status === 'fulfilled' && brandRes.value.data.success) {
+          const b = brandRes.value.data.data;
           setLogo(b.logo || '');
           setPrimaryColor(b.theme?.primaryColor || '#4f46e5');
           const links = b.socialLinks || {};
@@ -191,23 +193,22 @@ export default function SettingsPage() {
           });
         }
 
-        if (settingsRes.data.success) {
+        if (settingsRes.status === 'fulfilled' && settingsRes.value.data.success) {
           setPrefs({
-            emailNotifications: Boolean(settingsRes.data.data.emailNotifications),
-            leadNotifications: Boolean(settingsRes.data.data.leadNotifications),
-            reviewNotifications: Boolean(settingsRes.data.data.reviewNotifications),
-            loginAlerts: Boolean(settingsRes.data.data.loginAlerts),
-            subscriptionAlerts: Boolean(settingsRes.data.data.subscriptionAlerts),
-            customDomain: settingsRes.data.data.customDomain || '',
-            googleAnalyticsId: settingsRes.data.data.googleAnalyticsId || '',
+            emailNotifications: Boolean(settingsRes.value.data.data.emailNotifications),
+            leadNotifications: Boolean(settingsRes.value.data.data.leadNotifications),
+            reviewNotifications: Boolean(settingsRes.value.data.data.reviewNotifications),
+            loginAlerts: Boolean(settingsRes.value.data.data.loginAlerts),
+            subscriptionAlerts: Boolean(settingsRes.value.data.data.subscriptionAlerts),
+            customDomain: settingsRes.value.data.data.customDomain || '',
+            googleAnalyticsId: settingsRes.value.data.data.googleAnalyticsId || '',
           });
         }
 
-        if (categoriesRes.data.success) {
-          setCategories(categoriesRes.data.data || []);
+        if (categoriesRes.status === 'fulfilled' && categoriesRes.value.data.success) {
+          setCategories(categoriesRes.value.data.data || []);
         }
       })
-      .catch(() => toast.error('Failed to load company settings'))
       .finally(() => setLoading(false));
   }, [companySlug, reset, resetSocial]);
 

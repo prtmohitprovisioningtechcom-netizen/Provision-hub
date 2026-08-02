@@ -24,6 +24,6 @@ export async function GET(request: NextRequest) {
     return apiPaginated(result.companies, result.pagination);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Search failed';
-    return apiError(message, 400);
+    return apiError(message, 500);
   }
 }

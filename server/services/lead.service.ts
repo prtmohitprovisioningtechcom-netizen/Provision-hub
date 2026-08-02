@@ -1,7 +1,7 @@
 // @ts-nocheck
 import crypto from 'crypto';
 import pool from '@/lib/db';
-import { getPaginationMeta } from '@/lib/utils';
+import { getPaginationMeta, sqlLimitOffset } from '@/lib/utils';
 import { sendEmail, leadNotificationEmailHtml } from '@/lib/email';
 import { LeadInput } from '@/lib/validators';
 import { RowDataPacket } from 'mysql2';
@@ -46,11 +46,11 @@ export class LeadService {
       params.push(status);
     }
 
-    queryStr += ' ORDER BY createdAt DESC LIMIT ? OFFSET ?';
+    queryStr += ` ORDER BY createdAt DESC ${sqlLimitOffset(limit, skip)}`;
 
     const [[countResult], [leads]] = await Promise.all([
       pool.execute<RowDataPacket[]>(countQueryStr, params),
-      pool.execute<RowDataPacket[]>(queryStr, [...params, limit, skip])
+      pool.execute<RowDataPacket[]>(queryStr, params),
     ]);
 
     return { 

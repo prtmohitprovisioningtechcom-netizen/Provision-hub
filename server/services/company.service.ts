@@ -1,6 +1,6 @@
 // @ts-nocheck
 import pool from '@/lib/db';
-import { getPaginationMeta } from '@/lib/utils';
+import { getPaginationMeta, sqlLimitOffset } from '@/lib/utils';
 import { SearchFilters, CompanyStatus } from '@/types';
 import { LANDING_SECTIONS } from '@/constants';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
@@ -55,8 +55,8 @@ export class CompanyService {
     const [[countResult], [companies]] = await Promise.all([
       pool.execute<RowDataPacket[]>(`SELECT COUNT(*) as count FROM (${queryStr}) as t`, params),
       pool.execute<RowDataPacket[]>(
-        `${queryStr} ${orderBy} LIMIT ? OFFSET ?`,
-        [...params, limit, skip]
+        `${queryStr} ${orderBy} ${sqlLimitOffset(limit, skip)}`,
+        params,
       ),
     ]);
 
@@ -80,10 +80,25 @@ export class CompanyService {
     };
   }
 
+  /** Public listing lookup — only approved companies. */
   static async getBySlug(slug: string) {
+    return this.getBySlugInternal(slug, { approvedOnly: true });
+  }
+
+  /** Dashboard/settings lookup — owner can load even when pending. */
+  static async getBySlugAnyStatus(slug: string) {
+    return this.getBySlugInternal(slug, { approvedOnly: false });
+  }
+
+  private static async getBySlugInternal(
+    slug: string,
+    options: { approvedOnly: boolean },
+  ) {
     const [companies] = await pool.execute<RowDataPacket[]>(
-      'SELECT * FROM companies WHERE slug = ? AND status = "approved"',
-      [slug]
+      options.approvedOnly
+        ? 'SELECT * FROM companies WHERE slug = ? AND status = "approved"'
+        : 'SELECT * FROM companies WHERE slug = ?',
+      [slug],
     );
     if (companies.length === 0) throw new Error('Company not found');
     const companyRaw = companies[0];
@@ -226,24 +241,37 @@ export class CompanyService {
   }
 
   static async getDashboardStats(companyId: string) {
-    const [[productsResult], [servicesResult], [leadsResult], [reviewsResult], [newLeadsResult], [recentLeads]] = await Promise.all([
+    const [
+      [productRows],
+      [serviceRows],
+      [leadRows],
+      [reviewRows],
+      [newLeadRows],
+      [recentLeads],
+    ] = await Promise.all([
       pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM products WHERE companyId = ?', [companyId]),
       pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM services WHERE companyId = ?', [companyId]),
       pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM leads WHERE companyId = ?', [companyId]),
       pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM reviews WHERE companyId = ?', [companyId]),
-      pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM leads WHERE companyId = ? AND status = "new"', [companyId]),
-      pool.execute<RowDataPacket[]>('SELECT id as _id, customerName, email, message, status, createdAt FROM leads WHERE companyId = ? ORDER BY createdAt DESC LIMIT 5', [companyId]),
+      pool.execute<RowDataPacket[]>(
+        'SELECT COUNT(*) as count FROM leads WHERE companyId = ? AND status = ?',
+        [companyId, 'new'],
+      ),
+      pool.execute<RowDataPacket[]>(
+        'SELECT id as _id, customerName, email, message, status, createdAt FROM leads WHERE companyId = ? ORDER BY createdAt DESC LIMIT 5',
+        [companyId],
+      ),
     ]);
 
     return {
       stats: {
-        products: productsResult[0].count,
-        services: servicesResult[0].count,
-        leads: leadsResult[0].count,
-        reviews: reviewsResult[0].count,
-        newLeads: newLeadsResult[0].count
+        products: Number(productRows[0]?.count || 0),
+        services: Number(serviceRows[0]?.count || 0),
+        leads: Number(leadRows[0]?.count || 0),
+        reviews: Number(reviewRows[0]?.count || 0),
+        newLeads: Number(newLeadRows[0]?.count || 0),
       },
-      recentLeads: recentLeads.map(l => ({ ...l, _id: l._id })),
+      recentLeads: recentLeads.map((l) => ({ ...l, _id: l._id })),
     };
   }
 
@@ -260,11 +288,11 @@ export class CompanyService {
       params.push(status);
     }
 
-    queryStr += ' ORDER BY createdAt DESC LIMIT ? OFFSET ?';
+    queryStr += ` ORDER BY createdAt DESC ${sqlLimitOffset(limit, skip)}`;
 
     const [[countResult], [companies]] = await Promise.all([
       pool.execute<RowDataPacket[]>(countQueryStr, params),
-      pool.execute<RowDataPacket[]>(queryStr, [...params, limit, skip])
+      pool.execute<RowDataPacket[]>(queryStr, params),
     ]);
 
     return {

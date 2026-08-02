@@ -1,7 +1,7 @@
 // @ts-nocheck
 import crypto from 'crypto';
 import pool from '@/lib/db';
-import { generateSlug, getPaginationMeta } from '@/lib/utils';
+import { generateSlug, getPaginationMeta, sqlLimitOffset } from '@/lib/utils';
 import { ServiceInput } from '@/lib/validators';
 import { RowDataPacket } from 'mysql2';
 
@@ -23,7 +23,10 @@ export class ServiceService {
 
     const [[countResult], [services]] = await Promise.all([
       pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM services WHERE companyId = ?', [companyId]),
-      pool.execute<RowDataPacket[]>('SELECT * FROM services WHERE companyId = ? ORDER BY createdAt DESC LIMIT ? OFFSET ?', [companyId, limit, skip])
+      pool.execute<RowDataPacket[]>(
+        `SELECT * FROM services WHERE companyId = ? ORDER BY createdAt DESC ${sqlLimitOffset(limit, skip)}`,
+        [companyId],
+      ),
     ]);
 
     return {

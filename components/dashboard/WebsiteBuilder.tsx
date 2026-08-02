@@ -456,14 +456,7 @@ export default function WebsiteBuilder() {
 
     const load = async () => {
       try {
-        const [
-          { data },
-          { data: brandingResponse },
-          { data: blogsResponse },
-          { data: productsResponse },
-          { data: servicesResponse },
-          { data: galleryResponse },
-        ] = await Promise.all([
+        const results = await Promise.allSettled([
           api.get('/api/dashboard/landing-page'),
           api.get('/api/dashboard/company-branding'),
           api.get('/api/dashboard/blogs'),
@@ -472,9 +465,26 @@ export default function WebsiteBuilder() {
           api.get('/api/dashboard/gallery'),
         ]);
 
+        const data =
+          results[0].status === 'fulfilled' ? results[0].value.data : null;
+        const brandingResponse =
+          results[1].status === 'fulfilled' ? results[1].value.data : null;
+        const blogsResponse =
+          results[2].status === 'fulfilled' ? results[2].value.data : null;
+        const productsResponse =
+          results[3].status === 'fulfilled' ? results[3].value.data : null;
+        const servicesResponse =
+          results[4].status === 'fulfilled' ? results[4].value.data : null;
+        const galleryResponse =
+          results[5].status === 'fulfilled' ? results[5].value.data : null;
+
+        if (!data?.success) {
+          throw new Error('Landing page failed to load');
+        }
+
         const rawSections =
           (data.data?.sections as ILandingPageSection[] | undefined) || [];
-        const brandName = brandingResponse.success
+        const brandName = brandingResponse?.success
           ? String(brandingResponse.data?.name || '')
           : '';
         const loaded = sanitizeNavFooterItems(
@@ -482,7 +492,7 @@ export default function WebsiteBuilder() {
           brandName,
         );
         const ordered = [...loaded].sort((a, b) => a.order - b.order);
-        const catalogFromGallery = galleryResponse.success
+        const catalogFromGallery = galleryResponse?.success
           ? (galleryResponse.data?.images || []).map(
               (
                 image: { url?: string; caption?: string },
@@ -519,7 +529,7 @@ export default function WebsiteBuilder() {
         setSelectedId(null);
         setEditingPageId(null);
         setSaved(JSON.stringify(rawSections) === JSON.stringify(sectionsWithGallery));
-        if (brandingResponse.success) {
+        if (brandingResponse?.success) {
           setCompanyName(brandingResponse.data?.name || '');
           setCompanyLogo(brandingResponse.data?.logo || '');
           setCompanyPhone(brandingResponse.data?.phone || '');
@@ -551,17 +561,17 @@ export default function WebsiteBuilder() {
             linkedin: String(links.linkedin || ''),
           });
         }
-        if (blogsResponse.success) {
+        if (blogsResponse?.success) {
           setPublishedBlogs(
             ((blogsResponse.data || []) as IBlog[]).filter(
               (blog) => blog.status === 'published',
             ),
           );
         }
-        if (productsResponse.success) {
+        if (productsResponse?.success) {
           setCatalogProducts(productsResponse.data || []);
         }
-        if (servicesResponse.success) {
+        if (servicesResponse?.success) {
           setCatalogServices(servicesResponse.data || []);
         }
       } catch {

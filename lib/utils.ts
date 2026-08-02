@@ -58,3 +58,13 @@ export function getPaginationMeta(page: number, limit: number, total: number) {
     hasPrev: page > 1,
   };
 }
+
+/**
+ * mysql2 prepared statements often reject bound LIMIT/OFFSET params.
+ * Interpolate safe integers instead of using `LIMIT ? OFFSET ?`.
+ */
+export function sqlLimitOffset(limit: number, offset = 0): string {
+  const safeLimit = Math.max(0, Math.min(1000, Math.floor(Number(limit) || 20)));
+  const safeOffset = Math.max(0, Math.floor(Number(offset) || 0));
+  return `LIMIT ${safeLimit} OFFSET ${safeOffset}`;
+}

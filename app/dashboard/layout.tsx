@@ -67,10 +67,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           }
         })
         .catch(err => {
-          // Ignore 404s as it might just mean they haven't created one yet
-          if (err.response?.status === 404) {
+          const status = err?.response?.status;
+          // Missing landing page → theme picker. Ignore auth flicker / no-company noise.
+          if (status === 404) {
             router.push('/dashboard/select-theme');
-          } else {
+          } else if (status !== 401 && status !== 400) {
             console.error('Failed to check theme configuration:', err);
           }
         });

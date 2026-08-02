@@ -4,6 +4,7 @@ import { ServiceService } from '@/server/services/service.service';
 import { serviceSchema } from '@/lib/validators';
 import { apiSuccess, apiError, apiPaginated, parseBody } from '@/server/utils/api-response';
 import { revalidateCompanyPage } from '@/lib/revalidate-company';
+import { dbErrorMessage } from '@/lib/db-errors';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,8 +17,7 @@ export async function GET(request: NextRequest) {
     const result = await ServiceService.getByCompany(companyId, page, limit);
     return apiPaginated(result.services, result.pagination);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to get services';
-    return apiError(message, 400);
+    return apiError(dbErrorMessage(error, 'Failed to get services'), 400);
   }
 }
 

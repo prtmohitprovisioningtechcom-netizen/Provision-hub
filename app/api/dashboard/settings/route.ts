@@ -25,6 +25,35 @@ const DEFAULTS: SettingsRow = {
   googleAnalyticsId: '',
 };
 
+let ensureTablePromise: Promise<void> | null = null;
+
+function ensureSettingsTable(): Promise<void> {
+  if (!ensureTablePromise) {
+    ensureTablePromise = (async () => {
+      try {
+        await pool.execute(`
+          CREATE TABLE IF NOT EXISTS settings (
+            id VARCHAR(36) PRIMARY KEY,
+            companyId VARCHAR(36) NOT NULL UNIQUE,
+            emailNotifications BOOLEAN DEFAULT TRUE,
+            leadNotifications BOOLEAN DEFAULT TRUE,
+            reviewNotifications BOOLEAN DEFAULT TRUE,
+            loginAlerts BOOLEAN DEFAULT TRUE,
+            subscriptionAlerts BOOLEAN DEFAULT TRUE,
+            customDomain VARCHAR(255),
+            googleAnalyticsId VARCHAR(255),
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+          )
+        `);
+      } catch (error) {
+        console.warn('ensureSettingsTable:', error);
+      }
+    })();
+  }
+  return ensureTablePromise;
+}
+
 function mapRow(row?: RowDataPacket | null): SettingsRow {
   if (!row) return { ...DEFAULTS };
   return {
@@ -42,14 +71,20 @@ export async function GET(request: NextRequest) {
   try {
     const auth = await requireAuth(request, ['company_admin', 'super_admin']);
     if (auth instanceof Response) return auth;
-    if (!auth.companyId) return apiError('Company not found', 404);
+    if (!auth.companyId) return apiError('No company associated', 400);
 
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      'SELECT emailNotifications, leadNotifications, reviewNotifications, loginAlerts, subscriptionAlerts, customDomain, googleAnalyticsId FROM settings WHERE companyId = ?',
-      [auth.companyId],
-    );
+    await ensureSettingsTable();
 
-    return apiSuccess(mapRow(rows[0]));
+    try {
+      const [rows] = await pool.execute<RowDataPacket[]>(
+        'SELECT emailNotifications, leadNotifications, reviewNotifications, loginAlerts, subscriptionAlerts, customDomain, googleAnalyticsId FROM settings WHERE companyId = ?',
+        [auth.companyId],
+      );
+      return apiSuccess(mapRow(rows[0]));
+    } catch {
+      // Table/query issues should not break Settings page
+      return apiSuccess({ ...DEFAULTS });
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to load settings';
     return apiError(message, 500);
@@ -60,7 +95,9 @@ export async function PUT(request: NextRequest) {
   try {
     const auth = await requireAuth(request, ['company_admin', 'super_admin']);
     if (auth instanceof Response) return auth;
-    if (!auth.companyId) return apiError('Company not found', 404);
+    if (!auth.companyId) return apiError('No company associated', 400);
+
+    await ensureSettingsTable();
 
     const body = await parseBody(request);
     const next: SettingsRow = {
@@ -135,6 +172,7 @@ export async function PUT(request: NextRequest) {
 
     return apiSuccess(next, 'Settings saved');
   } catch (error) {
+    console.error('Settings save failed:', error);
     const message = error instanceof Error ? error.message : 'Failed to save settings';
     return apiError(message, 500);
   }
