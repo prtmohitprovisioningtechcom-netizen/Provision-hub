@@ -174,7 +174,7 @@ export function PremiumShowcaseTheme(props: Props) {
                         <div className="text-3xl font-serif text-white/20 group-hover:text-white transition duration-500">0{i + 1}</div>
                         <div className="flex-1">
                           {img && (
-                            <img src={img} alt={service.name} className="aspect-[16/10] w-full object-cover mb-6" />
+                            <img src={img} alt={service.name} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover mb-6" />
                           )}
                           <h3 className="text-2xl font-serif text-white mb-4">{service.name}</h3>
                           <p className="text-gray-400 mb-8 font-light leading-relaxed">{service.description}</p>
@@ -207,7 +207,7 @@ export function PremiumShowcaseTheme(props: Props) {
                 {page.products.items.map((product, i) => (
                   <div key={product._id || i} className="group">
                     <div className="relative aspect-[3/4] overflow-hidden mb-8">
-                      <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="w-full h-full object-cover transition duration-1000 group-hover:scale-105" />
+                      <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-cover transition duration-1000 group-hover:scale-105" />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition duration-500"></div>
                     </div>
                     <h3 className="text-xl font-serif text-white mb-3">{product.name}</h3>
@@ -240,7 +240,7 @@ export function PremiumShowcaseTheme(props: Props) {
               <div className="grid grid-cols-2 gap-4 lg:gap-8">
                 {page.gallery.images.map((img, i) => (
                   <div key={i} className={`relative overflow-hidden group ${i % 3 === 0 ? 'col-span-2 aspect-[21/9]' : 'col-span-1 aspect-square'}`}>
-                    <img src={img.url} alt={img.caption || 'Gallery'} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-1000 group-hover:scale-105" />
+                    <img src={img.url} alt={img.caption || 'Gallery'} loading="lazy" decoding="async" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-1000 group-hover:scale-105" />
                     {img.caption && (
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition duration-500 flex items-end justify-center pb-12">
                         <p className="text-white text-sm tracking-[0.2em] uppercase">{img.caption}</p>

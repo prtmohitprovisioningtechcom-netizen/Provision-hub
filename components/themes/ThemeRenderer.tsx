@@ -2,6 +2,7 @@
 
 import { CompanyProfileView } from '@/components/company/CompanyProfileView';
 import { CreativeStudioTheme } from '@/components/themes/creative-studio';
+import { HerbalCosmeticsTheme } from '@/components/themes/herbal-cosmetics';
 import { WarmShowcaseTheme } from '@/components/themes/warm-showcase';
 import { BoldLaunchTheme } from '@/components/themes/bold-launch';
 import { CleanPresenceTheme } from '@/components/themes/clean-presence';
@@ -98,10 +99,18 @@ export const THEME_OPTIONS = [
   {
     id: 'royal-glow',
     name: 'Royal Glow',
-    description: 'Bridal luxury — maroon & gold, full-bleed hero, package cards.',
+    description: 'Luxurious gold and purple aesthetics for high-end brands.',
     previewImg:
-      'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&q=80',
-    tags: ['Bridal', 'Luxury', 'Maroon'],
+      'https://images.unsplash.com/photo-1542340916-3829440f3531?auto=format&fit=crop&w=800&q=80',
+    tags: ['Luxury', 'Royal', 'Elegant'],
+  },
+  {
+    id: 'herbal-cosmetics',
+    name: 'Herbal Cosmetics',
+    description: 'Vibrant, structured layout perfect for physical products, cosmetics, and health brands with built-in order forms.',
+    previewImg:
+      'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=800&q=80',
+    tags: ['Cosmetics', 'Products', 'Retail', 'Vibrant'],
   },
 ] as const;
 
@@ -176,6 +185,8 @@ export function ThemeRenderer({
         return <NeonDarkTheme {...shared} />;
       case 'royal-glow':
         return <RoyalGlowTheme {...shared} />;
+      case 'herbal-cosmetics':
+        return <HerbalCosmeticsTheme {...shared} />;
       default:
         return <CompanyProfileView {...shared} templateId={id} />;
     }

@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { cache } from 'react';
 import crypto from 'crypto';
 import pool from '@/lib/db';
 import { generateSlug, getPaginationMeta, sqlLimitOffset } from '@/lib/utils';
@@ -22,7 +23,7 @@ export class ProductService {
     return await this.getById(id);
   }
 
-  static async getByCompany(companyId: string, page = 1, limit = 20) {
+  static getByCompany = cache(async (companyId: string, page = 1, limit = 20) => {
     const skip = (page - 1) * limit;
 
     const [[countResult], [products]] = await Promise.all([
@@ -41,7 +42,7 @@ export class ProductService {
       })),
       pagination: getPaginationMeta(page, limit, countResult[0].count)
     };
-  }
+  });
 
   static async getById(id: string) {
     const [products] = await pool.execute<RowDataPacket[]>('SELECT * FROM products WHERE id = ?', [id]);

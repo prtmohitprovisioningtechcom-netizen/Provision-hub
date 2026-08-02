@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { cache } from 'react';
 import pool from '@/lib/db';
 import { getPaginationMeta, sqlLimitOffset } from '@/lib/utils';
 import { SearchFilters, CompanyStatus } from '@/types';
@@ -81,14 +82,14 @@ export class CompanyService {
   }
 
   /** Public listing lookup — only approved companies. */
-  static async getBySlug(slug: string) {
+  static getBySlug = cache(async (slug: string) => {
     return this.getBySlugInternal(slug, { approvedOnly: true });
-  }
+  });
 
   /** Dashboard/settings lookup — owner can load even when pending. */
-  static async getBySlugAnyStatus(slug: string) {
+  static getBySlugAnyStatus = cache(async (slug: string) => {
     return this.getBySlugInternal(slug, { approvedOnly: false });
-  }
+  });
 
   private static async getBySlugInternal(
     slug: string,
