@@ -42,6 +42,9 @@ export default function CustomizePage() {
         setSettings({
           ...settings,
           ...d,
+          heroConfig: d.heroConfig || settings.heroConfig,
+          featureToggles: d.featureToggles || settings.featureToggles,
+          seoConfig: d.seoConfig || settings.seoConfig,
           themeConfig: d.themeConfig || { logoText: 'TenantHub', logoImage: '', primaryColor: '#4f46e5', secondaryColor: '#ec4899' },
           contactConfig: d.contactConfig || { email: 'hello@tenanthub.com', phone: '+1 (555) 123-4567', address: '123 SaaS Street, San Francisco, CA' },
           featuresConfig: {
