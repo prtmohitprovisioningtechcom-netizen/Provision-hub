@@ -7,6 +7,8 @@ declare global {
 
 let pool: mysql.Pool;
 
+const sslConfig = process.env.DB_SSL === 'true' ? { ssl: { rejectUnauthorized: false } } : {};
+
 if (process.env.NODE_ENV === 'production') {
   pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
@@ -18,6 +20,7 @@ if (process.env.NODE_ENV === 'production') {
     connectionLimit: 10,
     queueLimit: 0,
     namedPlaceholders: true,
+    ...sslConfig,
   });
 } else {
   if (!global.mysqlPool) {
@@ -31,6 +34,7 @@ if (process.env.NODE_ENV === 'production') {
       connectionLimit: 10,
       queueLimit: 0,
       namedPlaceholders: true,
+      ...sslConfig,
     });
   }
   pool = global.mysqlPool;
