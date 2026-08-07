@@ -99,7 +99,7 @@ export async function PUT(request: NextRequest) {
 
     await ensureSettingsTable();
 
-    const body = await parseBody(request);
+    const body = await parseBody<Partial<SettingsRow>>(request);
     const next: SettingsRow = {
       emailNotifications:
         body.emailNotifications !== undefined
