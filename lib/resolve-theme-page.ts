@@ -112,6 +112,7 @@ export type ThemePageModel = {
     content: string;
     items: NavLink[];
   };
+  orderedSectionTypes: string[];
 };
 
 function clean(value?: string | null): string {
@@ -196,6 +197,15 @@ export function resolveThemePage(input: {
 
   const navCtaLabel = clean(navbar?.buttonText) || clean(hero?.buttonText);
   const navCtaLink = clean(navbar?.buttonLink) || clean(hero?.buttonLink) || '#contact';
+
+  const orderedSectionTypes = landingPage.sections
+    ?.filter(s => s.isVisible !== false && s.type !== 'navbar' && s.type !== 'footer')
+    .sort((a, b) => (a.order || 0) - (b.order || 0))
+    .map(s => s.type) || [];
+
+  if (orderedSectionTypes.length === 0) {
+    orderedSectionTypes.push('hero', 'about', 'why-choose-us', 'services', 'products', 'gallery', 'testimonials', 'faq', 'subscribe', 'blogs', 'contact');
+  }
 
   return {
     brandName: clean(navbar?.title) || company.name,
@@ -288,5 +298,6 @@ export function resolveThemePage(input: {
       content: clean(footer?.content) || clean(company.description),
       items: footerLinks.length ? footerLinks : defaultNav,
     },
+    orderedSectionTypes,
   };
 }

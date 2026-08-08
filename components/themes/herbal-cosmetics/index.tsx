@@ -214,139 +214,148 @@ export function HerbalCosmeticsTheme(props: Props) {
       </AnimatePresence>
 
       <main>
-        {/* Hero Section */}
-        {page.hero.show && (
-          <section id="home" className="relative w-full h-[400px] md:h-[600px] bg-gray-100 overflow-hidden">
-            {page.hero.image ? (
-              <img src={page.hero.image} alt="Hero" className="w-full h-full object-cover object-center" />
-            ) : (
-              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-400">Hero Image Placeholder</span>
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center px-6 md:px-24">
-              <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-                <h1 className="text-4xl md:text-6xl font-serif text-white mb-4 shadow-sm" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
-                  {page.hero.title}
-                </h1>
-                <p className="text-xl md:text-2xl text-white/90 font-light max-w-2xl" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
-                  {page.hero.subtitle}
-                </p>
-              </motion.div>
-            </div>
-          </section>
-        )}
+        {page.orderedSectionTypes.map((type) => {
+          switch (type) {
+            case 'hero':
+              return page.hero.show && (
+                <section id="home" key="hero" className="relative w-full h-[400px] md:h-[600px] bg-gray-100 overflow-hidden">
+                  {page.hero.image ? (
+                    <img src={page.hero.image} alt="Hero" className="w-full h-full object-cover object-center" />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-400">Hero Image Placeholder</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center px-6 md:px-24">
+                    <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+                      <h1 className="text-4xl md:text-6xl font-serif text-white mb-4 shadow-sm" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+                        {page.hero.title}
+                      </h1>
+                      <p className="text-xl md:text-2xl text-white/90 font-light max-w-2xl" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
+                        {page.hero.subtitle}
+                      </p>
+                    </motion.div>
+                  </div>
+                </section>
+              );
 
-        {/* Feature Products Section */}
-        {page.products.show && props.products.length > 0 && (
-          <section id="products" className="py-16 bg-white">
-            <div className="max-w-7xl mx-auto px-4">
-              <div className="flex items-center justify-center gap-4 mb-12">
-                <div className="h-px bg-gray-300 w-16 md:w-32"></div>
-                <h2 className="text-2xl md:text-3xl font-serif text-gray-800 font-bold" style={{ color: secondaryColor }}>Feature Products</h2>
-                <div className="h-px bg-gray-300 w-16 md:w-32"></div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {props.products.slice(0, 8).map((product) => (
-                  <div key={product._id} className="border border-gray-200 bg-white group flex flex-col hover:shadow-lg transition-shadow duration-300">
-                    <div className="aspect-square relative overflow-hidden bg-gray-50 p-4">
-                      {product.images?.[0] ? (
-                        <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-105 transition duration-500" />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">No Image</div>
-                      )}
+            case 'products':
+              return page.products.show && props.products.length > 0 && (
+                <section id="products" key="products" className="py-16 bg-white">
+                  <div className="max-w-7xl mx-auto px-4">
+                    <div className="flex items-center justify-center gap-4 mb-12">
+                      <div className="h-px bg-gray-300 w-16 md:w-32"></div>
+                      <h2 className="text-2xl md:text-3xl font-serif text-gray-800 font-bold" style={{ color: secondaryColor }}>Feature Products</h2>
+                      <div className="h-px bg-gray-300 w-16 md:w-32"></div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {props.products.slice(0, 8).map((product) => (
+                        <div key={product._id} className="border border-gray-200 bg-white group flex flex-col hover:shadow-lg transition-shadow duration-300">
+                          <div className="aspect-square relative overflow-hidden bg-gray-50 p-4">
+                            {product.images?.[0] ? (
+                              <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-105 transition duration-500" />
+                            ) : (
+                              <div className="w-full h-full bg-gray-100 flex items-center justify-center">No Image</div>
+                            )}
+                            
+                            {/* Decorative triangle point downward from image */}
+                            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-white transform rotate-45 border-r border-b border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+                          </div>
+                          
+                          <div className="p-5 flex flex-col flex-grow text-center relative z-20 bg-white border-t border-gray-100">
+                            <h3 className="font-bold text-sm mb-3 uppercase h-10 flex items-center justify-center line-clamp-2" style={{ color: secondaryColor }}>{product.name}</h3>
+                            <p className="text-xs text-gray-600 mb-6 line-clamp-3 leading-relaxed flex-grow">{product.description || 'Premium quality product manufactured with the best ingredients.'}</p>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 border-t border-gray-200 mt-auto">
+                            <button 
+                              onClick={() => handleOrderNow(product)}
+                              className="py-3 text-xs font-bold text-white uppercase hover:brightness-110 transition"
+                              style={{ backgroundColor: primaryColor }}
+                            >
+                              Order Now
+                            </button>
+                            <button 
+                              className="py-3 text-xs font-bold text-white uppercase hover:brightness-110 transition"
+                              style={{ backgroundColor: secondaryColor }}
+                            >
+                              View More
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+
+            case 'contact':
+              return page.contact.show && (
+                <section id="contact" key="contact" className="py-16 bg-gray-100 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-50 opacity-50 polygon-pattern"></div>
+                  
+                  <div className="max-w-6xl mx-auto px-4 relative z-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                      {/* Text Side */}
+                      <div className="bg-white rounded-lg shadow-sm p-8 md:p-10 border border-gray-100 relative">
+                        <div className="absolute -left-2 top-8 w-1 h-12 bg-red-600" style={{ backgroundColor: primaryColor }}></div>
+                        <ul className="space-y-6 text-gray-700 italic font-medium leading-relaxed">
+                          <li className="flex items-start gap-3">
+                            <span className="mt-1 text-xl">👉</span>
+                            <span>We have best offers and discounted price for our clients.</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <span className="mt-1 text-xl">👉</span>
+                            <span>Explore exclusive bulk discounts and quantity purchase discounts.</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <span className="mt-1 text-xl">👉</span>
+                            <span>Contact us with your name, email, phone number and the products you are interested in.</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <span className="mt-1 text-xl">👉</span>
+                            <span>For more information, please contact us via <a href={`mailto:${page.email}`} className="text-blue-600 hover:underline">{page.email}</a> or {page.phone}, and we'll be happy to assist you.</span>
+                          </li>
+                        </ul>
+                      </div>
                       
-                      {/* Decorative triangle point downward from image */}
-                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-white transform rotate-45 border-r border-b border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
-                    </div>
-                    
-                    <div className="p-5 flex flex-col flex-grow text-center relative z-20 bg-white border-t border-gray-100">
-                      <h3 className="font-bold text-sm mb-3 uppercase h-10 flex items-center justify-center line-clamp-2" style={{ color: secondaryColor }}>{product.name}</h3>
-                      <p className="text-xs text-gray-600 mb-6 line-clamp-3 leading-relaxed flex-grow">{product.description || 'Premium quality product manufactured with the best ingredients.'}</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 border-t border-gray-200 mt-auto">
-                      <button 
-                        onClick={() => handleOrderNow(product)}
-                        className="py-3 text-xs font-bold text-white uppercase hover:brightness-110 transition"
-                        style={{ backgroundColor: primaryColor }}
-                      >
-                        Order Now
-                      </button>
-                      <button 
-                        className="py-3 text-xs font-bold text-white uppercase hover:brightness-110 transition"
-                        style={{ backgroundColor: secondaryColor }}
-                      >
-                        View More
-                      </button>
+                      {/* Form Side */}
+                      <div className="bg-white shadow-xl overflow-hidden border border-gray-200">
+                        <div className="py-4 text-center text-white font-bold text-lg" style={{ backgroundColor: secondaryColor }}>
+                          Fill This Form ↓ Get Your Best Offer Price
+                        </div>
+                        <form onSubmit={handleOfferSubmit} className="p-8 space-y-5">
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">your name or company name</label>
+                            <input name="name" type="text" required placeholder="Your Name" className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition" />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">your email id for receiving catalogue</label>
+                            <input name="email" type="email" required placeholder="Your Email" className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition" />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">enter your 10 digit contact no.</label>
+                            <input name="phone" type="tel" required placeholder="Your Mobile no" className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition" />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-gray-600 mb-1">write here your interset with our products/services</label>
+                            <textarea name="message" required placeholder="Your requirement" rows={3} className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition"></textarea>
+                          </div>
+                          <button type="submit" className="w-full py-3 text-white font-bold rounded-sm transition hover:brightness-110 shadow-md" style={{ backgroundColor: primaryColor }}>
+                            Get Best Offer Price
+                          </button>
+                        </form>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+                </section>
+              );
 
-        {/* Offer Form Section */}
-        <section className="py-16 bg-gray-100 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-50 opacity-50 polygon-pattern"></div>
-          
-          <div className="max-w-6xl mx-auto px-4 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              {/* Text Side */}
-              <div className="bg-white rounded-lg shadow-sm p-8 md:p-10 border border-gray-100 relative">
-                <div className="absolute -left-2 top-8 w-1 h-12 bg-red-600" style={{ backgroundColor: primaryColor }}></div>
-                <ul className="space-y-6 text-gray-700 italic font-medium leading-relaxed">
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1 text-xl">👉</span>
-                    <span>We have best offers and discounted price for our clients.</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1 text-xl">👉</span>
-                    <span>Explore exclusive bulk discounts and quantity purchase discounts.</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1 text-xl">👉</span>
-                    <span>Contact us with your name, email, phone number and the products you are interested in.</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1 text-xl">👉</span>
-                    <span>For more information, please contact us via <a href={`mailto:${page.email}`} className="text-blue-600 hover:underline">{page.email}</a> or {page.phone}, and we'll be happy to assist you.</span>
-                  </li>
-                </ul>
-              </div>
-              
-              {/* Form Side */}
-              <div className="bg-white shadow-xl overflow-hidden border border-gray-200">
-                <div className="py-4 text-center text-white font-bold text-lg" style={{ backgroundColor: secondaryColor }}>
-                  Fill This Form ↓ Get Your Best Offer Price
-                </div>
-                <form onSubmit={handleOfferSubmit} className="p-8 space-y-5">
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">your name or company name</label>
-                    <input name="name" type="text" required placeholder="Your Name" className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">your email id for receiving catalogue</label>
-                    <input name="email" type="email" required placeholder="Your Email" className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">enter your 10 digit contact no.</label>
-                    <input name="phone" type="tel" required placeholder="Your Mobile no" className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">write here your interset with our products/services</label>
-                    <textarea name="message" required placeholder="Your requirement" rows={3} className="w-full px-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white transition"></textarea>
-                  </div>
-                  <button type="submit" className="w-full py-3 text-white font-bold rounded-sm transition hover:brightness-110 shadow-md" style={{ backgroundColor: primaryColor }}>
-                    Get Best Offer Price
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </section>
+            default:
+              return null;
+          }
+        })}
       </main>
 
       {/* Footer */}

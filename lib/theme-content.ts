@@ -92,7 +92,7 @@ export function resolveTestimonials(
       const row = item as Record<string, unknown>;
       return {
         name: String(row.name || row.author || row.title || 'Customer'),
-        comment: String(row.comment || row.description || row.content || row.text || ''),
+        comment: String(row.comment || row.quote || row.description || row.content || row.text || ''),
         rating: Number(row.rating) || 5,
       };
     }).filter((t) => t.comment);

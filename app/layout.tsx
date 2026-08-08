@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getPlatformSettings();
-  const name = settings?.themeConfig?.logoText || siteConfig.name;
+  const name = siteConfig.name;
   const description = settings?.seoConfig?.description || siteConfig.description;
   const logoImage = settings?.themeConfig?.logoImage;
 

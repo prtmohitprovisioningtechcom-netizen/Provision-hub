@@ -261,493 +261,504 @@ export function RoyalGlowTheme(props: Props) {
       </nav>
 
       <main>
-        {/* Hero — full-bleed */}
-        {page.hero.show ? (
-          <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden">
-            <div className="absolute inset-0">
-              {page.hero.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={page.hero.image} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <div className="h-full w-full" style={{ background: `linear-gradient(135deg, ${primary}, ${DEEP_GREEN})` }} />
-              )}
-              <div className="absolute inset-0 bg-black/40" />
-            </div>
-
-            <div className="relative z-10 mx-auto max-w-4xl px-6 py-24 text-center text-white">
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-              >
-                {page.hero.eyebrow ? (
-                  <p className="mb-4 text-sm tracking-[0.25em] uppercase text-white/85">
-                    {page.hero.eyebrow}
-                  </p>
-                ) : null}
-                <h1
-                  className="mb-4 text-4xl leading-tight font-semibold drop-shadow-md sm:text-5xl md:text-6xl lg:text-7xl"
-                  style={{ fontFamily: "'Cinzel', 'Playfair Display', serif" }}
-                >
-                  {page.hero.title}
-                </h1>
-                {page.hero.subtitle ? (
-                  <p className="mb-10 text-lg text-white/90 drop-shadow sm:text-xl md:text-2xl">
-                    {page.hero.subtitle}
-                  </p>
-                ) : null}
-                <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-                  {page.hero.buttonText ? (
-                    <a
-                      href={page.hero.buttonLink}
-                      className="rounded-full px-8 py-3.5 text-sm font-semibold shadow transition hover:-translate-y-0.5 hover:bg-white"
-                      style={{ backgroundColor: GOLD, color: primary }}
+        {page.orderedSectionTypes.map((type, index) => {
+          switch (type) {
+            case 'hero':
+              return page.hero.show && (
+                <section id="home" key="hero" className="relative flex min-h-screen items-center justify-center overflow-hidden">
+                  <div className="absolute inset-0">
+                    {page.hero.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={page.hero.image} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="h-full w-full" style={{ background: `linear-gradient(135deg, ${primary}, ${DEEP_GREEN})` }} />
+                    )}
+                    <div className="absolute inset-0 bg-black/40" />
+                  </div>
+      
+                  <div className="relative z-10 mx-auto max-w-4xl px-6 py-24 text-center text-white">
+                    <motion.div
+                      initial={{ opacity: 0, y: 24 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8 }}
                     >
-                      {page.hero.buttonText}
-                    </a>
-                  ) : null}
-                  {page.services.show ? (
-                    <a
-                      href="#services"
-                      className="rounded-full border-2 border-white px-8 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white hover:text-[#800020]"
-                    >
-                      {page.services.title}
-                    </a>
-                  ) : null}
-                </div>
-              </motion.div>
-            </div>
-          </section>
-        ) : null}
-
-        {(page.hero.show && (page.about.show || page.services.show || page.products.show)) ? (
-          <WaveDivider />
-        ) : null}
-
-        {/* About */}
-        {page.about.show ? (
-          <section id="about" className="px-4 py-16 sm:px-6 sm:py-20">
-            <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2">
-              {page.about.image ? (
-                <div className="overflow-hidden rounded-xl shadow-lg">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={page.about.image} alt="" className="aspect-[4/3] w-full object-cover" />
-                </div>
-              ) : null}
-              <div>
-                {page.about.title ? <SectionHeading title={page.about.title} subtitle={page.about.subtitle} /> : null}
-                {page.about.content ? (
-                  <div
-                    className="prose max-w-none text-gray-600 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: page.about.content }}
-                  />
-                ) : null}
-              </div>
-            </div>
-          </section>
-        ) : null}
-
-        {page.about.show && page.services.show ? <WaveDivider /> : null}
-
-        {/* Services */}
-        {page.services.show ? (
-          <section id="services" className="px-4 py-16 sm:px-6 sm:py-20">
-            <div className="mx-auto max-w-7xl">
-              <SectionHeading title={page.services.title} subtitle={page.services.subtitle} />
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {page.services.items.map((service, i) => {
-                  const img = getServiceImage(service);
-                  return (
-                    <motion.article
-                      key={service._id || i}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: Math.min(i * 0.05, 0.3) }}
-                      className="group flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-[0_5px_15px_rgba(0,0,0,0.08)] transition hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(128,0,32,0.18)]"
-                    >
-                      {img ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={img}
-                          alt={service.name}
-                          className="h-56 w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                        />
-                      ) : (
-                        <div
-                          className="flex h-40 items-end p-6 text-4xl font-semibold text-white/30"
-                          style={{
-                            background: `linear-gradient(135deg, ${primary}, ${DEEP_GREEN})`,
-                            fontFamily: "'Cinzel', serif",
-                          }}
-                        >
-                          {String(i + 1).padStart(2, '0')}
-                        </div>
-                      )}
-                      <div className="flex flex-1 flex-col p-5">
-                        <h3
-                          className="mb-2 text-xl font-bold"
-                          style={{ color: primary, fontFamily: "'Cinzel', serif" }}
-                        >
-                          {service.name}
-                        </h3>
-                        {service.description ? (
-                          <p className="mb-4 flex-1 text-sm leading-relaxed text-gray-600">
-                            {service.description}
-                          </p>
+                      {page.hero.eyebrow ? (
+                        <p className="mb-4 text-sm tracking-[0.25em] uppercase text-white/85">
+                          {page.hero.eyebrow}
+                        </p>
+                      ) : null}
+                      <h1
+                        className="mb-4 text-4xl leading-tight font-semibold drop-shadow-md sm:text-5xl md:text-6xl lg:text-7xl"
+                        style={{ fontFamily: "'Cinzel', 'Playfair Display', serif" }}
+                      >
+                        {page.hero.title}
+                      </h1>
+                      {page.hero.subtitle ? (
+                        <p className="mb-10 text-lg text-white/90 drop-shadow sm:text-xl md:text-2xl">
+                          {page.hero.subtitle}
+                        </p>
+                      ) : null}
+                      <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+                        {page.hero.buttonText ? (
+                          <a
+                            href={page.hero.buttonLink}
+                            className="rounded-full px-8 py-3.5 text-sm font-semibold shadow transition hover:-translate-y-0.5 hover:bg-white"
+                            style={{ backgroundColor: GOLD, color: primary }}
+                          >
+                            {page.hero.buttonText}
+                          </a>
                         ) : null}
-                        <div className="mt-auto flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
-                          <div>
-                            {service.price != null ? (
-                              <p className="font-semibold" style={{ color: GOLD }}>
-                                {formatCurrency(service.price)}
+                        {page.services.show ? (
+                          <a
+                            href="#services"
+                            className="rounded-full border-2 border-white px-8 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white hover:text-[#800020]"
+                          >
+                            {page.services.title}
+                          </a>
+                        ) : null}
+                      </div>
+                    </motion.div>
+                  </div>
+                </section>
+              );
+
+            case 'about':
+              return page.about.show && (
+                <div key="about">
+                  {index > 0 && <WaveDivider />}
+                  <section id="about" className="px-4 py-16 sm:px-6 sm:py-20">
+                    <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2">
+                      {page.about.image ? (
+                        <div className="overflow-hidden rounded-xl shadow-lg">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={page.about.image} alt="" className="aspect-[4/3] w-full object-cover" />
+                        </div>
+                      ) : null}
+                      <div>
+                        {page.about.title ? <SectionHeading title={page.about.title} subtitle={page.about.subtitle} /> : null}
+                        {page.about.content ? (
+                          <div
+                            className="prose max-w-none text-gray-600 leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: page.about.content }}
+                          />
+                        ) : null}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              );
+
+            case 'services':
+              return page.services.show && (
+                <div key="services">
+                  {index > 0 && <WaveDivider />}
+                  <section id="services" className="px-4 py-16 sm:px-6 sm:py-20">
+                    <div className="mx-auto max-w-7xl">
+                      <SectionHeading title={page.services.title} subtitle={page.services.subtitle} />
+                      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {page.services.items.map((service, i) => {
+                          const img = getServiceImage(service);
+                          return (
+                            <motion.article
+                              key={service._id || i}
+                              initial={{ opacity: 0, y: 20 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ delay: Math.min(i * 0.05, 0.3) }}
+                              className="group flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-[0_5px_15px_rgba(0,0,0,0.08)] transition hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(128,0,32,0.18)]"
+                            >
+                              {img ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={img}
+                                  alt={service.name}
+                                  className="h-56 w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                                />
+                              ) : (
+                                <div
+                                  className="flex h-40 items-end p-6 text-4xl font-semibold text-white/30"
+                                  style={{
+                                    background: `linear-gradient(135deg, ${primary}, ${DEEP_GREEN})`,
+                                    fontFamily: "'Cinzel', serif",
+                                  }}
+                                >
+                                  {String(i + 1).padStart(2, '0')}
+                                </div>
+                              )}
+                              <div className="flex flex-1 flex-col p-5">
+                                <h3
+                                  className="mb-2 text-xl font-bold"
+                                  style={{ color: primary, fontFamily: "'Cinzel', serif" }}
+                                >
+                                  {service.name}
+                                </h3>
+                                {service.description ? (
+                                  <p className="mb-4 flex-1 text-sm leading-relaxed text-gray-600">
+                                    {service.description}
+                                  </p>
+                                ) : null}
+                                <div className="mt-auto flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
+                                  <div>
+                                    {service.price != null ? (
+                                      <p className="font-semibold" style={{ color: GOLD }}>
+                                        {formatCurrency(service.price)}
+                                      </p>
+                                    ) : null}
+                                    {service.duration ? (
+                                      <p className="text-xs text-gray-500">{service.duration}</p>
+                                    ) : null}
+                                  </div>
+                                  {page.contact.show || page.hero.buttonLink ? (
+                                    <a
+                                      href={page.hero.buttonLink || '#contact'}
+                                      className="rounded-full px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                                      style={{ backgroundColor: primary }}
+                                    >
+                                      {page.navCta?.label || 'Book'}
+                                    </a>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </motion.article>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              );
+
+            case 'products':
+              return page.products.show && (
+                <div key="products">
+                  {index > 0 && <WaveDivider />}
+                  <section id="packages" className="bg-white/70 px-4 py-16 sm:px-6 sm:py-20">
+                    <div className="mx-auto max-w-7xl">
+                      <SectionHeading title={page.products.title} subtitle={page.products.subtitle} />
+                      <div className="grid items-stretch gap-6 lg:grid-cols-3">
+                        {page.products.items.map((product, i) => {
+                          const features = packageFeatures(product.description);
+                          const popular = i === popularIndex;
+                          return (
+                            <article
+                              key={product._id || i}
+                              className="relative flex h-full flex-col overflow-hidden rounded-xl border bg-white p-8 transition"
+                              style={{
+                                borderColor: popular ? GOLD : 'rgba(0,0,0,0.1)',
+                                borderWidth: popular ? 2 : 1,
+                                boxShadow: popular
+                                  ? '0 10px 30px rgba(212,175,55,0.2)'
+                                  : '0 5px 15px rgba(0,0,0,0.04)',
+                                transform: popular ? 'scale(1.02)' : undefined,
+                              }}
+                            >
+                              {popular ? (
+                                <span
+                                  className="absolute top-4 -right-8 rotate-45 px-8 py-1 text-[10px] font-bold tracking-wide"
+                                  style={{ backgroundColor: GOLD, color: primary }}
+                                >
+                                  Popular
+                                </span>
+                              ) : null}
+                              <h3
+                                className="mb-3 text-2xl font-bold"
+                                style={{ color: primary, fontFamily: "'Cinzel', serif" }}
+                              >
+                                {product.name}
+                              </h3>
+                              <p className="mb-6 text-3xl font-bold" style={{ color: GOLD }}>
+                                {formatCurrency(product.offerPrice ?? product.price)}
                               </p>
-                            ) : null}
-                            {service.duration ? (
-                              <p className="text-xs text-gray-500">{service.duration}</p>
+                              {features.length ? (
+                                <ul className="mb-8 flex-1 space-y-2.5">
+                                  {features.map((feature) => (
+                                    <li key={feature} className="flex gap-2 text-sm text-gray-700">
+                                      <Check className="mt-0.5 h-4 w-4 shrink-0" style={{ color: GOLD }} />
+                                      <span>{feature}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : product.description ? (
+                                <p className="mb-8 flex-1 text-sm leading-relaxed text-gray-600">
+                                  {product.description}
+                                </p>
+                              ) : (
+                                <div className="mb-8 flex-1" />
+                              )}
+                              <a
+                                href={page.hero.buttonLink || '#contact'}
+                                className="mt-auto block rounded-full py-3 text-center text-sm font-semibold text-white transition hover:opacity-90"
+                                style={{ backgroundColor: primary }}
+                              >
+                                {page.navCta?.label || page.hero.buttonText || 'Book'}
+                              </a>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              );
+
+            case 'why-choose-us':
+              return page.why.show && (
+                <div key="why-choose-us">
+                  {index > 0 && <WaveDivider />}
+                  <section id="why" className="px-4 py-16 sm:px-6 sm:py-20">
+                    <div className="mx-auto max-w-7xl">
+                      <SectionHeading title={page.why.title} subtitle={page.why.subtitle} />
+                      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                        {page.why.items.map((item, i) => (
+                          <div
+                            key={i}
+                            className="rounded-xl bg-white p-6 text-center shadow-[0_5px_15px_rgba(0,0,0,0.05)] transition hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(128,0,32,0.1)]"
+                          >
+                            <div
+                              className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full text-xl font-bold"
+                              style={{ backgroundColor: `${GOLD}22`, color: GOLD }}
+                            >
+                              {String(i + 1).padStart(2, '0')}
+                            </div>
+                            <h3
+                              className="mb-2 text-lg font-semibold"
+                              style={{ color: primary, fontFamily: "'Cinzel', serif" }}
+                            >
+                              {item.title}
+                            </h3>
+                            {item.description ? (
+                              <p className="text-sm leading-relaxed text-gray-600">{item.description}</p>
                             ) : null}
                           </div>
-                          {page.contact.show || page.hero.buttonLink ? (
-                            <a
-                              href={page.hero.buttonLink || '#contact'}
-                              className="rounded-full px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
-                              style={{ backgroundColor: primary }}
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              );
+
+            case 'testimonials':
+              return page.testimonials.show && (
+                <div key="testimonials">
+                  {index > 0 && <WaveDivider />}
+                  <section id="testimonials" className="bg-white/70 px-4 py-16 sm:px-6 sm:py-20">
+                    <div className="mx-auto max-w-7xl">
+                      <SectionHeading title={page.testimonials.title} subtitle={page.testimonials.subtitle} />
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {page.testimonials.items.map((item, i) => (
+                          <article
+                            key={i}
+                            className="rounded-xl bg-white p-8 shadow-[0_5px_15px_rgba(0,0,0,0.05)]"
+                          >
+                            <div className="mb-4 flex gap-1" style={{ color: GOLD }}>
+                              {Array.from({ length: Math.max(1, Math.min(5, item.rating || 5)) }).map(
+                                (_, star) => (
+                                  <Star key={star} className="h-4 w-4 fill-current" />
+                                ),
+                              )}
+                            </div>
+                            <p className="mb-6 text-sm leading-relaxed text-gray-600 italic">
+                              “{item.comment}”
+                            </p>
+                            <p className="font-semibold" style={{ color: primary }}>
+                              {item.name}
+                            </p>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              );
+
+            case 'gallery':
+              return page.gallery.show && (
+                <div key="gallery">
+                  {index > 0 && <WaveDivider />}
+                  <section id="gallery" className="px-4 py-16 sm:px-6 sm:py-20">
+                    <div className="mx-auto max-w-7xl">
+                      <SectionHeading title={page.gallery.title} subtitle={page.gallery.subtitle} />
+                      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        {page.gallery.images.map((image, i) => (
+                          <div
+                            key={image.url + i}
+                            className="group relative h-72 overflow-hidden rounded-xl"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={image.url}
+                              alt={image.caption || ''}
+                              className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                            />
+                            {image.caption ? (
+                              <div className="absolute inset-0 flex flex-col justify-end bg-linear-to-t from-[#800020]/85 to-transparent p-5 text-white opacity-0 transition group-hover:opacity-100">
+                                <h5 className="font-semibold" style={{ fontFamily: "'Cinzel', serif" }}>
+                                  {image.caption}
+                                </h5>
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              );
+
+            case 'faq':
+              return page.faq.show && (
+                <div key="faq">
+                  {index > 0 && <WaveDivider />}
+                  <section id="faq" className="px-4 py-16 sm:px-6 sm:py-20">
+                    <div className="mx-auto max-w-3xl">
+                      <SectionHeading title={page.faq.title} subtitle={page.faq.subtitle} />
+                      <div className="space-y-4">
+                        {page.faq.items.map((item, i) => (
+                          <details
+                            key={i}
+                            className="group rounded-xl border border-black/5 bg-white p-5 open:shadow-md"
+                          >
+                            <summary
+                              className="cursor-pointer list-none font-semibold"
+                              style={{ color: primary, fontFamily: "'Cinzel', serif" }}
                             >
-                              {page.navCta?.label || 'Book'}
-                            </a>
+                              {item.question}
+                            </summary>
+                            <p className="mt-3 text-sm leading-relaxed text-gray-600">{item.answer}</p>
+                          </details>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              );
+
+            case 'blogs':
+              return page.blogs.show && (
+                <div key="blogs">
+                  {index > 0 && <WaveDivider />}
+                  <section id="blogs" className="px-4 py-16 sm:px-6 sm:py-20">
+                    <div className="mx-auto max-w-7xl">
+                      <SectionHeading title={page.blogs.title} subtitle={page.blogs.subtitle} />
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {page.blogs.items.map((blog, i) => (
+                          <article
+                            key={blog._id || i}
+                            className="overflow-hidden rounded-xl bg-white shadow-[0_5px_15px_rgba(0,0,0,0.06)]"
+                          >
+                            {blog.featuredImage ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={blog.featuredImage}
+                                alt={blog.title}
+                                className="aspect-[16/10] w-full object-cover"
+                              />
+                            ) : null}
+                            <div className="p-5">
+                              <h3
+                                className="mb-2 text-xl font-semibold"
+                                style={{ color: primary, fontFamily: "'Cinzel', serif" }}
+                              >
+                                {blog.title}
+                              </h3>
+                              {blog.excerpt ? (
+                                <p className="line-clamp-3 text-sm text-gray-600">{blog.excerpt}</p>
+                              ) : null}
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              );
+
+            case 'contact':
+              return page.contact.show && (
+                <div key="contact">
+                  {index > 0 && <WaveDivider />}
+                  <section id="contact" className="px-4 py-16 sm:px-6 sm:py-20">
+                    <div className="mx-auto grid max-w-7xl items-start gap-10 lg:grid-cols-2">
+                      <div>
+                        {page.contact.title ? (
+                          <SectionHeading title={page.contact.title} subtitle={page.contact.subtitle} />
+                        ) : null}
+                        {page.contact.content ? (
+                          <div
+                            className="mb-8 prose max-w-none text-gray-600"
+                            dangerouslySetInnerHTML={{ __html: page.contact.content }}
+                          />
+                        ) : null}
+                        <div className="space-y-4 text-sm">
+                          {page.phone ? (
+                            <p className="flex items-center gap-3">
+                              <Phone className="h-4 w-4" style={{ color: GOLD }} />
+                              <a href={`tel:${page.phone}`}>{page.phone}</a>
+                            </p>
+                          ) : null}
+                          {page.email ? (
+                            <p className="flex items-center gap-3">
+                              <Mail className="h-4 w-4" style={{ color: GOLD }} />
+                              <a href={`mailto:${page.email}`}>{page.email}</a>
+                            </p>
+                          ) : null}
+                          {page.addressLine ? (
+                            <p className="flex items-start gap-3">
+                              <MapPin className="mt-0.5 h-4 w-4 shrink-0" style={{ color: GOLD }} />
+                              <span>{page.addressLine}</span>
+                            </p>
                           ) : null}
                         </div>
                       </div>
-                    </motion.article>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        ) : null}
-
-        {page.services.show && page.products.show ? <WaveDivider /> : null}
-
-        {/* Products / Packages */}
-        {page.products.show ? (
-          <section id="packages" className="bg-white/70 px-4 py-16 sm:px-6 sm:py-20">
-            <div className="mx-auto max-w-7xl">
-              <SectionHeading title={page.products.title} subtitle={page.products.subtitle} />
-              <div className="grid items-stretch gap-6 lg:grid-cols-3">
-                {page.products.items.map((product, i) => {
-                  const features = packageFeatures(product.description);
-                  const popular = i === popularIndex;
-                  return (
-                    <article
-                      key={product._id || i}
-                      className="relative flex h-full flex-col overflow-hidden rounded-xl border bg-white p-8 transition"
-                      style={{
-                        borderColor: popular ? GOLD : 'rgba(0,0,0,0.1)',
-                        borderWidth: popular ? 2 : 1,
-                        boxShadow: popular
-                          ? '0 10px 30px rgba(212,175,55,0.2)'
-                          : '0 5px 15px rgba(0,0,0,0.04)',
-                        transform: popular ? 'scale(1.02)' : undefined,
-                      }}
-                    >
-                      {popular ? (
-                        <span
-                          className="absolute top-4 -right-8 rotate-45 px-8 py-1 text-[10px] font-bold tracking-wide"
-                          style={{ backgroundColor: GOLD, color: primary }}
-                        >
-                          Popular
-                        </span>
-                      ) : null}
-                      <h3
-                        className="mb-3 text-2xl font-bold"
-                        style={{ color: primary, fontFamily: "'Cinzel', serif" }}
-                      >
-                        {product.name}
-                      </h3>
-                      <p className="mb-6 text-3xl font-bold" style={{ color: GOLD }}>
-                        {formatCurrency(product.offerPrice ?? product.price)}
-                      </p>
-                      {features.length ? (
-                        <ul className="mb-8 flex-1 space-y-2.5">
-                          {features.map((feature) => (
-                            <li key={feature} className="flex gap-2 text-sm text-gray-700">
-                              <Check className="mt-0.5 h-4 w-4 shrink-0" style={{ color: GOLD }} />
-                              <span>{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : product.description ? (
-                        <p className="mb-8 flex-1 text-sm leading-relaxed text-gray-600">
-                          {product.description}
-                        </p>
-                      ) : (
-                        <div className="mb-8 flex-1" />
-                      )}
-                      <a
-                        href={page.hero.buttonLink || '#contact'}
-                        className="mt-auto block rounded-full py-3 text-center text-sm font-semibold text-white transition hover:opacity-90"
-                        style={{ backgroundColor: primary }}
-                      >
-                        {page.navCta?.label || page.hero.buttonText || 'Book'}
-                      </a>
-                    </article>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        ) : null}
-
-        {page.products.show && page.why.show ? <WaveDivider /> : null}
-
-        {/* Why choose us */}
-        {page.why.show ? (
-          <section id="why" className="px-4 py-16 sm:px-6 sm:py-20">
-            <div className="mx-auto max-w-7xl">
-              <SectionHeading title={page.why.title} subtitle={page.why.subtitle} />
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {page.why.items.map((item, i) => (
-                  <div
-                    key={i}
-                    className="rounded-xl bg-white p-6 text-center shadow-[0_5px_15px_rgba(0,0,0,0.05)] transition hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(128,0,32,0.1)]"
-                  >
-                    <div
-                      className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full text-xl font-bold"
-                      style={{ backgroundColor: `${GOLD}22`, color: GOLD }}
-                    >
-                      {String(i + 1).padStart(2, '0')}
-                    </div>
-                    <h3
-                      className="mb-2 text-lg font-semibold"
-                      style={{ color: primary, fontFamily: "'Cinzel', serif" }}
-                    >
-                      {item.title}
-                    </h3>
-                    {item.description ? (
-                      <p className="text-sm leading-relaxed text-gray-600">{item.description}</p>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        ) : null}
-
-        {page.why.show && page.testimonials.show ? <WaveDivider /> : null}
-
-        {/* Testimonials */}
-        {page.testimonials.show ? (
-          <section id="testimonials" className="bg-white/70 px-4 py-16 sm:px-6 sm:py-20">
-            <div className="mx-auto max-w-7xl">
-              <SectionHeading title={page.testimonials.title} subtitle={page.testimonials.subtitle} />
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {page.testimonials.items.map((item, i) => (
-                  <article
-                    key={i}
-                    className="rounded-xl bg-white p-8 shadow-[0_5px_15px_rgba(0,0,0,0.05)]"
-                  >
-                    <div className="mb-4 flex gap-1" style={{ color: GOLD }}>
-                      {Array.from({ length: Math.max(1, Math.min(5, item.rating || 5)) }).map(
-                        (_, star) => (
-                          <Star key={star} className="h-4 w-4 fill-current" />
-                        ),
-                      )}
-                    </div>
-                    <p className="mb-6 text-sm leading-relaxed text-gray-600 italic">
-                      “{item.comment}”
-                    </p>
-                    <p className="font-semibold" style={{ color: primary }}>
-                      {item.name}
-                    </p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-        ) : null}
-
-        {page.testimonials.show && page.gallery.show ? <WaveDivider /> : null}
-
-        {/* Gallery */}
-        {page.gallery.show ? (
-          <section id="gallery" className="px-4 py-16 sm:px-6 sm:py-20">
-            <div className="mx-auto max-w-7xl">
-              <SectionHeading title={page.gallery.title} subtitle={page.gallery.subtitle} />
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {page.gallery.images.map((image, i) => (
-                  <div
-                    key={image.url + i}
-                    className="group relative h-72 overflow-hidden rounded-xl"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={image.url}
-                      alt={image.caption || ''}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                    />
-                    {image.caption ? (
-                      <div className="absolute inset-0 flex flex-col justify-end bg-linear-to-t from-[#800020]/85 to-transparent p-5 text-white opacity-0 transition group-hover:opacity-100">
-                        <h5 className="font-semibold" style={{ fontFamily: "'Cinzel', serif" }}>
-                          {image.caption}
-                        </h5>
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        ) : null}
-
-        {/* FAQ */}
-        {page.faq.show ? (
-          <>
-            <WaveDivider />
-            <section id="faq" className="px-4 py-16 sm:px-6 sm:py-20">
-              <div className="mx-auto max-w-3xl">
-                <SectionHeading title={page.faq.title} subtitle={page.faq.subtitle} />
-                <div className="space-y-4">
-                  {page.faq.items.map((item, i) => (
-                    <details
-                      key={i}
-                      className="group rounded-xl border border-black/5 bg-white p-5 open:shadow-md"
-                    >
-                      <summary
-                        className="cursor-pointer list-none font-semibold"
-                        style={{ color: primary, fontFamily: "'Cinzel', serif" }}
-                      >
-                        {item.question}
-                      </summary>
-                      <p className="mt-3 text-sm leading-relaxed text-gray-600">{item.answer}</p>
-                    </details>
-                  ))}
-                </div>
-              </div>
-            </section>
-          </>
-        ) : null}
-
-        {/* Blogs */}
-        {page.blogs.show ? (
-          <>
-            <WaveDivider />
-            <section id="blogs" className="px-4 py-16 sm:px-6 sm:py-20">
-              <div className="mx-auto max-w-7xl">
-                <SectionHeading title={page.blogs.title} subtitle={page.blogs.subtitle} />
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {page.blogs.items.map((blog, i) => (
-                    <article
-                      key={blog._id || i}
-                      className="overflow-hidden rounded-xl bg-white shadow-[0_5px_15px_rgba(0,0,0,0.06)]"
-                    >
-                      {blog.featuredImage ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={blog.featuredImage}
-                          alt={blog.title}
-                          className="aspect-[16/10] w-full object-cover"
+                      <div className="rounded-xl bg-white p-6 shadow-[0_5px_30px_rgba(0,0,0,0.1)] sm:p-8">
+                        <ContactForm
+                          companyId={props.company._id}
+                          primaryColor={primary}
+                          services={page.services.items.map((s) => s.name).filter(Boolean)}
                         />
-                      ) : null}
-                      <div className="p-5">
-                        <h3
-                          className="mb-2 text-xl font-semibold"
-                          style={{ color: primary, fontFamily: "'Cinzel', serif" }}
-                        >
-                          {blog.title}
-                        </h3>
-                        {blog.excerpt ? (
-                          <p className="line-clamp-3 text-sm text-gray-600">{blog.excerpt}</p>
-                        ) : null}
                       </div>
-                    </article>
-                  ))}
+                    </div>
+                  </section>
                 </div>
-              </div>
-            </section>
-          </>
-        ) : null}
+              );
 
-        {/* Contact / Booking */}
-        {page.contact.show ? (
-          <>
-            <WaveDivider />
-            <section id="contact" className="px-4 py-16 sm:px-6 sm:py-20">
-              <div className="mx-auto grid max-w-7xl items-start gap-10 lg:grid-cols-2">
-                <div>
-                  {page.contact.title ? (
-                    <SectionHeading title={page.contact.title} subtitle={page.contact.subtitle} />
-                  ) : null}
-                  {page.contact.content ? (
-                    <div
-                      className="mb-8 prose max-w-none text-gray-600"
-                      dangerouslySetInnerHTML={{ __html: page.contact.content }}
-                    />
-                  ) : null}
-                  <div className="space-y-4 text-sm">
-                    {page.phone ? (
-                      <p className="flex items-center gap-3">
-                        <Phone className="h-4 w-4" style={{ color: GOLD }} />
-                        <a href={`tel:${page.phone}`}>{page.phone}</a>
-                      </p>
-                    ) : null}
-                    {page.email ? (
-                      <p className="flex items-center gap-3">
-                        <Mail className="h-4 w-4" style={{ color: GOLD }} />
-                        <a href={`mailto:${page.email}`}>{page.email}</a>
-                      </p>
-                    ) : null}
-                    {page.addressLine ? (
-                      <p className="flex items-start gap-3">
-                        <MapPin className="mt-0.5 h-4 w-4 shrink-0" style={{ color: GOLD }} />
-                        <span>{page.addressLine}</span>
-                      </p>
-                    ) : null}
-                  </div>
+            case 'subscribe':
+              return page.subscribe.show && (
+                <div key="subscribe">
+                  {index > 0 && <WaveDivider />}
+                  <section
+                    id="subscribe"
+                    className="px-4 py-16 text-white sm:px-6 sm:py-20"
+                    style={{ background: `linear-gradient(135deg, ${primary}, ${DEEP_GREEN})` }}
+                  >
+                    <div className="mx-auto max-w-xl text-center">
+                      <h2
+                        className="mb-3 text-3xl font-semibold"
+                        style={{ fontFamily: "'Cinzel', serif", color: GOLD }}
+                      >
+                        {page.subscribe.title}
+                      </h2>
+                      {page.subscribe.subtitle ? (
+                        <p className="mb-8 text-white/85">{page.subscribe.subtitle}</p>
+                      ) : null}
+                      <NewsletterForm
+                        companyId={props.company._id}
+                        buttonText={page.subscribe.buttonText}
+                        placeholder={page.subscribe.placeholder}
+                        primaryColor={GOLD}
+                      />
+                      {page.subscribe.note ? (
+                        <p className="mt-4 text-xs text-white/70">{page.subscribe.note}</p>
+                      ) : null}
+                    </div>
+                  </section>
                 </div>
-                <div className="rounded-xl bg-white p-6 shadow-[0_5px_30px_rgba(0,0,0,0.1)] sm:p-8">
-                  <ContactForm
-                    companyId={props.company._id}
-                    primaryColor={primary}
-                    services={page.services.items.map((s) => s.name).filter(Boolean)}
-                  />
-                </div>
-              </div>
-            </section>
-          </>
-        ) : null}
+              );
 
-        {/* Subscribe */}
-        {page.subscribe.show ? (
-          <>
-            <WaveDivider />
-            <section
-              id="subscribe"
-              className="px-4 py-16 text-white sm:px-6 sm:py-20"
-              style={{ background: `linear-gradient(135deg, ${primary}, ${DEEP_GREEN})` }}
-            >
-              <div className="mx-auto max-w-xl text-center">
-                <h2
-                  className="mb-3 text-3xl font-semibold"
-                  style={{ fontFamily: "'Cinzel', serif", color: GOLD }}
-                >
-                  {page.subscribe.title}
-                </h2>
-                {page.subscribe.subtitle ? (
-                  <p className="mb-8 text-white/85">{page.subscribe.subtitle}</p>
-                ) : null}
-                <NewsletterForm
-                  companyId={props.company._id}
-                  buttonText={page.subscribe.buttonText}
-                  placeholder={page.subscribe.placeholder}
-                  primaryColor={GOLD}
-                />
-                {page.subscribe.note ? (
-                  <p className="mt-4 text-xs text-white/70">{page.subscribe.note}</p>
-                ) : null}
-              </div>
-            </section>
-          </>
-        ) : null}
+            default:
+              return null;
+          }
+        })}
       </main>
 
       {/* Footer */}
