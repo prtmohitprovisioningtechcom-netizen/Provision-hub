@@ -20,6 +20,8 @@ if (process.env.NODE_ENV === 'production') {
     connectionLimit: 10,
     queueLimit: 0,
     namedPlaceholders: true,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 10000,
     ...sslConfig,
   });
 } else {
@@ -34,6 +36,8 @@ if (process.env.NODE_ENV === 'production') {
       connectionLimit: 10,
       queueLimit: 0,
       namedPlaceholders: true,
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 10000,
       ...sslConfig,
     });
   }
