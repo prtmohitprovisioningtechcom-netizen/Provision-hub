@@ -413,7 +413,7 @@ export function BoldLaunchTheme(props: Props) {
       <footer className="py-12 px-6 border-t border-white/10">
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6 font-mono text-xs uppercase tracking-widest text-gray-500">
           <div>
-            &copy; {new Date().getFullYear()} {page.brandName}.
+            &copy; {new Date().getFullYear()} {page.brandName}. - Promoted By Multi-Tenant Platform Provisioning Tech
           </div>
           <div className="flex gap-6">
              {page.nav.map((item) => (

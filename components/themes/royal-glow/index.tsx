@@ -881,7 +881,7 @@ export function RoyalGlowTheme(props: Props) {
         </div>
 
         <div className="mx-auto mt-12 max-w-7xl border-t border-white/10 py-5 text-center text-xs text-gray-500">
-          © {new Date().getFullYear()} {page.brandName}
+          © {new Date().getFullYear()} {page.brandName} - Promoted By Multi-Tenant Platform Provisioning Tech
         </div>
       </footer>
 

@@ -401,7 +401,7 @@ export function ElegantSerifTheme(props: Props) {
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-center md:text-left">
             <h2 className="text-2xl font-serif text-white mb-2">{page.brandName}</h2>
-            <p>&copy; {new Date().getFullYear()} All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} All rights reserved. - Promoted By Multi-Tenant Platform Provisioning Tech</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8">
              {page.nav.map((item) => (

@@ -353,7 +353,7 @@ export function LayoutClassic({ skin, ...props }: ThemeLayoutProps) {
                   </div>
                 </div>
                 <p className="mx-auto mt-16 max-w-6xl border-t px-5 pt-8 text-center text-xs opacity-40 md:px-8" style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
-                  © {new Date().getFullYear()} {page.brandName}
+                  © {new Date().getFullYear()} {page.brandName}. Promoted By Multi-Tenant Platform Provisioning Tech.
                 </p>
               </footer>
             );

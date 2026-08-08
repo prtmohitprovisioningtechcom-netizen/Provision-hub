@@ -324,7 +324,7 @@ export function LayoutSplit({ skin, ...props }: ThemeLayoutProps) {
                 ))}
               </div>
             )}
-            <p className="mt-16 text-xs opacity-40">© {new Date().getFullYear()} {page.brandName}</p>
+            <p className="mt-16 text-xs opacity-40">© {new Date().getFullYear()} {page.brandName} - Promoted By Multi-Tenant Platform Provisioning Tech</p>
           </div>
           <div className="flex flex-col justify-center gap-5 border-t px-6 py-16 lg:border-l lg:border-t-0 md:px-12" style={{ borderColor: 'rgba(255,255,255,0.12)' }}>
             {page.phone && (

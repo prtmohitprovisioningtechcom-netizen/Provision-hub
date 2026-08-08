@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { usePlatformBranding } from '@/hooks/usePlatformBranding';
 
 interface TestimonialsConfig {
@@ -57,11 +59,14 @@ export function Testimonials({ config }: { config?: TestimonialsConfig }) {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="flex flex-col sm:flex-row items-center justify-between mb-16 gap-6"
         >
           <h2 className="text-3xl font-bold sm:text-4xl text-gray-900 dark:text-white">
             {title}
           </h2>
+          <Button asChild variant="outline" className="shrink-0 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors font-semibold">
+            <Link href="#contact">Give Feedback</Link>
+          </Button>
         </motion.div>
 
         <div className="grid gap-8 md:grid-cols-3">

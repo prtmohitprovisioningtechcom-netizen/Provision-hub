@@ -411,7 +411,7 @@ export function WarmShowcaseTheme(props: Props) {
              ))}
           </div>
           <div className="text-[#6b5a4a] text-sm font-sans border-t border-[#3a3027] pt-8">
-            &copy; {new Date().getFullYear()} {page.brandName}. All rights reserved.
+            &copy; {new Date().getFullYear()} {page.brandName}. - Promoted By Multi-Tenant Platform Provisioning Tech All rights reserved.
           </div>
         </div>
       </footer>

@@ -347,7 +347,7 @@ export function LayoutBands({ skin, ...props }: ThemeLayoutProps) {
                 </div>
               )}
             </div>
-            <p className="mt-16 text-xs opacity-40">© {new Date().getFullYear()} {page.brandName}</p>
+            <p className="mt-16 text-xs opacity-40">© {new Date().getFullYear()} {page.brandName} - Promoted By Multi-Tenant Platform Provisioning Tech</p>
           </div>
         </footer>
       )}

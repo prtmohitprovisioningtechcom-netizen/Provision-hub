@@ -423,7 +423,7 @@ export function NeonDarkTheme(props: Props) {
       <footer className="py-12 px-6 lg:px-12 border-t border-white/5 bg-[#030303] text-gray-600 text-xs uppercase tracking-widest">
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-center md:text-left font-bold">
-            &copy; {new Date().getFullYear()} {page.brandName} // ALL_SYSTEMS_NOMINAL
+            &copy; {new Date().getFullYear()} {page.brandName}  - Promoted By Multi-Tenant Platform Provisioning Tech // ALL_SYSTEMS_NOMINAL
           </div>
           <div className="flex flex-wrap justify-center gap-8">
              {page.nav.map((item) => (

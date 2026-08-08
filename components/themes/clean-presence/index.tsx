@@ -412,7 +412,7 @@ export function CleanPresenceTheme(props: Props) {
       <footer className="py-12 px-6 border-t border-slate-100 bg-slate-50 text-slate-500 text-sm">
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6">
           <div>
-            &copy; {new Date().getFullYear()} {page.brandName}. All rights reserved.
+            &copy; {new Date().getFullYear()} {page.brandName}. - Promoted By Multi-Tenant Platform Provisioning Tech All rights reserved.
           </div>
           <div className="flex gap-8">
              {page.nav.map((item) => (

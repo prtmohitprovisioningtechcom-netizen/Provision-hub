@@ -97,7 +97,7 @@ export function Pricing({ config }: { config?: PricingConfig }) {
                   <CardTitle>{plan.name}</CardTitle>
                   <CardDescription>
                     <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                      ${plan.price}
+                      ₹{plan.price}
                     </span>
                     <span className="text-gray-500">/month</span>
                   </CardDescription>

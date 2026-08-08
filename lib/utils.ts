@@ -10,8 +10,8 @@ export function generateSlug(text: string): string {
   return slugifyLib(text, { lower: true, strict: true });
 }
 
-export function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+export function formatCurrency(amount: number, currency = 'INR'): string {
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency }).format(amount);
 }
 
 export function formatDate(date: Date | string): string {

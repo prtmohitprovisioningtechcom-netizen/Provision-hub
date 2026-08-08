@@ -401,7 +401,7 @@ export function PremiumShowcaseTheme(props: Props) {
              ))}
           </div>
           <div className="text-gray-700 text-xs tracking-widest uppercase mt-12">
-            &copy; {new Date().getFullYear()} {page.brandName}. All rights reserved.
+            &copy; {new Date().getFullYear()} {page.brandName}. - Promoted By Multi-Tenant Platform Provisioning Tech All rights reserved.
           </div>
         </div>
       </footer>

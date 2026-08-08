@@ -10,12 +10,12 @@ import { CompanyCard } from '@/components/company/CompanyCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const templates = [
-  { name: 'Modern Business', style: 'Professional layout', color: 'from-blue-500 to-cyan-500' },
-  { name: 'Creative Studio', style: 'Creative layout', color: 'from-purple-500 to-pink-500' },
-  { name: 'Warm Showcase', style: 'Elegant layout', color: 'from-orange-500 to-red-500' },
-  { name: 'Bold Launch', style: 'Modern layout', color: 'from-indigo-500 to-violet-500' },
-  { name: 'Clean Presence', style: 'Clean layout', color: 'from-green-500 to-teal-500' },
-  { name: 'Premium Showcase', style: 'Premium layout', color: 'from-amber-500 to-orange-500' },
+  { name: 'Modern Business', style: 'Professional layout', color: 'from-blue-500 to-cyan-500', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' },
+  { name: 'Creative Studio', style: 'Creative layout', color: 'from-purple-500 to-pink-500', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80' },
+  { name: 'Warm Showcase', style: 'Elegant layout', color: 'from-orange-500 to-red-500', image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80' },
+  { name: 'Bold Launch', style: 'Modern layout', color: 'from-indigo-500 to-violet-500', image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80' },
+  { name: 'Clean Presence', style: 'Clean layout', color: 'from-green-500 to-teal-500', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80' },
+  { name: 'Premium Showcase', style: 'Premium layout', color: 'from-amber-500 to-orange-500', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80' },
 ];
 
 export function Templates() {
@@ -67,8 +67,11 @@ export function Templates() {
               whileHover={{ y: -5 }}
             >
               <Card className="overflow-hidden group cursor-pointer">
-                <div className={`h-48 bg-linear-to-br ${template.color} relative`}>
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <div className={`h-48 bg-linear-to-br ${template.color} relative overflow-hidden`}>
+                  {template.image && (
+                    <img src={template.image} alt={template.name} className="w-full h-full object-cover" />
+                  )}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                     <Button
                       asChild
                       variant="secondary"

@@ -424,7 +424,7 @@ export function SleekGlassTheme(props: Props) {
       <footer className="py-12 px-6 border-t border-slate-200 bg-white/40 backdrop-blur-xl relative z-10">
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500 font-medium">
           <div>
-            &copy; {new Date().getFullYear()} {page.brandName}. All rights reserved.
+            &copy; {new Date().getFullYear()} {page.brandName}. - Promoted By Multi-Tenant Platform Provisioning Tech All rights reserved.
           </div>
           <div className="flex gap-8">
              {page.nav.map((item) => (

@@ -628,8 +628,8 @@ export function HerbalCosmeticsTheme(props: Props) {
         </div>
         
         <div className="max-w-7xl mx-auto px-6 pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-          <p>Copyright © {new Date().getFullYear()} {page.brandName}. All Rights Reserved.</p>
-          <p>Promoted By Multi-Tenant Platform</p>
+          <p>Copyright © {new Date().getFullYear()} {page.brandName}. All Rights Reserved. - Promoted By Multi-Tenant Platform Provisioning Tech</p>
+          <p>Promoted By Multi-Tenant Platform Provisioning Tech</p>
         </div>
       </footer>
 
