@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Phone, Mail, Menu, X, Send, ChevronRight, Check } from 'lucide-react';
 import { ICompany, IProduct, IService, IReview, IBlog, ILandingPageSection } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { resolveThemePage } from '@/lib/resolve-theme-page';
+import { getServiceImage } from '../layouts/service-image';
 import { ContactForm } from '@/components/company/ContactForm';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -19,6 +20,43 @@ interface Props {
   blogs: IBlog[];
   landingPage: { sections?: ILandingPageSection[]; isPublished?: boolean } | null;
   gallery: { images?: Array<{ url: string; caption?: string }> } | null;
+}
+
+function HeroSlider({ images }: { images: string[] }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  if (images.length === 0) {
+    return (
+      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+        <span className="text-gray-400">Hero Image Placeholder</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 z-0 bg-gray-900">
+      <AnimatePresence mode="popLayout">
+        <motion.img
+          key={index}
+          src={images[index]}
+          alt={`Hero slide ${index + 1}`}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5, ease: 'easeInOut' }}
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export function HerbalCosmeticsTheme(props: Props) {
@@ -92,27 +130,12 @@ export function HerbalCosmeticsTheme(props: Props) {
               <span>{props.company.gst}</span>
             </div>
           )}
-          <div className="flex items-center gap-2">
-            <Phone size={14} />
-            <span>CALL ON 🇮🇳 {page.phone}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <select className="bg-white text-black text-xs px-2 py-1 border-none outline-none rounded-sm">
-            <option>Select Language</option>
-            <option>English</option>
-            <option>Hindi</option>
-          </select>
-          <div className="flex items-center gap-2 text-xs font-bold">
-            <a href="#" className="p-1 border border-white/30 rounded-sm hover:bg-white/20 px-2">FB</a>
-            <a href="#" className="p-1 border border-white/30 rounded-sm hover:bg-white/20 px-2">TW</a>
-            <a href="#" className="p-1 border border-white/30 rounded-sm hover:bg-white/20 px-2">IG</a>
-            <a href="#" className="p-1 border border-white/30 rounded-sm hover:bg-white/20 px-2">IN</a>
-          </div>
-          <button className="flex items-center gap-2 border border-white px-3 py-1 rounded-sm hover:bg-white hover:text-red-700 transition font-medium">
-            <Mail size={14} />
-            SEND ENQUIRY
-          </button>
+          {page.phone && (
+            <div className="flex items-center gap-2">
+              <Phone size={14} />
+              <span>CALL ON 🇮🇳 {page.phone}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -130,18 +153,6 @@ export function HerbalCosmeticsTheme(props: Props) {
           </Link>
           
           <div className="hidden md:flex items-center gap-8 text-sm">
-            {page.whatsapp && (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600">
-                  <Phone size={20} />
-                </div>
-                <div>
-                  <div className="font-bold text-gray-800">{page.whatsapp}</div>
-                  <div className="text-xs text-gray-500 uppercase">Send WhatsApp</div>
-                </div>
-              </div>
-            )}
-            
             {page.phone && (
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
@@ -217,16 +228,11 @@ export function HerbalCosmeticsTheme(props: Props) {
         {page.orderedSectionTypes.map((type) => {
           switch (type) {
             case 'hero':
+              const sliderImages = page.hero.images?.length > 0 ? page.hero.images : (page.hero.image ? [page.hero.image] : []);
               return page.hero.show && (
                 <section id="home" key="hero" className="relative w-full h-[400px] md:h-[600px] bg-gray-100 overflow-hidden">
-                  {page.hero.image ? (
-                    <img src={page.hero.image} alt="Hero" className="w-full h-full object-cover object-center" />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-400">Hero Image Placeholder</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center px-6 md:px-24">
+                  <HeroSlider images={sliderImages} />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center px-6 md:px-24 pointer-events-none z-10">
                     <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
                       <h1 className="text-4xl md:text-6xl font-serif text-white mb-4 shadow-sm" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
                         {page.hero.title}
@@ -240,17 +246,17 @@ export function HerbalCosmeticsTheme(props: Props) {
               );
 
             case 'products':
-              return page.products.show && props.products.length > 0 && (
+              return page.products.show && (
                 <section id="products" key="products" className="py-16 bg-white">
                   <div className="max-w-7xl mx-auto px-4">
                     <div className="flex items-center justify-center gap-4 mb-12">
                       <div className="h-px bg-gray-300 w-16 md:w-32"></div>
-                      <h2 className="text-2xl md:text-3xl font-serif text-gray-800 font-bold" style={{ color: secondaryColor }}>Feature Products</h2>
+                      <h2 className="text-2xl md:text-3xl font-serif text-gray-800 font-bold" style={{ color: secondaryColor }}>{page.products.title || 'Featured Products'}</h2>
                       <div className="h-px bg-gray-300 w-16 md:w-32"></div>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                      {props.products.slice(0, 8).map((product) => (
+                      {page.products.items.slice(0, 8).map((product: any) => (
                         <div key={product._id} className="border border-gray-200 bg-white group flex flex-col hover:shadow-lg transition-shadow duration-300">
                           <div className="aspect-square relative overflow-hidden bg-gray-50 p-4">
                             {product.images?.[0] ? (
@@ -300,24 +306,15 @@ export function HerbalCosmeticsTheme(props: Props) {
                       {/* Text Side */}
                       <div className="bg-white rounded-lg shadow-sm p-8 md:p-10 border border-gray-100 relative">
                         <div className="absolute -left-2 top-8 w-1 h-12 bg-red-600" style={{ backgroundColor: primaryColor }}></div>
-                        <ul className="space-y-6 text-gray-700 italic font-medium leading-relaxed">
-                          <li className="flex items-start gap-3">
-                            <span className="mt-1 text-xl">👉</span>
-                            <span>We have best offers and discounted price for our clients.</span>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <span className="mt-1 text-xl">👉</span>
-                            <span>Explore exclusive bulk discounts and quantity purchase discounts.</span>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <span className="mt-1 text-xl">👉</span>
-                            <span>Contact us with your name, email, phone number and the products you are interested in.</span>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <span className="mt-1 text-xl">👉</span>
-                            <span>For more information, please contact us via <a href={`mailto:${page.email}`} className="text-blue-600 hover:underline">{page.email}</a> or {page.phone}, and we'll be happy to assist you.</span>
-                          </li>
-                        </ul>
+                        <h3 className="text-2xl font-serif font-bold text-gray-800 mb-4">{page.contact.title || 'Get In Touch'}</h3>
+                        {page.contact.subtitle && <p className="text-gray-600 font-medium mb-4">{page.contact.subtitle}</p>}
+                        {page.contact.content ? (
+                          <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{page.contact.content}</p>
+                        ) : (
+                          <p className="text-gray-600 leading-relaxed">
+                            For more information, please contact us via <a href={`mailto:${page.email}`} className="text-blue-600 hover:underline">{page.email}</a> or {page.phone}, and we'll be happy to assist you.
+                          </p>
+                        )}
                       </div>
                       
                       {/* Form Side */}
@@ -348,6 +345,201 @@ export function HerbalCosmeticsTheme(props: Props) {
                         </form>
                       </div>
                     </div>
+                  </div>
+                </section>
+              );
+
+            case 'about':
+              return page.about.show && (
+                <section id="about" key="about" className="py-16 bg-white">
+                  <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div>
+                      {page.about.eyebrow && <p className="text-sm font-bold uppercase tracking-wider mb-2" style={{ color: primaryColor }}>{page.about.eyebrow}</p>}
+                      <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6" style={{ color: secondaryColor }}>{page.about.title}</h2>
+                      {page.about.subtitle && <h3 className="text-lg text-gray-700 font-medium mb-4">{page.about.subtitle}</h3>}
+                      <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{page.about.content}</p>
+                    </div>
+                    {page.about.image && (
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-red-100 rounded-lg transform translate-x-4 translate-y-4" style={{ backgroundColor: `${primaryColor}22` }}></div>
+                        <img src={page.about.image} alt={page.about.title} loading="lazy" decoding="async" className="relative z-10 w-full rounded-lg shadow-xl" />
+                      </div>
+                    )}
+                  </div>
+                </section>
+              );
+
+            case 'services':
+              return page.services.show && (
+                <section id="services" key="services" className="py-16 bg-gray-50">
+                  <div className="max-w-7xl mx-auto px-4">
+                    <div className="flex items-center justify-center gap-4 mb-12">
+                      <div className="h-px bg-gray-300 w-16 md:w-32"></div>
+                      <div className="text-center">
+                        <h2 className="text-2xl md:text-3xl font-serif text-gray-800 font-bold" style={{ color: secondaryColor }}>{page.services.title}</h2>
+                        {page.services.subtitle && <p className="mt-2 text-sm text-gray-500">{page.services.subtitle}</p>}
+                      </div>
+                      <div className="h-px bg-gray-300 w-16 md:w-32"></div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {page.services.items.map((service: any) => {
+                        const img = getServiceImage(service);
+                        return (
+                          <div key={service._id || service.name} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition overflow-hidden flex flex-col">
+                            {img && (
+                              <img src={img} alt={service.name} loading="lazy" decoding="async" className="w-full aspect-[16/10] object-cover" />
+                            )}
+                            <div className="p-6 flex flex-col flex-grow">
+                              <h3 className="text-xl font-bold mb-3" style={{ color: secondaryColor }}>{service.name}</h3>
+                              <p className="text-gray-600 mb-6 line-clamp-3 flex-grow">{service.description}</p>
+                              {Number(service.price) > 0 && (
+                                <p className="text-lg font-bold" style={{ color: primaryColor }}>{formatCurrency(service.price)}</p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </section>
+              );
+
+            case 'why-choose-us':
+              return page.why.show && (
+                <section id="why-choose-us" key="why-choose-us" className="py-16 bg-white">
+                  <div className="max-w-7xl mx-auto px-4">
+                    <div className="text-center mb-12">
+                      <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4" style={{ color: secondaryColor }}>{page.why.title}</h2>
+                      {page.why.subtitle && <p className="text-gray-600 max-w-2xl mx-auto">{page.why.subtitle}</p>}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                      {page.why.items.map((item, i) => (
+                        <div key={i} className="text-center group">
+                          <div className="w-16 h-16 mx-auto bg-gray-50 rounded-full flex items-center justify-center mb-6 group-hover:bg-red-50 transition" style={{ color: primaryColor }}>
+                            <Check size={28} />
+                          </div>
+                          <h3 className="text-lg font-bold mb-3" style={{ color: secondaryColor }}>{item.title}</h3>
+                          <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+
+            case 'testimonials':
+              return page.testimonials.show && (
+                <section id="testimonials" key="testimonials" className="py-20" style={{ backgroundColor: secondaryColor }}>
+                  <div className="max-w-6xl mx-auto px-4">
+                    <div className="text-center mb-16">
+                      <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-4">{page.testimonials.title}</h2>
+                      {page.testimonials.subtitle && <p className="text-gray-300 max-w-2xl mx-auto">{page.testimonials.subtitle}</p>}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {page.testimonials.items.map((item, i) => (
+                        <div key={i} className="bg-white/10 backdrop-blur p-8 rounded-2xl text-white">
+                          <div className="flex text-yellow-400 mb-6">
+                            {Array.from({ length: item.rating }).map((_, j) => (
+                              <span key={j}>★</span>
+                            ))}
+                          </div>
+                          <p className="text-gray-200 italic mb-6">"{item.comment}"</p>
+                          <p className="font-bold">{item.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+
+            case 'gallery':
+              return page.gallery.show && (
+                <section id="gallery" key="gallery" className="py-16 bg-white">
+                  <div className="max-w-7xl mx-auto px-4">
+                    <div className="text-center mb-12">
+                      <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4" style={{ color: secondaryColor }}>{page.gallery.title}</h2>
+                      {page.gallery.subtitle && <p className="text-gray-600 max-w-2xl mx-auto">{page.gallery.subtitle}</p>}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {page.gallery.images.map((img, i) => (
+                        <div key={i} className="relative aspect-square overflow-hidden rounded-lg group">
+                          <img src={img.url} alt={img.caption || ''} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+
+            case 'faq':
+              return page.faq.show && (
+                <section id="faq" key="faq" className="py-16 bg-gray-50">
+                  <div className="max-w-3xl mx-auto px-4">
+                    <div className="text-center mb-12">
+                      <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4" style={{ color: secondaryColor }}>{page.faq.title}</h2>
+                      {page.faq.subtitle && <p className="text-gray-600">{page.faq.subtitle}</p>}
+                    </div>
+                    <div className="space-y-4">
+                      {page.faq.items.map((item, i) => (
+                        <details key={i} className="bg-white border border-gray-200 rounded-lg group">
+                          <summary className="font-bold p-6 cursor-pointer list-none flex justify-between items-center" style={{ color: secondaryColor }}>
+                            {item.question}
+                            <span className="group-open:rotate-180 transition">▼</span>
+                          </summary>
+                          <div className="px-6 pb-6 text-gray-600">
+                            {item.answer}
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+
+            case 'blogs':
+              return page.blogs.show && (
+                <section id="blogs" key="blogs" className="py-16 bg-white">
+                  <div className="max-w-7xl mx-auto px-4">
+                    <div className="flex items-center justify-center gap-4 mb-12">
+                      <div className="h-px bg-gray-300 w-16 md:w-32"></div>
+                      <h2 className="text-2xl md:text-3xl font-serif text-gray-800 font-bold" style={{ color: secondaryColor }}>{page.blogs.title}</h2>
+                      <div className="h-px bg-gray-300 w-16 md:w-32"></div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      {page.blogs.items.map((blog: any) => (
+                        <Link key={blog._id || blog.slug} href={`/${page.slug}/blog/${blog.slug}`} className="group block">
+                          <div className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-xl transition">
+                            {blog.featuredImage && (
+                              <img src={blog.featuredImage} alt={blog.title} loading="lazy" decoding="async" className="w-full aspect-[16/10] object-cover group-hover:scale-105 transition" />
+                            )}
+                            <div className="p-6">
+                              <h3 className="font-bold text-lg mb-3 line-clamp-2" style={{ color: secondaryColor }}>{blog.title}</h3>
+                              <p className="text-gray-600 text-sm mb-4 line-clamp-3">{blog.excerpt}</p>
+                              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: primaryColor }}>Read More →</span>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+
+            case 'subscribe':
+              return page.subscribe.show && (
+                <section id="subscribe" key="subscribe" className="py-20 bg-gray-900 text-white relative overflow-hidden">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                  <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+                    <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">{page.subscribe.title}</h2>
+                    {page.subscribe.subtitle && <p className="text-gray-300 mb-8">{page.subscribe.subtitle}</p>}
+                    <form className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto">
+                      <input type="email" placeholder={page.subscribe.placeholder} required className="flex-1 px-6 py-4 rounded-full text-black outline-none" />
+                      <button type="submit" className="px-8 py-4 rounded-full font-bold transition hover:brightness-110 whitespace-nowrap" style={{ backgroundColor: primaryColor }}>
+                        {page.subscribe.buttonText}
+                      </button>
+                    </form>
+                    {page.subscribe.note && <p className="mt-4 text-sm text-gray-400">{page.subscribe.note}</p>}
                   </div>
                 </section>
               );

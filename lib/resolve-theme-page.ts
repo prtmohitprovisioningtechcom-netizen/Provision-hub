@@ -14,6 +14,7 @@ import {
   resolveTestimonials,
   resolveWhyItems,
   sectionImage,
+  sectionImages,
   ThemeGallery,
   ThemeLandingPage,
   whatsappLink,
@@ -41,6 +42,7 @@ export type ThemePageModel = {
     buttonText: string;
     buttonLink: string;
     image: string;
+    images: string[];
   };
   about: {
     show: boolean;
@@ -227,6 +229,7 @@ export function resolveThemePage(input: {
       buttonText: clean(hero?.buttonText),
       buttonLink: clean(hero?.buttonLink) || '#contact',
       image: sectionImage(hero, company.banner || ''),
+      images: sectionImages(hero),
     },
     about: {
       show: isSectionVisible(landingPage, 'about'),
