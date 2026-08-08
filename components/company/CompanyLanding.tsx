@@ -598,7 +598,7 @@ export function CompanyLanding({
             return (
               <BlogsSection
                 key={section.id}
-                section={{ ...section, items: resolvedBlogs }}
+                section={{ ...section, items: resolvedBlogs as any }}
                 primaryColor={navy}
                 blogs={resolvedBlogs}
               />
