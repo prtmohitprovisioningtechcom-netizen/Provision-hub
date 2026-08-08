@@ -53,9 +53,29 @@ export class AuthService {
     const [existingUsers] = await pool.execute<RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [data.email]);
     if (existingUsers.length > 0) throw new Error('Email already registered');
 
-    const slug = generateSlug(data.name);
+    let slug = generateSlug(data.name);
     const [existingCompanies] = await pool.execute<RowDataPacket[]>('SELECT * FROM companies WHERE slug = ?', [slug]);
-    if (existingCompanies.length > 0) throw new Error('Company name already taken');
+    
+    if (existingCompanies.length > 0) {
+      let addressInfo: any = {};
+      try {
+        const addressData = existingCompanies[0].address;
+        addressInfo = typeof addressData === 'string' ? JSON.parse(addressData) : addressData;
+      } catch (e) {}
+
+      const isSameState = addressInfo?.state?.toLowerCase() === data.state?.toLowerCase();
+      const isSameCity = addressInfo?.city?.toLowerCase() === data.city?.toLowerCase();
+
+      if (isSameState && isSameCity) {
+        throw new Error('This domain already exists');
+      } else {
+        slug = generateSlug(`${data.name}-${data.state || ''}-${data.city || ''}`);
+        const [existingWithCity] = await pool.execute<RowDataPacket[]>('SELECT * FROM companies WHERE slug = ?', [slug]);
+        if (existingWithCity.length > 0) {
+          throw new Error('This domain already exists');
+        }
+      }
+    }
 
     const hashedPassword = await hashPassword(data.password);
     const verificationToken = crypto.randomBytes(32).toString('hex');
