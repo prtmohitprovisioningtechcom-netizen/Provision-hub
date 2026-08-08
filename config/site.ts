@@ -7,7 +7,7 @@ const deploymentUrl =
       : 'http://localhost:3000');
 
 export const siteConfig = {
-  name: process.env.NEXT_PUBLIC_APP_NAME || 'TenantHub',
+  name: process.env.NEXT_PUBLIC_APP_NAME || 'ProvisioningTechHub',
   description:
     'Build stunning company landing pages in minutes. Multi-tenant SaaS platform for businesses to create, manage, and grow their online presence.',
   url: deploymentUrl,

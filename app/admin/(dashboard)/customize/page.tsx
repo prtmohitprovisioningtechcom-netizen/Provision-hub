@@ -45,8 +45,8 @@ export default function CustomizePage() {
           heroConfig: d.heroConfig || settings.heroConfig,
           featureToggles: d.featureToggles || settings.featureToggles,
           seoConfig: d.seoConfig || settings.seoConfig,
-          themeConfig: d.themeConfig || { logoText: 'TenantHub', logoImage: '', primaryColor: '#4f46e5', secondaryColor: '#ec4899' },
-          contactConfig: d.contactConfig || { email: 'hello@tenanthub.com', phone: '+1 (555) 123-4567', address: '123 SaaS Street, San Francisco, CA' },
+          themeConfig: d.themeConfig || { logoText: 'ProvisioningTechHub', logoImage: '', primaryColor: '#4f46e5', secondaryColor: '#ec4899' },
+          contactConfig: d.contactConfig || { email: 'hello@provisioningtechhub.com', phone: '+1 (555) 123-4567', address: '123 SaaS Street, San Francisco, CA' },
           featuresConfig: {
             title: d.featuresConfig?.title || 'Everything You Need to Grow',
             subtitle: d.featuresConfig?.subtitle || 'Powerful features designed to help businesses create, manage, and scale their online presence.',
@@ -94,12 +94,12 @@ export default function CustomizePage() {
           testimonialsConfig: {
             title: d.testimonialsConfig?.title || 'Loved by Businesses Worldwide',
             items: d.testimonialsConfig?.items?.length > 0 ? d.testimonialsConfig.items : [
-              { name: 'Sarah Johnson', role: 'CEO, TechStart Inc.', content: 'TenantHub transformed our online presence. We went from zero to a professional landing page in under an hour.', rating: 5, initials: 'SJ' },
+              { name: 'Sarah Johnson', role: 'CEO, TechStart Inc.', content: 'ProvisioningTechHub transformed our online presence. We went from zero to a professional landing page in under an hour.', rating: 5, initials: 'SJ' },
               { name: 'Michael Chen', role: 'Founder, GreenLeaf Services', content: 'The lead management system alone has increased our conversions by 40%. Highly recommended for any business.', rating: 5, initials: 'MC' },
               { name: 'Emily Rodriguez', role: 'Marketing Director, Bloom Studio', content: 'Beautiful templates, easy customization, and the analytics dashboard gives us insights we never had before.', rating: 5, initials: 'ER' },
             ]
           },
-          footerConfig: d.footerConfig || { copyrightText: '© 2026 TenantHub Inc. All rights reserved.', facebookLink: '#', twitterLink: '#', instagramLink: '#', linkedinLink: '#' },
+          footerConfig: d.footerConfig || { copyrightText: '© 2026 ProvisioningTechHub Inc. All rights reserved.', facebookLink: '#', twitterLink: '#', instagramLink: '#', linkedinLink: '#' },
         });
       }
     } catch (error) {
@@ -286,7 +286,7 @@ export default function CustomizePage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Support Email</Label>
-                <Input value={settings.contactConfig.email} onChange={e => updateSection('contactConfig', 'email', e.target.value)} type="email" placeholder="hello@tenanthub.com" />
+                <Input value={settings.contactConfig.email} onChange={e => updateSection('contactConfig', 'email', e.target.value)} type="email" placeholder="hello@provisioningtechhub.com" />
               </div>
               <div className="space-y-2">
                 <Label>Phone Number</Label>
