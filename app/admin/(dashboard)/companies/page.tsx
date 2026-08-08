@@ -36,6 +36,8 @@ interface AdminCompany {
   status: CompanyStatus;
   isVerified: boolean;
   address?: { city?: string; state?: string; country?: string };
+  customDomain?: string;
+  customDomainStatus?: 'none' | 'pending' | 'active' | 'failed';
   createdAt: string;
 }
 
@@ -89,6 +91,22 @@ export default function AdminCompaniesPage() {
       if (isUnauthorized(err)) return;
       const message = axios.isAxiosError(err) ? err.response?.data?.message : 'Action failed';
       toast.error(message || 'Action failed');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const updateDomainStatus = async (id: string, customDomainStatus: 'active' | 'failed' | 'none') => {
+    setActionLoading(`domain-${id}`);
+    try {
+      const res = await api.patch(`/api/admin/companies/${id}`, { customDomainStatus });
+      if (res.data.success) {
+        toast.success(`Domain marked as ${customDomainStatus}`);
+        fetchCompanies();
+      }
+    } catch (err) {
+      if (isUnauthorized(err)) return;
+      toast.error('Action failed');
     } finally {
       setActionLoading(null);
     }
@@ -177,6 +195,7 @@ export default function AdminCompaniesPage() {
                     <th className="p-4 font-medium">Company</th>
                     <th className="p-4 font-medium hidden md:table-cell">Category</th>
                     <th className="p-4 font-medium hidden lg:table-cell">Location</th>
+                    <th className="p-4 font-medium">Domain</th>
                     <th className="p-4 font-medium">Status</th>
                     <th className="p-4 font-medium hidden sm:table-cell">Registered</th>
                     <th className="p-4 font-medium text-right">Actions</th>
@@ -202,6 +221,24 @@ export default function AdminCompaniesPage() {
                         {[company.address?.city, company.address?.country]
                           .filter(Boolean)
                           .join(', ') || 'Not provided'}
+                      </td>
+                      <td className="p-4 text-xs">
+                        {company.customDomain ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="font-medium text-gray-700">{company.customDomain}</span>
+                            <span className={`inline-block px-2 py-0.5 rounded-full w-max ${
+                              company.customDomainStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              company.customDomainStatus === 'active' ? 'bg-green-100 text-green-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>{company.customDomainStatus}</span>
+                            {company.customDomainStatus === 'pending' && (
+                              <div className="flex gap-1 mt-1">
+                                <button className="text-green-600 hover:underline" onClick={() => updateDomainStatus(company._id, 'active')}>Activate</button>
+                                <button className="text-red-600 hover:underline" onClick={() => updateDomainStatus(company._id, 'failed')}>Reject</button>
+                              </div>
+                            )}
+                          </div>
+                        ) : <span className="text-gray-400">N/A</span>}
                       </td>
                       <td className="p-4">{statusBadge(company.status)}</td>
                       <td className="p-4 hidden sm:table-cell text-gray-500">

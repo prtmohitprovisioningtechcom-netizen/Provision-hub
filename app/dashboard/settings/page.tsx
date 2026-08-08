@@ -126,9 +126,13 @@ export default function SettingsPage() {
     reviewNotifications: true,
     loginAlerts: true,
     subscriptionAlerts: true,
-    customDomain: '',
+    subscriptionAlerts: true,
     googleAnalyticsId: '',
   });
+
+  const [customDomain, setCustomDomain] = useState('');
+  const [customDomainStatus, setCustomDomainStatus] = useState<'none' | 'pending' | 'active' | 'failed'>('none');
+  const [requestingDomain, setRequestingDomain] = useState(false);
 
   const { register, handleSubmit, reset } = useForm<CompanyForm>();
   const {
@@ -194,14 +198,14 @@ export default function SettingsPage() {
         }
 
         if (settingsRes.status === 'fulfilled' && settingsRes.value.data.success) {
+          const foundSettings = settingsRes.value.data.data;
           setPrefs({
-            emailNotifications: Boolean(settingsRes.value.data.data.emailNotifications),
-            leadNotifications: Boolean(settingsRes.value.data.data.leadNotifications),
-            reviewNotifications: Boolean(settingsRes.value.data.data.reviewNotifications),
-            loginAlerts: Boolean(settingsRes.value.data.data.loginAlerts),
-            subscriptionAlerts: Boolean(settingsRes.value.data.data.subscriptionAlerts),
-            customDomain: settingsRes.value.data.data.customDomain || '',
-            googleAnalyticsId: settingsRes.value.data.data.googleAnalyticsId || '',
+            emailNotifications: Boolean(foundSettings.emailNotifications ?? true),
+            leadNotifications: Boolean(foundSettings.leadNotifications ?? true),
+            reviewNotifications: Boolean(foundSettings.reviewNotifications ?? true),
+            loginAlerts: Boolean(foundSettings.loginAlerts ?? true),
+            subscriptionAlerts: Boolean(foundSettings.subscriptionAlerts ?? true),
+            googleAnalyticsId: foundSettings.googleAnalyticsId || '',
           });
         }
 
@@ -745,21 +749,6 @@ export default function SettingsPage() {
 
           <div className="grid gap-4 border-t pt-5 sm:grid-cols-2">
             <div>
-              <Label htmlFor="customDomain">Custom domain</Label>
-              <div className="relative mt-1">
-                <Globe className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <Input
-                  id="customDomain"
-                  className="pl-9"
-                  placeholder="www.yourbrand.com"
-                  value={prefs.customDomain}
-                  onChange={(e) =>
-                    setPrefs((current) => ({ ...current, customDomain: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-            <div>
               <Label htmlFor="googleAnalyticsId">Google Analytics ID</Label>
               <Input
                 id="googleAnalyticsId"
@@ -777,6 +766,66 @@ export default function SettingsPage() {
             {savingPrefs ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Save preferences
           </Button>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Globe className="h-5 w-5 text-indigo-600" />
+            Custom Domain
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-gray-500">
+            Link your own domain (e.g., www.yourcompany.com) to your page.
+          </p>
+          <div className="flex flex-col sm:flex-row items-end gap-4">
+            <div className="flex-1 w-full">
+              <Label htmlFor="domainInput">Domain Name</Label>
+              <Input
+                id="domainInput"
+                placeholder="www.yourdomain.com"
+                value={customDomain}
+                onChange={(e) => setCustomDomain(e.target.value)}
+                disabled={customDomainStatus === 'pending' || customDomainStatus === 'active'}
+                className="mt-1"
+              />
+            </div>
+            {(customDomainStatus === 'none' || customDomainStatus === 'failed') && (
+              <Button
+                type="button"
+                disabled={!customDomain || requestingDomain}
+                onClick={async () => {
+                  try {
+                    setRequestingDomain(true);
+                    await api.patch(`/api/companies/me`, {
+                      customDomain,
+                      customDomainStatus: 'pending'
+                    });
+                    setCustomDomainStatus('pending');
+                    toast.success('Custom domain requested! Admin will review shortly.');
+                  } catch {
+                    toast.error('Failed to request custom domain.');
+                  } finally {
+                    setRequestingDomain(false);
+                  }
+                }}
+              >
+                {requestingDomain ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Request Domain
+              </Button>
+            )}
+          </div>
+          {customDomainStatus === 'pending' && (
+            <div className="mt-4 p-3 bg-yellow-50 text-yellow-800 rounded-md text-sm">
+              Your custom domain request is <strong>Pending</strong>. Please wait for the admin to configure it or contact support.
+            </div>
+          )}
+          {customDomainStatus === 'active' && (
+            <div className="mt-4 p-3 bg-green-50 text-green-800 rounded-md text-sm">
+              Your custom domain is <strong>Active</strong>! You can now access your site at <strong>{customDomain}</strong>.
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

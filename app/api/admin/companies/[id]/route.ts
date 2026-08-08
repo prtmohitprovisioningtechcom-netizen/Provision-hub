@@ -12,9 +12,19 @@ export async function PATCH(
     if (auth instanceof Response) return auth;
 
     const { id } = await params;
-    const { status } = await request.json();
-    const company = await CompanyService.updateStatus(id, status);
-    return apiSuccess(company, `Company ${status}`);
+    const body = await request.json();
+    
+    if (body.customDomainStatus) {
+      const company = await CompanyService.update(id, { customDomainStatus: body.customDomainStatus });
+      return apiSuccess(company, `Domain marked as ${body.customDomainStatus}`);
+    }
+
+    if (body.status) {
+      const company = await CompanyService.updateStatus(id, body.status);
+      return apiSuccess(company, `Company ${body.status}`);
+    }
+    
+    return apiError('No valid status provided', 400);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Update failed';
     return apiError(message, 400);

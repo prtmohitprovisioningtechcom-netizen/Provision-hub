@@ -279,7 +279,7 @@ export class CompanyService {
   static async getAllForAdmin(page = 1, limit = 20, status?: CompanyStatus) {
     const skip = (page - 1) * limit;
     
-    let queryStr = 'SELECT id as _id, name, slug, logo, category, address, status, isVerified, subscription, createdAt, ownerName, email FROM companies';
+    let queryStr = 'SELECT id as _id, name, slug, logo, category, address, status, isVerified, subscription, createdAt, ownerName, email, customDomain, customDomainStatus FROM companies';
     let countQueryStr = 'SELECT COUNT(*) as count FROM companies';
     const params: unknown[] = [];
 

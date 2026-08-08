@@ -98,6 +98,8 @@ export interface ICompany {
   subscription: SubscriptionPlan;
   subscriptionExpiresAt?: Date;
   ownerId: string;
+  customDomain?: string;
+  customDomainStatus?: 'none' | 'pending' | 'active' | 'failed';
   theme: ThemeSettings;
   seo: SEOSettings;
   createdAt: Date;
