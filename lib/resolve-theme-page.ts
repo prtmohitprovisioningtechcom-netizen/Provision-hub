@@ -170,9 +170,9 @@ export function resolveThemePage(input: {
   const contact = getSection(landingPage, 'contact');
   const footer = getSection(landingPage, 'footer');
 
-  const resolvedServices = (servicesSec?.items as any)?.length ? (servicesSec?.items as any) : services;
-  const resolvedProducts = (productsSec?.items as any)?.length ? (productsSec?.items as any) : products;
-  const resolvedBlogs = (blogsSec?.items as any)?.length ? (blogsSec?.items as any) : blogs;
+  const resolvedServices = services.length > 0 ? services : ((servicesSec?.items as any) || []);
+  const resolvedProducts = products.length > 0 ? products : ((productsSec?.items as any) || []);
+  const resolvedBlogs = blogs.length > 0 ? blogs : ((blogsSec?.items as any) || []);
 
   const whyItems = resolveWhyItems(landingPage);
   const galleryImages = resolveGalleryImages(landingPage, gallery);

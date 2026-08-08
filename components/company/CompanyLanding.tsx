@@ -419,14 +419,18 @@ export function CompanyLanding({
       if (section.isVisible === false) return false;
       if (section.type === 'navbar') return false;
       if (section.type === 'services') {
-        return Boolean(section.items?.length || services.length);
+        return Boolean(services.length || section.items?.length);
       }
-      if (section.type === 'products') return Boolean(section.items?.length);
+      if (section.type === 'products') {
+        return Boolean(products.length || section.items?.length);
+      }
       if (section.type === 'gallery') {
         return Boolean(section.items?.length || section.images?.length);
       }
       if (section.type === 'why-choose-us') return Boolean(section.items?.length);
-      if (section.type === 'blogs') return Boolean(section.items?.length);
+      if (section.type === 'blogs') {
+        return Boolean(blogs.length || section.items?.length);
+      }
       if (section.type === 'faq' || section.type === 'testimonials') {
         return Boolean(section.items?.length);
       }
@@ -539,24 +543,28 @@ export function CompanyLanding({
 
 
 
-          case 'services':
+          case 'services': {
+            const resolvedServices = (services.length > 0 ? services : (section.items || [])) as IService[];
             return (
               <ServicesSection 
                 key={section.id} 
                 section={section} 
-                services={services} 
+                services={resolvedServices} 
                 primaryColor={navy} 
               />
             );
+          }
 
-          case 'products':
+          case 'products': {
+            const resolvedProducts = (products.length > 0 ? products : (section.items || [])) as any[];
             return (
               <ProductsSection
                 key={section.id}
-                section={section}
+                section={{ ...section, items: resolvedProducts }}
                 primaryColor={navy}
               />
             );
+          }
 
           case 'why-choose-us':
             return (
@@ -585,15 +593,17 @@ export function CompanyLanding({
               />
             );
 
-          case 'blogs':
+          case 'blogs': {
+            const resolvedBlogs = (blogs.length > 0 ? blogs : (section.items || [])) as IBlog[];
             return (
               <BlogsSection
                 key={section.id}
-                section={section}
+                section={{ ...section, items: resolvedBlogs }}
                 primaryColor={navy}
-                blogs={blogs || []}
+                blogs={resolvedBlogs}
               />
             );
+          }
 
           case 'testimonials':
             return (
