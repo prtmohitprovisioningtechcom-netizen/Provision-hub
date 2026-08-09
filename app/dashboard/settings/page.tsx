@@ -205,6 +205,7 @@ export default function SettingsPage() {
             reviewNotifications: Boolean(foundSettings.reviewNotifications ?? true),
             loginAlerts: Boolean(foundSettings.loginAlerts ?? true),
             subscriptionAlerts: Boolean(foundSettings.subscriptionAlerts ?? true),
+            customDomain: foundSettings.customDomain || '',
             googleAnalyticsId: foundSettings.googleAnalyticsId || '',
           });
         }
