@@ -126,7 +126,7 @@ export default function SettingsPage() {
     reviewNotifications: true,
     loginAlerts: true,
     subscriptionAlerts: true,
-    subscriptionAlerts: true,
+    customDomain: '',
     googleAnalyticsId: '',
   });
 
