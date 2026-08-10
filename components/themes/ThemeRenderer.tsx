@@ -14,6 +14,7 @@ import { RoyalGlowTheme } from '@/components/themes/royal-glow';
 import { LAYOUT_MAP } from '@/components/themes/layouts';
 import { getThemeSkin } from '@/lib/theme-skins';
 import { normalizeLayoutId } from '@/lib/layout-id';
+import { BackToTop } from '@/components/ui/back-to-top';
 import {
   IBlog,
   ICompany,
@@ -159,41 +160,50 @@ export function ThemeRenderer({
     gallery,
   };
 
-  // Layout 3 = first theme (Modern Business) full design — sliding hero, etc.
-  if (resolvedLayout === '3') {
-    return <CompanyProfileView {...shared} templateId="default" />;
-  }
-
-  // Layout 1 = each theme's signature design (unique look).
-  if (resolvedLayout === '1') {
-    switch (id) {
-      case 'creative-studio':
-        return <CreativeStudioTheme {...shared} />;
-      case 'warm-showcase':
-        return <WarmShowcaseTheme {...shared} />;
-      case 'bold-launch':
-        return <BoldLaunchTheme {...shared} />;
-      case 'clean-presence':
-        return <CleanPresenceTheme {...shared} />;
-      case 'premium-showcase':
-        return <PremiumShowcaseTheme {...shared} />;
-      case 'elegant-serif':
-        return <ElegantSerifTheme {...shared} />;
-      case 'sleek-glass':
-        return <SleekGlassTheme {...shared} />;
-      case 'neon-dark':
-        return <NeonDarkTheme {...shared} />;
-      case 'royal-glow':
-        return <RoyalGlowTheme {...shared} />;
-      case 'herbal-cosmetics':
-        return <HerbalCosmeticsTheme {...shared} />;
-      default:
-        return <CompanyProfileView {...shared} templateId={id} />;
+  const renderTheme = () => {
+    // Layout 3 = first theme (Modern Business) full design — sliding hero, etc.
+    if (resolvedLayout === '3') {
+      return <CompanyProfileView {...shared} templateId="default" />;
     }
-  }
 
-  // Layout 2 = split structure with selected theme colors.
-  const skin = getThemeSkin(id, company.theme?.primaryColor);
-  const Layout = LAYOUT_MAP['2'];
-  return <Layout skin={skin} {...shared} />;
+    // Layout 1 = each theme's signature design (unique look).
+    if (resolvedLayout === '1') {
+      switch (id) {
+        case 'creative-studio':
+          return <CreativeStudioTheme {...shared} />;
+        case 'warm-showcase':
+          return <WarmShowcaseTheme {...shared} />;
+        case 'bold-launch':
+          return <BoldLaunchTheme {...shared} />;
+        case 'clean-presence':
+          return <CleanPresenceTheme {...shared} />;
+        case 'premium-showcase':
+          return <PremiumShowcaseTheme {...shared} />;
+        case 'elegant-serif':
+          return <ElegantSerifTheme {...shared} />;
+        case 'sleek-glass':
+          return <SleekGlassTheme {...shared} />;
+        case 'neon-dark':
+          return <NeonDarkTheme {...shared} />;
+        case 'royal-glow':
+          return <RoyalGlowTheme {...shared} />;
+        case 'herbal-cosmetics':
+          return <HerbalCosmeticsTheme {...shared} />;
+        default:
+          return <CompanyProfileView {...shared} templateId={id} />;
+      }
+    }
+
+    // Layout 2 = split structure with selected theme colors.
+    const skin = getThemeSkin(id, company.theme?.primaryColor);
+    const Layout = LAYOUT_MAP['2'];
+    return <Layout skin={skin} {...shared} />;
+  };
+
+  return (
+    <>
+      {renderTheme()}
+      <BackToTop />
+    </>
+  );
 }
