@@ -279,7 +279,7 @@ export class CompanyService {
   static async getAllForAdmin(page = 1, limit = 20, status?: CompanyStatus) {
     const skip = (page - 1) * limit;
     
-    let queryStr = 'SELECT id as _id, name, slug, logo, category, address, status, isVerified, subscription, createdAt, ownerName, email, customDomain, customDomainStatus FROM companies';
+    let queryStr = 'SELECT id as _id, name, slug, logo, category, address, status, isVerified, subscription, createdAt, ownerId, ownerName, email, phone, description, website, gst, pan, businessHours, socialLinks, customDomain, customDomainStatus FROM companies';
     let countQueryStr = 'SELECT COUNT(*) as count FROM companies';
     const params: unknown[] = [];
 
@@ -300,6 +300,8 @@ export class CompanyService {
       companies: companies.map(c => ({
         ...c,
         address: typeof c.address === 'string' ? JSON.parse(c.address) : c.address,
+        businessHours: typeof c.businessHours === 'string' ? JSON.parse(c.businessHours) : c.businessHours,
+        socialLinks: typeof c.socialLinks === 'string' ? JSON.parse(c.socialLinks) : c.socialLinks,
         isVerified: Boolean(c.isVerified)
       })),
       pagination: getPaginationMeta(page, limit, countResult[0].count)
@@ -313,6 +315,15 @@ export class CompanyService {
       [status, isVerified, id]
     );
     return await this.getById(id);
+  }
+
+  static async updateOwnerPassword(companyId: string, newPasswordHash: string) {
+    const [companies] = await pool.execute<RowDataPacket[]>('SELECT ownerId FROM companies WHERE id = ?', [companyId]);
+    if (companies.length === 0) throw new Error('Company not found');
+    const ownerId = companies[0].ownerId;
+    
+    await pool.execute('UPDATE users SET password = ? WHERE id = ?', [newPasswordHash, ownerId]);
+    return { success: true, message: 'Password updated successfully' };
   }
 
   static async delete(id: string) {

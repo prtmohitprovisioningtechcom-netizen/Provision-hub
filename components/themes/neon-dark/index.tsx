@@ -69,6 +69,33 @@ export function NeonDarkTheme(props: Props) {
             {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+        
+        {menuOpen && (
+          <div className="lg:hidden bg-[#050505]/95 backdrop-blur-xl border-t border-white/5 absolute w-full left-0 mt-4 px-6 py-6 border-b border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+            <div className="flex flex-col space-y-6">
+              {page.nav.map((item) => (
+                <a
+                  key={item.link + item.label}
+                  href={item.link}
+                  className="text-sm uppercase tracking-[0.2em] hover:text-white transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              ))}
+              {page.navCta && (
+                <a
+                  href={page.navCta.link}
+                  className="inline-block px-6 py-3 text-sm uppercase tracking-[0.2em] font-bold text-black transition-all text-center"
+                  style={{ backgroundColor: primary, boxShadow: `0 0 15px ${primary}40` }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {page.navCta.label}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <main className="pt-20">
@@ -86,7 +113,7 @@ export function NeonDarkTheme(props: Props) {
                           {page.hero.eyebrow}
                         </span>
                       )}
-                      <h1 className="text-5xl lg:text-7xl font-bold tracking-tighter mb-8 text-white uppercase leading-[1.1]">
+                      <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tighter mb-8 text-white uppercase leading-[1.1]">
                         {page.hero.title}
                       </h1>
                       <p className="text-lg lg:text-xl text-gray-400 mb-12 font-sans font-light leading-relaxed max-w-lg">
@@ -120,7 +147,7 @@ export function NeonDarkTheme(props: Props) {
 
             case 'about':
               return page.about.show && (
-                <section id="about" key="about" className="py-24 px-6 lg:px-12 bg-[#0a0a0a] border-y border-white/5 relative">
+                <section id="about" key="about" className="py-16 lg:py-24 px-6 lg:px-12 bg-[#0a0a0a] border-y border-white/5 relative">
                   <div className="mx-auto max-w-7xl">
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                       <div className="order-2 lg:order-1 relative h-[500px] overflow-hidden group">
@@ -136,8 +163,8 @@ export function NeonDarkTheme(props: Props) {
                           <div className="h-px w-12" style={{ backgroundColor: primary }}></div>
                           <span className="uppercase tracking-[0.2em] text-xs font-bold" style={{ color: primary }}>Initialize</span>
                         </div>
-                        <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-8 text-white uppercase">{page.about.title}</h2>
-                        <p className="text-xl text-gray-400 mb-10 font-sans">{page.about.subtitle}</p>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-8 text-white uppercase">{page.about.title}</h2>
+                        <p className="text-lg md:text-xl text-gray-400 mb-10 font-sans">{page.about.subtitle}</p>
                         <div className="prose prose-invert prose-lg font-sans font-light leading-relaxed text-gray-500" dangerouslySetInnerHTML={{ __html: page.about.content }} />
                       </div>
                     </div>
@@ -147,10 +174,10 @@ export function NeonDarkTheme(props: Props) {
 
             case 'why-choose-us':
               return page.why.show && page.why.items.length > 0 && (
-                <section id="why-choose-us" key="why-choose-us" className="py-32 px-6 lg:px-12 relative overflow-hidden">
+                <section id="why-choose-us" key="why-choose-us" className="py-16 lg:py-32 px-6 lg:px-12 relative overflow-hidden">
                   <div className="mx-auto max-w-7xl relative z-10">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.why.title}</h2>
+                    <div className="text-center mb-16 lg:mb-20">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.why.title}</h2>
                       <p className="text-lg text-gray-500 font-sans max-w-2xl mx-auto">{page.why.subtitle}</p>
                     </div>
                     <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
@@ -171,10 +198,10 @@ export function NeonDarkTheme(props: Props) {
 
             case 'services':
               return page.services.show && page.services.items.length > 0 && (
-                <section id="services" key="services" className="py-32 px-6 lg:px-12 relative overflow-hidden">
+                <section id="services" key="services" className="py-16 lg:py-32 px-6 lg:px-12 relative overflow-hidden">
                   <div className="mx-auto max-w-7xl relative z-10">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.services.title}</h2>
+                    <div className="text-center mb-16 lg:mb-20">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.services.title}</h2>
                       <p className="text-lg text-gray-500 font-sans max-w-2xl mx-auto">{page.services.subtitle}</p>
                     </div>
                     
@@ -209,11 +236,11 @@ export function NeonDarkTheme(props: Props) {
 
             case 'products':
               return page.products.show && page.products.items.length > 0 && (
-                <section id="products" key="products" className="py-32 px-6 lg:px-12 bg-[#0a0a0a] border-y border-white/5">
+                <section id="products" key="products" className="py-16 lg:py-32 px-6 lg:px-12 bg-[#0a0a0a] border-y border-white/5">
                   <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 lg:mb-16 gap-8">
                       <div>
-                        <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-4 text-white uppercase">{page.products.title}</h2>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-4 text-white uppercase">{page.products.title}</h2>
                         <p className="text-lg text-gray-500 font-sans">{page.products.subtitle}</p>
                       </div>
                     </div>
@@ -251,10 +278,10 @@ export function NeonDarkTheme(props: Props) {
 
             case 'gallery':
               return page.gallery.show && page.gallery.images.length > 0 && (
-                <section id="gallery" key="gallery" className="py-32 px-6 lg:px-12 relative overflow-hidden">
+                <section id="gallery" key="gallery" className="py-16 lg:py-32 px-6 lg:px-12 relative overflow-hidden">
                   <div className="mx-auto max-w-7xl relative z-10">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.gallery.title}</h2>
+                    <div className="text-center mb-16 lg:mb-20">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.gallery.title}</h2>
                       <p className="text-lg text-gray-500 font-sans max-w-2xl mx-auto">{page.gallery.subtitle}</p>
                     </div>
                     <div className="columns-2 lg:columns-3 gap-6 space-y-6">
@@ -275,10 +302,10 @@ export function NeonDarkTheme(props: Props) {
 
             case 'testimonials':
               return page.testimonials.show && page.testimonials.items.length > 0 && (
-                <section id="testimonials" key="testimonials" className="py-32 px-6 lg:px-12 bg-[#0a0a0a] border-y border-white/5">
+                <section id="testimonials" key="testimonials" className="py-16 lg:py-32 px-6 lg:px-12 bg-[#0a0a0a] border-y border-white/5">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.testimonials.title}</h2>
+                    <div className="text-center mb-16 lg:mb-20">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.testimonials.title}</h2>
                       <p className="text-lg text-gray-500 font-sans max-w-2xl mx-auto">{page.testimonials.subtitle}</p>
                     </div>
                     <div className="grid lg:grid-cols-3 gap-8">
@@ -301,10 +328,10 @@ export function NeonDarkTheme(props: Props) {
 
             case 'faq':
               return page.faq.show && page.faq.items.length > 0 && (
-                <section id="faq" key="faq" className="py-32 px-6 lg:px-12 relative overflow-hidden">
+                <section id="faq" key="faq" className="py-16 lg:py-32 px-6 lg:px-12 relative overflow-hidden">
                   <div className="mx-auto max-w-4xl relative z-10">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.faq.title}</h2>
+                    <div className="text-center mb-16 lg:mb-20">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.faq.title}</h2>
                       <p className="text-lg text-gray-500 font-sans">{page.faq.subtitle}</p>
                     </div>
                     <div className="space-y-6">
@@ -321,10 +348,10 @@ export function NeonDarkTheme(props: Props) {
 
             case 'subscribe':
               return page.subscribe.show && (
-                <section id="subscribe" key="subscribe" className="py-32 px-6 lg:px-12 bg-[#0a0a0a] border-y border-white/5 relative">
+                <section id="subscribe" key="subscribe" className="py-16 lg:py-32 px-6 lg:px-12 bg-[#0a0a0a] border-y border-white/5 relative">
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 mix-blend-overlay"></div>
                   <div className="mx-auto max-w-3xl text-center relative z-10">
-                    <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase" style={{ textShadow: `0 0 20px ${primary}40` }}>{page.subscribe.title}</h2>
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase" style={{ textShadow: `0 0 20px ${primary}40` }}>{page.subscribe.title}</h2>
                     <p className="text-lg text-gray-500 font-sans mb-12">{page.subscribe.subtitle}</p>
                     <div className="bg-[#050505] p-2 border border-white/10">
                       <NewsletterForm 
@@ -343,10 +370,10 @@ export function NeonDarkTheme(props: Props) {
 
             case 'blogs':
               return page.blogs.show && page.blogs.items.length > 0 && (
-                <section id="blogs" key="blogs" className="py-32 px-6 lg:px-12 relative overflow-hidden">
+                <section id="blogs" key="blogs" className="py-16 lg:py-32 px-6 lg:px-12 relative overflow-hidden">
                   <div className="mx-auto max-w-7xl relative z-10">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.blogs.title}</h2>
+                    <div className="text-center mb-16 lg:mb-20">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.blogs.title}</h2>
                       <p className="text-lg text-gray-500 font-sans max-w-2xl mx-auto">{page.blogs.subtitle}</p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -371,13 +398,13 @@ export function NeonDarkTheme(props: Props) {
 
             case 'contact':
               return page.contact.show && (
-                <section id="contact" key="contact" className="py-32 px-6 lg:px-12 relative overflow-hidden">
+                <section id="contact" key="contact" className="py-16 lg:py-32 px-6 lg:px-12 relative overflow-hidden">
                   <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-[#00ffcc]/10 to-transparent rounded-full blur-[100px] pointer-events-none"></div>
                   
                   <div className="mx-auto max-w-7xl relative z-10">
-                    <div className="grid lg:grid-cols-2 gap-20">
+                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-20">
                       <div>
-                        <h2 className="text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.contact.title}</h2>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-6 text-white uppercase">{page.contact.title}</h2>
                         <p className="text-lg text-gray-500 font-sans mb-16">{page.contact.subtitle}</p>
                         
                         <div className="space-y-10">

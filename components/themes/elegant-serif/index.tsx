@@ -69,6 +69,33 @@ export function ElegantSerifTheme(props: Props) {
             {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+        
+        {menuOpen && (
+          <div className="lg:hidden bg-[#fdfbf7]/95 backdrop-blur-md border-t border-[#e8e2d2] absolute w-full left-0 mt-4 px-6 py-6 shadow-xl">
+            <div className="flex flex-col space-y-6 text-center">
+              {page.nav.map((item) => (
+                <a
+                  key={item.link + item.label}
+                  href={item.link}
+                  className="text-sm uppercase tracking-[0.2em] hover:text-[#c5a059] transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              ))}
+              {page.navCta && (
+                <a
+                  href={page.navCta.link}
+                  className="inline-block px-8 py-4 text-sm uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-90 mt-4"
+                  style={{ backgroundColor: primary }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {page.navCta.label}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <main className="pt-24">
@@ -93,7 +120,7 @@ export function ElegantSerifTheme(props: Props) {
                           {page.hero.eyebrow}
                         </span>
                       )}
-                      <h1 className="text-5xl lg:text-7xl font-medium leading-[1.1] mb-8">
+                      <h1 className="text-4xl md:text-5xl lg:text-7xl font-medium leading-[1.1] mb-8">
                         {page.hero.title}
                       </h1>
                       <p className="text-xl lg:text-2xl text-gray-600 mb-12 font-light leading-relaxed max-w-lg">
@@ -122,12 +149,12 @@ export function ElegantSerifTheme(props: Props) {
 
             case 'about':
               return page.about.show && (
-                <section id="about" key="about" className="py-32 px-6 lg:px-12 bg-white">
+                <section id="about" key="about" className="py-16 md:py-24 lg:py-32 px-6 lg:px-12 bg-white">
                   <div className="mx-auto max-w-7xl">
-                    <div className="grid lg:grid-cols-12 gap-16 items-center">
-                      <div className="lg:col-span-5 order-2 lg:order-1">
-                        <h2 className="text-4xl lg:text-5xl mb-8">{page.about.title}</h2>
-                        <p className="text-2xl text-gray-500 mb-10 italic font-light">{page.about.subtitle}</p>
+                    <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+                      <div className="lg:col-span-5 order-2 lg:order-1 text-center lg:text-left">
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl mb-6 lg:mb-8">{page.about.title}</h2>
+                        <p className="text-xl md:text-2xl text-gray-500 mb-8 lg:mb-10 italic font-light">{page.about.subtitle}</p>
                         <div className="prose prose-lg prose-headings:font-serif text-gray-600 font-sans font-light leading-relaxed" dangerouslySetInnerHTML={{ __html: page.about.content }} />
                       </div>
                       {page.about.image && (
@@ -142,10 +169,10 @@ export function ElegantSerifTheme(props: Props) {
 
             case 'why-choose-us':
               return page.why.show && page.why.items.length > 0 && (
-                <section id="why-choose-us" key="why-choose-us" className="py-32 px-6 lg:px-12 bg-[#1a1a1a] text-white">
+                <section id="why-choose-us" key="why-choose-us" className="py-16 md:py-24 lg:py-32 px-6 lg:px-12 bg-[#1a1a1a] text-white">
                   <div className="mx-auto max-w-7xl text-center">
-                    <h2 className="text-4xl lg:text-5xl mb-6">{page.why.title}</h2>
-                    <p className="text-xl text-gray-400 mb-20 italic font-light">{page.why.subtitle}</p>
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4 lg:mb-6">{page.why.title}</h2>
+                    <p className="text-lg md:text-xl text-gray-400 mb-16 lg:mb-20 italic font-light">{page.why.subtitle}</p>
                     
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
                       {page.why.items.map((item, i) => (
@@ -164,11 +191,11 @@ export function ElegantSerifTheme(props: Props) {
 
             case 'services':
               return page.services.show && page.services.items.length > 0 && (
-                <section id="services" key="services" className="py-32 px-6 lg:px-12">
+                <section id="services" key="services" className="py-16 md:py-24 lg:py-32 px-6 lg:px-12">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-24">
-                      <h2 className="text-4xl lg:text-5xl mb-6">{page.services.title}</h2>
-                      <p className="text-xl text-gray-500 italic font-light">{page.services.subtitle}</p>
+                    <div className="text-center mb-16 lg:mb-24">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4 lg:mb-6">{page.services.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-500 italic font-light">{page.services.subtitle}</p>
                     </div>
                     
                     <div className="grid lg:grid-cols-3 gap-12">
@@ -201,12 +228,12 @@ export function ElegantSerifTheme(props: Props) {
 
             case 'products':
               return page.products.show && page.products.items.length > 0 && (
-                <section id="products" key="products" className="py-32 px-6 lg:px-12 bg-white">
+                <section id="products" key="products" className="py-16 md:py-24 lg:py-32 px-6 lg:px-12 bg-white">
                   <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+                    <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 lg:mb-20 gap-6 text-center md:text-left">
                       <div>
-                        <h2 className="text-4xl lg:text-5xl mb-4">{page.products.title}</h2>
-                        <p className="text-xl text-gray-500 italic font-light">{page.products.subtitle}</p>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4">{page.products.title}</h2>
+                        <p className="text-lg md:text-xl text-gray-500 italic font-light">{page.products.subtitle}</p>
                       </div>
                     </div>
                     
@@ -241,11 +268,11 @@ export function ElegantSerifTheme(props: Props) {
 
             case 'gallery':
               return page.gallery.show && page.gallery.images.length > 0 && (
-                <section id="gallery" key="gallery" className="py-32 px-6 lg:px-12">
+                <section id="gallery" key="gallery" className="py-16 md:py-24 lg:py-32 px-6 lg:px-12">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl lg:text-5xl mb-6">{page.gallery.title}</h2>
-                      <p className="text-xl text-gray-500 italic font-light">{page.gallery.subtitle}</p>
+                    <div className="text-center mb-16 lg:mb-20">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4 lg:mb-6">{page.gallery.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-500 italic font-light">{page.gallery.subtitle}</p>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 lg:gap-8">
                       {page.gallery.images.map((img, i) => (
@@ -265,10 +292,10 @@ export function ElegantSerifTheme(props: Props) {
 
             case 'testimonials':
               return page.testimonials.show && page.testimonials.items.length > 0 && (
-                <section id="testimonials" key="testimonials" className="py-32 px-6 lg:px-12 bg-white border-y border-[#e8e2d2]">
+                <section id="testimonials" key="testimonials" className="py-16 md:py-24 lg:py-32 px-6 lg:px-12 bg-white border-y border-[#e8e2d2]">
                   <div className="mx-auto max-w-5xl">
-                    <h2 className="text-4xl lg:text-5xl mb-24 text-center">{page.testimonials.title}</h2>
-                    <div className="space-y-24">
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl mb-16 lg:mb-24 text-center">{page.testimonials.title}</h2>
+                    <div className="space-y-16 lg:space-y-24">
                       {page.testimonials.items.map((test, i) => (
                         <div key={i} className="text-center max-w-3xl mx-auto">
                           <div className="text-6xl font-serif mb-8 opacity-20" style={{ color: primary }}>"</div>
@@ -288,11 +315,11 @@ export function ElegantSerifTheme(props: Props) {
 
             case 'faq':
               return page.faq.show && page.faq.items.length > 0 && (
-                <section id="faq" key="faq" className="py-32 px-6 lg:px-12">
+                <section id="faq" key="faq" className="py-16 md:py-24 lg:py-32 px-6 lg:px-12">
                   <div className="mx-auto max-w-4xl">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl lg:text-5xl mb-6">{page.faq.title}</h2>
-                      <p className="text-xl text-gray-500 italic font-light">{page.faq.subtitle}</p>
+                    <div className="text-center mb-16 lg:mb-20">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4 lg:mb-6">{page.faq.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-500 italic font-light">{page.faq.subtitle}</p>
                     </div>
                     <div className="space-y-8">
                       {page.faq.items.map((faq, i) => (
@@ -308,10 +335,10 @@ export function ElegantSerifTheme(props: Props) {
 
             case 'subscribe':
               return page.subscribe.show && (
-                <section id="subscribe" key="subscribe" className="py-32 px-6 lg:px-12 bg-[#1a1a1a] text-white">
+                <section id="subscribe" key="subscribe" className="py-16 md:py-24 lg:py-32 px-6 lg:px-12 bg-[#1a1a1a] text-white">
                   <div className="mx-auto max-w-3xl text-center">
-                    <h2 className="text-4xl lg:text-5xl mb-6">{page.subscribe.title}</h2>
-                    <p className="text-xl text-gray-400 italic font-light mb-16">{page.subscribe.subtitle}</p>
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4 lg:mb-6">{page.subscribe.title}</h2>
+                    <p className="text-lg md:text-xl text-gray-400 italic font-light mb-12 lg:mb-16">{page.subscribe.subtitle}</p>
                     <div className="relative">
                       <NewsletterForm 
                         companyId={props.company._id} 
@@ -329,11 +356,11 @@ export function ElegantSerifTheme(props: Props) {
 
             case 'blogs':
               return page.blogs.show && page.blogs.items.length > 0 && (
-                <section id="blogs" key="blogs" className="py-32 px-6 lg:px-12">
+                <section id="blogs" key="blogs" className="py-16 md:py-24 lg:py-32 px-6 lg:px-12">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl lg:text-5xl mb-6">{page.blogs.title}</h2>
-                      <p className="text-xl text-gray-500 italic font-light">{page.blogs.subtitle}</p>
+                    <div className="text-center mb-16 lg:mb-20">
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4 lg:mb-6">{page.blogs.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-500 italic font-light">{page.blogs.subtitle}</p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
                       {page.blogs.items.map((blog, i) => (
@@ -353,12 +380,12 @@ export function ElegantSerifTheme(props: Props) {
 
             case 'contact':
               return page.contact.show && (
-                <section id="contact" key="contact" className="py-32 px-6 lg:px-12 bg-white border-t border-[#e8e2d2]">
+                <section id="contact" key="contact" className="py-16 md:py-24 lg:py-32 px-6 lg:px-12 bg-white border-t border-[#e8e2d2]">
                   <div className="mx-auto max-w-7xl">
-                    <div className="grid lg:grid-cols-2 gap-20">
-                      <div>
-                        <h2 className="text-4xl lg:text-5xl mb-6">{page.contact.title}</h2>
-                        <p className="text-xl text-gray-500 italic font-light mb-16">{page.contact.subtitle}</p>
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
+                      <div className="text-center lg:text-left">
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl mb-4 lg:mb-6">{page.contact.title}</h2>
+                        <p className="text-lg md:text-xl text-gray-500 italic font-light mb-12 lg:mb-16">{page.contact.subtitle}</p>
                         
                         <div className="space-y-12 font-sans">
                            {page.phone && (

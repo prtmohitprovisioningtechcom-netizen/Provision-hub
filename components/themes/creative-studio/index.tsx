@@ -93,7 +93,7 @@ export function CreativeStudioTheme(props: Props) {
           switch (type) {
             case 'hero':
               return page.hero.show && (
-                <section id="home" key="hero" className="relative pt-24 pb-32 lg:pt-36 lg:pb-40 px-6 overflow-hidden">
+                <section id="home" key="hero" className="relative pt-16 pb-24 md:pt-24 md:pb-32 lg:pt-36 lg:pb-40 px-6 overflow-hidden">
                   <div className="absolute inset-0 z-0">
                      {/* Creative blobs */}
                      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
@@ -109,7 +109,7 @@ export function CreativeStudioTheme(props: Props) {
                             {page.hero.eyebrow}
                           </span>
                         )}
-                        <h1 className="text-5xl lg:text-7xl font-black tracking-tighter leading-[1.1] mb-6 text-gray-900">
+                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter leading-[1.1] mb-6 text-gray-900">
                           {page.hero.title}
                         </h1>
                         <p className="text-xl text-gray-600 mb-8 max-w-lg leading-relaxed">
@@ -146,7 +146,7 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'about':
               return page.about.show && (
-                <section id="about" key="about" className="py-24 px-6 bg-white">
+                <section id="about" key="about" className="py-16 lg:py-24 px-6 bg-white">
                   <div className="mx-auto max-w-7xl">
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                       {page.about.image && (
@@ -156,8 +156,8 @@ export function CreativeStudioTheme(props: Props) {
                         </div>
                       )}
                       <div className="order-1 lg:order-2">
-                        <h2 className="text-4xl font-black tracking-tight mb-6">{page.about.title}</h2>
-                        <p className="text-xl text-gray-500 mb-8 font-light">{page.about.subtitle}</p>
+                        <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6">{page.about.title}</h2>
+                        <p className="text-lg md:text-xl text-gray-500 mb-8 font-light">{page.about.subtitle}</p>
                         <div className="prose prose-lg text-gray-600" dangerouslySetInnerHTML={{ __html: page.about.content }} />
                       </div>
                     </div>
@@ -167,11 +167,11 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'why-choose-us':
               return page.why.show && page.why.items.length > 0 && (
-                <section id="why-choose-us" key="why-choose-us" className="py-24 px-6 bg-[#f8fafc]">
+                <section id="why-choose-us" key="why-choose-us" className="py-16 lg:py-24 px-6 bg-[#f8fafc]">
                   <div className="mx-auto max-w-7xl">
                     <div className="text-center max-w-3xl mx-auto mb-16">
-                      <h2 className="text-4xl font-black tracking-tight mb-6">{page.why.title}</h2>
-                      <p className="text-xl text-gray-500">{page.why.subtitle}</p>
+                      <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6">{page.why.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-500">{page.why.subtitle}</p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                       {page.why.items.map((item, i) => (
@@ -190,11 +190,11 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'services':
               return page.services.show && page.services.items.length > 0 && (
-                <section id="services" key="services" className="py-24 px-6">
+                <section id="services" key="services" className="py-16 lg:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
                     <div className="text-center max-w-3xl mx-auto mb-16">
-                      <h2 className="text-4xl font-black tracking-tight mb-6">{page.services.title}</h2>
-                      <p className="text-xl text-gray-500">{page.services.subtitle}</p>
+                      <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6">{page.services.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-500">{page.services.subtitle}</p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {page.services.items.map((service, i) => {
@@ -228,12 +228,12 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'products':
               return page.products.show && page.products.items.length > 0 && (
-                <section id="products" key="products" className="py-24 px-6 bg-gray-900 text-white">
+                <section id="products" key="products" className="py-16 lg:py-24 px-6 bg-gray-900 text-white">
                   <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6">
                       <div className="max-w-2xl">
-                        <h2 className="text-4xl font-black tracking-tight mb-4">{page.products.title}</h2>
-                        <p className="text-xl text-gray-400">{page.products.subtitle}</p>
+                        <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4">{page.products.title}</h2>
+                        <p className="text-lg md:text-xl text-gray-400">{page.products.subtitle}</p>
                       </div>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -267,11 +267,11 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'gallery':
               return page.gallery.show && page.gallery.images.length > 0 && (
-                <section id="gallery" key="gallery" className="py-24 px-6 bg-white overflow-hidden">
+                <section id="gallery" key="gallery" className="py-16 lg:py-24 px-6 bg-white overflow-hidden">
                   <div className="mx-auto max-w-7xl">
                     <div className="text-center mb-16">
-                      <h2 className="text-4xl font-black tracking-tight mb-4">{page.gallery.title}</h2>
-                      <p className="text-xl text-gray-500">{page.gallery.subtitle}</p>
+                      <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4">{page.gallery.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-500">{page.gallery.subtitle}</p>
                     </div>
                     <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
                       {page.gallery.images.map((img, i) => (
@@ -291,9 +291,9 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'testimonials':
               return page.testimonials.show && page.testimonials.items.length > 0 && (
-                <section id="testimonials" key="testimonials" className="py-24 px-6 bg-[#f8fafc]">
+                <section id="testimonials" key="testimonials" className="py-16 lg:py-24 px-6 bg-[#f8fafc]">
                   <div className="mx-auto max-w-7xl">
-                    <h2 className="text-4xl font-black tracking-tight mb-16 text-center">{page.testimonials.title}</h2>
+                    <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-16 text-center">{page.testimonials.title}</h2>
                     <div className="grid md:grid-cols-3 gap-8">
                       {page.testimonials.items.map((test, i) => (
                         <div key={i} className="bg-white p-10 rounded-3xl shadow-sm relative">
@@ -314,11 +314,11 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'faq':
               return page.faq.show && page.faq.items.length > 0 && (
-                <section id="faq" key="faq" className="py-24 px-6 bg-white">
+                <section id="faq" key="faq" className="py-16 lg:py-24 px-6 bg-white">
                   <div className="mx-auto max-w-4xl">
                     <div className="text-center mb-16">
-                      <h2 className="text-4xl font-black tracking-tight mb-6">{page.faq.title}</h2>
-                      <p className="text-xl text-gray-500">{page.faq.subtitle}</p>
+                      <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6">{page.faq.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-500">{page.faq.subtitle}</p>
                     </div>
                     <div className="space-y-6">
                       {page.faq.items.map((faq, i) => (
@@ -334,10 +334,10 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'subscribe':
               return page.subscribe.show && (
-                <section id="subscribe" key="subscribe" className="py-24 px-6 bg-[#f8fafc]">
-                  <div className="mx-auto max-w-4xl bg-white rounded-[3rem] p-12 text-center shadow-sm border border-gray-100">
-                    <h2 className="text-4xl font-black tracking-tight mb-6">{page.subscribe.title}</h2>
-                    <p className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto">{page.subscribe.subtitle}</p>
+                <section id="subscribe" key="subscribe" className="py-16 lg:py-24 px-6 bg-[#f8fafc]">
+                  <div className="mx-auto max-w-4xl bg-white rounded-3xl md:rounded-[3rem] p-8 md:p-12 text-center shadow-sm border border-gray-100">
+                    <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6">{page.subscribe.title}</h2>
+                    <p className="text-lg md:text-xl text-gray-500 mb-10 max-w-2xl mx-auto">{page.subscribe.subtitle}</p>
                     <div className="max-w-md mx-auto">
                       <NewsletterForm 
                         companyId={props.company._id} 
@@ -355,11 +355,11 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'blogs':
               return page.blogs.show && page.blogs.items.length > 0 && (
-                <section id="blogs" key="blogs" className="py-24 px-6 bg-white">
+                <section id="blogs" key="blogs" className="py-16 lg:py-24 px-6 bg-white">
                   <div className="mx-auto max-w-7xl">
                     <div className="text-center mb-16">
-                      <h2 className="text-4xl font-black tracking-tight mb-4">{page.blogs.title}</h2>
-                      <p className="text-xl text-gray-500">{page.blogs.subtitle}</p>
+                      <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4">{page.blogs.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-500">{page.blogs.subtitle}</p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
                       {page.blogs.items.map((blog) => (
@@ -379,12 +379,12 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'contact':
               return page.contact.show && (
-                <section id="contact" key="contact" className="py-24 px-6 bg-gray-900 text-white">
+                <section id="contact" key="contact" className="py-16 lg:py-24 px-6 bg-gray-900 text-white">
                   <div className="mx-auto max-w-7xl">
-                    <div className="grid lg:grid-cols-2 gap-16">
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
                       <div>
-                        <h2 className="text-4xl font-black tracking-tight mb-6">{page.contact.title}</h2>
-                        <p className="text-xl text-gray-400 mb-12">{page.contact.subtitle}</p>
+                        <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6">{page.contact.title}</h2>
+                        <p className="text-lg md:text-xl text-gray-400 mb-12">{page.contact.subtitle}</p>
                         
                         <div className="space-y-8">
                           {page.phone && (

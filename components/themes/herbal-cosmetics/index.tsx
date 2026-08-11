@@ -234,10 +234,10 @@ export function HerbalCosmeticsTheme(props: Props) {
                   <HeroSlider images={sliderImages} />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-center px-6 md:px-24 pointer-events-none z-10">
                     <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-                      <h1 className="text-4xl md:text-6xl font-serif text-white mb-4 shadow-sm" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+                      <h1 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-4 shadow-sm" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
                         {page.hero.title}
                       </h1>
-                      <p className="text-xl md:text-2xl text-white/90 font-light max-w-2xl" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
+                      <p className="text-lg md:text-xl lg:text-2xl text-white/90 font-light max-w-2xl" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
                         {page.hero.subtitle}
                       </p>
                     </motion.div>

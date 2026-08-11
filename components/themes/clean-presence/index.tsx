@@ -69,6 +69,33 @@ export function CleanPresenceTheme(props: Props) {
             {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+        
+        {menuOpen && (
+          <div className="lg:hidden bg-white/95 backdrop-blur-md border-t border-slate-100 absolute w-full left-0 mt-4 px-6 py-6 shadow-xl rounded-b-2xl">
+            <div className="flex flex-col space-y-6">
+              {page.nav.map((item) => (
+                <a
+                  key={item.link + item.label}
+                  href={item.link}
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 transition"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              ))}
+              {page.navCta && (
+                <a
+                  href={page.navCta.link}
+                  className="inline-block px-6 py-3 text-sm text-white rounded-full transition hover:opacity-90 font-medium text-center mt-2"
+                  style={{ backgroundColor: primary }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {page.navCta.label}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <main className="pt-20">
@@ -84,7 +111,7 @@ export function CleanPresenceTheme(props: Props) {
                           {page.hero.eyebrow}
                         </span>
                       )}
-                      <h1 className="text-5xl lg:text-7xl font-semibold tracking-tight mb-8 text-slate-900 leading-tight">
+                      <h1 className="text-4xl md:text-5xl lg:text-7xl font-semibold tracking-tight mb-8 text-slate-900 leading-tight">
                         {page.hero.title}
                       </h1>
                       <p className="text-xl text-slate-500 mb-12 max-w-2xl mx-auto font-light leading-relaxed">
@@ -117,7 +144,7 @@ export function CleanPresenceTheme(props: Props) {
 
             case 'about':
               return page.about.show && (
-                <section id="about" key="about" className="py-24 px-6 bg-slate-50/50">
+                <section id="about" key="about" className="py-16 md:py-24 px-6 bg-slate-50/50">
                   <div className="mx-auto max-w-7xl">
                     <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
                       <div className="order-2 lg:order-1">
@@ -137,7 +164,7 @@ export function CleanPresenceTheme(props: Props) {
 
             case 'why-choose-us':
               return page.why.show && page.why.items.length > 0 && (
-                <section id="why-choose-us" key="why-choose-us" className="py-24 px-6">
+                <section id="why-choose-us" key="why-choose-us" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
                     <div className="text-center mb-20 max-w-2xl mx-auto">
                       <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight mb-6 text-slate-900">{page.why.title}</h2>
@@ -160,7 +187,7 @@ export function CleanPresenceTheme(props: Props) {
 
             case 'services':
               return page.services.show && page.services.items.length > 0 && (
-                <section id="services" key="services" className="py-24 px-6">
+                <section id="services" key="services" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
                     <div className="text-center mb-20 max-w-2xl mx-auto">
                       <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight mb-6 text-slate-900">{page.services.title}</h2>
@@ -199,9 +226,9 @@ export function CleanPresenceTheme(props: Props) {
 
             case 'products':
               return page.products.show && page.products.items.length > 0 && (
-                <section id="products" key="products" className="py-24 px-6 bg-slate-50">
+                <section id="products" key="products" className="py-16 md:py-24 px-6 bg-slate-50">
                   <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 lg:mb-16 gap-6 text-center md:text-left">
                       <div className="max-w-2xl">
                         <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight mb-4 text-slate-900">{page.products.title}</h2>
                         <p className="text-xl text-slate-500 font-light">{page.products.subtitle}</p>
@@ -237,7 +264,7 @@ export function CleanPresenceTheme(props: Props) {
 
             case 'gallery':
               return page.gallery.show && page.gallery.images.length > 0 && (
-                <section id="gallery" key="gallery" className="py-24 px-6">
+                <section id="gallery" key="gallery" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
                     <div className="text-center mb-16 max-w-2xl mx-auto">
                       <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight mb-4 text-slate-900">{page.gallery.title}</h2>
@@ -261,7 +288,7 @@ export function CleanPresenceTheme(props: Props) {
 
             case 'testimonials':
               return page.testimonials.show && page.testimonials.items.length > 0 && (
-                <section id="testimonials" key="testimonials" className="py-24 px-6 bg-slate-50/50">
+                <section id="testimonials" key="testimonials" className="py-16 md:py-24 px-6 bg-slate-50/50">
                   <div className="mx-auto max-w-7xl">
                     <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight mb-16 text-center text-slate-900">{page.testimonials.title}</h2>
                     <div className="grid md:grid-cols-3 gap-8">
@@ -283,7 +310,7 @@ export function CleanPresenceTheme(props: Props) {
 
             case 'faq':
               return page.faq.show && page.faq.items.length > 0 && (
-                <section id="faq" key="faq" className="py-24 px-6">
+                <section id="faq" key="faq" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-3xl">
                     <div className="text-center mb-16">
                       <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight mb-4 text-slate-900">{page.faq.title}</h2>
@@ -303,7 +330,7 @@ export function CleanPresenceTheme(props: Props) {
 
             case 'subscribe':
               return page.subscribe.show && (
-                <section id="subscribe" key="subscribe" className="py-24 px-6 bg-slate-50">
+                <section id="subscribe" key="subscribe" className="py-16 md:py-24 px-6 bg-slate-50">
                   <div className="mx-auto max-w-4xl text-center">
                     <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight mb-4 text-slate-900">{page.subscribe.title}</h2>
                     <p className="text-xl text-slate-500 font-light mb-12 max-w-2xl mx-auto">{page.subscribe.subtitle}</p>
@@ -324,7 +351,7 @@ export function CleanPresenceTheme(props: Props) {
 
             case 'blogs':
               return page.blogs.show && page.blogs.items.length > 0 && (
-                <section id="blogs" key="blogs" className="py-24 px-6">
+                <section id="blogs" key="blogs" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
                     <div className="text-center mb-16 max-w-2xl mx-auto">
                       <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight mb-4 text-slate-900">{page.blogs.title}</h2>
@@ -350,9 +377,9 @@ export function CleanPresenceTheme(props: Props) {
 
             case 'contact':
               return page.contact.show && (
-                <section id="contact" key="contact" className="py-24 px-6">
+                <section id="contact" key="contact" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-24">
                       <div>
                         <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight mb-6 text-slate-900">{page.contact.title}</h2>
                         <p className="text-xl text-slate-500 mb-12 font-light">{page.contact.subtitle}</p>

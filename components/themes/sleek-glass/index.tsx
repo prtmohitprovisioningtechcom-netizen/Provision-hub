@@ -79,6 +79,33 @@ export function SleekGlassTheme(props: Props) {
             {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+        
+        {menuOpen && (
+          <div className="lg:hidden bg-white/95 backdrop-blur-3xl rounded-b-3xl mt-4 p-6 border-t border-slate-100 shadow-xl absolute w-[calc(100%-2rem)] left-4 top-full -mt-2 z-50">
+            <div className="flex flex-col space-y-4">
+              {page.nav.map((item) => (
+                <a
+                  key={item.link + item.label}
+                  href={item.link}
+                  className="text-lg font-medium text-slate-700 hover:text-slate-900 transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              ))}
+              {page.navCta && (
+                <a
+                  href={page.navCta.link}
+                  className="inline-block px-6 py-3 text-sm font-semibold text-white rounded-full text-center mt-2 shadow-md"
+                  style={{ backgroundColor: primary }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {page.navCta.label}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <main className="relative z-10 pt-32">
@@ -95,7 +122,7 @@ export function SleekGlassTheme(props: Props) {
                             {page.hero.eyebrow}
                           </span>
                         )}
-                        <h1 className="text-5xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight text-slate-900">
+                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight text-slate-900">
                           {page.hero.title}
                         </h1>
                         <p className="text-xl text-slate-500 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
@@ -125,17 +152,17 @@ export function SleekGlassTheme(props: Props) {
 
             case 'about':
               return page.about.show && (
-                <section id="about" key="about" className="py-24 px-6">
+                <section id="about" key="about" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-[3rem] p-8 lg:p-16 shadow-xl shadow-slate-200/50">
-                      <div className="grid lg:grid-cols-2 gap-16 items-center">
+                    <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-[2rem] lg:rounded-[3rem] p-8 lg:p-16 shadow-xl shadow-slate-200/50">
+                      <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                         {page.about.image && (
-                          <div className="order-2 lg:order-1 relative h-full min-h-[400px] rounded-3xl overflow-hidden border border-white/50 shadow-md">
+                          <div className="order-2 lg:order-1 relative h-full min-h-[300px] lg:min-h-[400px] rounded-3xl overflow-hidden border border-white/50 shadow-md">
                             <img src={page.about.image} alt="About" className="absolute inset-0 w-full h-full object-cover" />
                           </div>
                         )}
                         <div className="order-1 lg:order-2">
-                          <h2 className="text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.about.title}</h2>
+                          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.about.title}</h2>
                           <p className="text-xl text-slate-500 mb-8 font-medium">{page.about.subtitle}</p>
                           <div className="prose prose-slate prose-lg font-normal leading-relaxed text-slate-600" dangerouslySetInnerHTML={{ __html: page.about.content }} />
                         </div>
@@ -147,10 +174,10 @@ export function SleekGlassTheme(props: Props) {
 
             case 'why-choose-us':
               return page.why.show && page.why.items.length > 0 && (
-                <section id="why-choose-us" key="why-choose-us" className="py-24 px-6">
+                <section id="why-choose-us" key="why-choose-us" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-16 max-w-3xl mx-auto">
-                      <h2 className="text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.why.title}</h2>
+                    <div className="text-center mb-12 md:mb-16 max-w-3xl mx-auto">
+                      <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.why.title}</h2>
                       <p className="text-xl text-slate-500">{page.why.subtitle}</p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -170,10 +197,10 @@ export function SleekGlassTheme(props: Props) {
 
             case 'services':
               return page.services.show && page.services.items.length > 0 && (
-                <section id="services" key="services" className="py-24 px-6">
+                <section id="services" key="services" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-16 max-w-3xl mx-auto">
-                      <h2 className="text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.services.title}</h2>
+                    <div className="text-center mb-12 md:mb-16 max-w-3xl mx-auto">
+                      <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.services.title}</h2>
                       <p className="text-xl text-slate-500">{page.services.subtitle}</p>
                     </div>
                     
@@ -209,11 +236,11 @@ export function SleekGlassTheme(props: Props) {
 
             case 'products':
               return page.products.show && page.products.items.length > 0 && (
-                <section id="products" key="products" className="py-24 px-6">
+                <section id="products" key="products" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 md:mb-16 gap-6 text-center md:text-left">
                       <div>
-                        <h2 className="text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.products.title}</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.products.title}</h2>
                         <p className="text-xl text-slate-500">{page.products.subtitle}</p>
                       </div>
                     </div>
@@ -251,10 +278,10 @@ export function SleekGlassTheme(props: Props) {
 
             case 'gallery':
               return page.gallery.show && page.gallery.images.length > 0 && (
-                <section id="gallery" key="gallery" className="py-24 px-6">
+                <section id="gallery" key="gallery" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-16">
-                      <h2 className="text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.gallery.title}</h2>
+                    <div className="text-center mb-12 md:mb-16">
+                      <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.gallery.title}</h2>
                       <p className="text-xl text-slate-500">{page.gallery.subtitle}</p>
                     </div>
                     <div className="columns-2 md:columns-3 gap-6 space-y-6">
@@ -275,10 +302,10 @@ export function SleekGlassTheme(props: Props) {
 
             case 'testimonials':
               return page.testimonials.show && page.testimonials.items.length > 0 && (
-                <section id="testimonials" key="testimonials" className="py-24 px-6">
+                <section id="testimonials" key="testimonials" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-16">
-                      <h2 className="text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.testimonials.title}</h2>
+                    <div className="text-center mb-12 md:mb-16">
+                      <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.testimonials.title}</h2>
                       <p className="text-xl text-slate-500">{page.testimonials.subtitle}</p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
@@ -300,10 +327,10 @@ export function SleekGlassTheme(props: Props) {
 
             case 'faq':
               return page.faq.show && page.faq.items.length > 0 && (
-                <section id="faq" key="faq" className="py-24 px-6">
+                <section id="faq" key="faq" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-3xl">
-                    <div className="text-center mb-16">
-                      <h2 className="text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.faq.title}</h2>
+                    <div className="text-center mb-12 md:mb-16">
+                      <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.faq.title}</h2>
                       <p className="text-xl text-slate-500">{page.faq.subtitle}</p>
                     </div>
                     <div className="space-y-4">
@@ -320,11 +347,11 @@ export function SleekGlassTheme(props: Props) {
 
             case 'subscribe':
               return page.subscribe.show && (
-                <section id="subscribe" key="subscribe" className="py-24 px-6">
+                <section id="subscribe" key="subscribe" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-4xl text-center">
-                    <div className="bg-gradient-to-tr from-blue-50 to-purple-50 rounded-[3rem] p-12 lg:p-16 border border-white shadow-xl shadow-blue-500/5 relative overflow-hidden">
+                    <div className="bg-gradient-to-tr from-blue-50 to-purple-50 rounded-[2rem] lg:rounded-[3rem] p-8 lg:p-16 border border-white shadow-xl shadow-blue-500/5 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl pointer-events-none"></div>
-                      <h2 className="text-4xl font-bold tracking-tight mb-4 text-slate-900 relative z-10">{page.subscribe.title}</h2>
+                      <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 relative z-10">{page.subscribe.title}</h2>
                       <p className="text-xl text-slate-500 mb-12 max-w-2xl mx-auto relative z-10">{page.subscribe.subtitle}</p>
                       <div className="max-w-md mx-auto relative z-10">
                         <NewsletterForm 
@@ -344,10 +371,10 @@ export function SleekGlassTheme(props: Props) {
 
             case 'blogs':
               return page.blogs.show && page.blogs.items.length > 0 && (
-                <section id="blogs" key="blogs" className="py-24 px-6">
+                <section id="blogs" key="blogs" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-16">
-                      <h2 className="text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.blogs.title}</h2>
+                    <div className="text-center mb-12 md:mb-16">
+                      <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.blogs.title}</h2>
                       <p className="text-xl text-slate-500">{page.blogs.subtitle}</p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -370,13 +397,13 @@ export function SleekGlassTheme(props: Props) {
 
             case 'contact':
               return page.contact.show && (
-                <section id="contact" key="contact" className="py-24 px-6">
+                <section id="contact" key="contact" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="bg-slate-900 rounded-[3rem] p-8 lg:p-16 text-white relative overflow-hidden shadow-2xl">
+                    <div className="bg-slate-900 rounded-[2rem] lg:rounded-[3rem] p-8 lg:p-16 text-white relative overflow-hidden shadow-2xl">
                       <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/30 rounded-full blur-[100px] pointer-events-none"></div>
-                      <div className="grid lg:grid-cols-2 gap-16 relative z-10">
+                      <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 relative z-10">
                         <div>
-                          <h2 className="text-4xl font-bold tracking-tight mb-6">{page.contact.title}</h2>
+                          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-6">{page.contact.title}</h2>
                           <p className="text-xl text-slate-300 mb-12">{page.contact.subtitle}</p>
                           
                           <div className="space-y-8">

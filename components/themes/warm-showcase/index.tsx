@@ -69,6 +69,32 @@ export function WarmShowcaseTheme(props: Props) {
             {menuOpen ? <X className="h-8 w-8" /> : <Menu className="h-8 w-8" />}
           </button>
         </div>
+        {menuOpen && (
+          <div className="md:hidden border-t border-[#f3e8d6] bg-[#fffbf5] shadow-lg absolute w-full">
+            <div className="flex flex-col px-6 py-6 space-y-4">
+              {page.nav.map((item) => (
+                <a
+                  key={item.link + item.label}
+                  href={item.link}
+                  className="text-lg font-medium hover:text-[#d97706] transition"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              ))}
+              {page.navCta && (
+                <a
+                  href={page.navCta.link}
+                  className="inline-block px-6 py-3 text-sm text-white rounded-md transition text-center w-full"
+                  style={{ backgroundColor: primary }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {page.navCta.label}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <main className="pt-24">
@@ -84,7 +110,7 @@ export function WarmShowcaseTheme(props: Props) {
                           {page.hero.eyebrow}
                         </span>
                       )}
-                      <h1 className="text-5xl md:text-7xl font-bold mb-8 text-[#2d241c] leading-tight">
+                      <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-8 text-[#2d241c] leading-tight">
                         {page.hero.title}
                       </h1>
                       <p className="text-xl md:text-2xl text-[#6b5a4a] mb-12 font-light max-w-3xl mx-auto">
@@ -116,9 +142,9 @@ export function WarmShowcaseTheme(props: Props) {
 
             case 'about':
               return page.about.show && (
-                <section id="about" key="about" className="py-24 px-6 bg-white border-y border-[#f3e8d6]">
+                <section id="about" key="about" className="py-16 md:py-24 px-6 bg-white border-y border-[#f3e8d6]">
                   <div className="mx-auto max-w-5xl text-center">
-                    <h2 className="text-4xl font-bold mb-6 text-[#2d241c]">{page.about.title}</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-6 text-[#2d241c]">{page.about.title}</h2>
                     <p className="text-xl text-[#d97706] mb-12 italic">{page.about.subtitle}</p>
                     
                     <div className="prose prose-lg mx-auto text-[#6b5a4a] leading-relaxed" dangerouslySetInnerHTML={{ __html: page.about.content }} />
@@ -135,10 +161,10 @@ export function WarmShowcaseTheme(props: Props) {
 
             case 'why-choose-us':
               return page.why.show && page.why.items.length > 0 && (
-                <section id="why-choose-us" key="why-choose-us" className="py-24 px-6 bg-[#fffbf5]">
+                <section id="why-choose-us" key="why-choose-us" className="py-16 md:py-24 px-6 bg-[#fffbf5]">
                   <div className="mx-auto max-w-6xl">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl font-bold mb-4 text-[#2d241c]">{page.why.title}</h2>
+                    <div className="text-center mb-16 md:mb-20">
+                      <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#2d241c]">{page.why.title}</h2>
                       <p className="text-lg text-[#6b5a4a] max-w-2xl mx-auto">{page.why.subtitle}</p>
                       <div className="w-16 h-1 mx-auto mt-8" style={{ backgroundColor: primary }}></div>
                     </div>
@@ -159,10 +185,10 @@ export function WarmShowcaseTheme(props: Props) {
 
             case 'services':
               return page.services.show && page.services.items.length > 0 && (
-                <section id="services" key="services" className="py-24 px-6">
+                <section id="services" key="services" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-6xl">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl font-bold mb-4 text-[#2d241c]">{page.services.title}</h2>
+                    <div className="text-center mb-16 md:mb-20">
+                      <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#2d241c]">{page.services.title}</h2>
                       <p className="text-lg text-[#6b5a4a] max-w-2xl mx-auto">{page.services.subtitle}</p>
                       <div className="w-16 h-1 mx-auto mt-8" style={{ backgroundColor: primary }}></div>
                     </div>
@@ -201,10 +227,10 @@ export function WarmShowcaseTheme(props: Props) {
 
             case 'products':
               return page.products.show && page.products.items.length > 0 && (
-                <section id="products" key="products" className="py-24 px-6 bg-[#2d241c] text-[#fffbf5]">
+                <section id="products" key="products" className="py-16 md:py-24 px-6 bg-[#2d241c] text-[#fffbf5]">
                   <div className="mx-auto max-w-6xl">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl font-bold mb-4">{page.products.title}</h2>
+                    <div className="text-center mb-16 md:mb-20">
+                      <h2 className="text-3xl md:text-4xl font-bold mb-4">{page.products.title}</h2>
                       <p className="text-lg text-[#d3c5b8] max-w-2xl mx-auto">{page.products.subtitle}</p>
                       <div className="w-16 h-1 mx-auto mt-8" style={{ backgroundColor: primary }}></div>
                     </div>
@@ -238,10 +264,10 @@ export function WarmShowcaseTheme(props: Props) {
 
             case 'gallery':
               return page.gallery.show && page.gallery.images.length > 0 && (
-                <section id="gallery" key="gallery" className="py-24 px-6 bg-white border-b border-[#f3e8d6]">
+                <section id="gallery" key="gallery" className="py-16 md:py-24 px-6 bg-white border-b border-[#f3e8d6]">
                   <div className="mx-auto max-w-6xl">
-                    <div className="text-center mb-16">
-                      <h2 className="text-4xl font-bold mb-4">{page.gallery.title}</h2>
+                    <div className="text-center mb-12 md:mb-16">
+                      <h2 className="text-3xl md:text-4xl font-bold mb-4">{page.gallery.title}</h2>
                       <p className="text-lg text-[#6b5a4a]">{page.gallery.subtitle}</p>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -262,10 +288,10 @@ export function WarmShowcaseTheme(props: Props) {
 
             case 'testimonials':
               return page.testimonials.show && page.testimonials.items.length > 0 && (
-                <section id="testimonials" key="testimonials" className="py-24 px-6">
+                <section id="testimonials" key="testimonials" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-6xl">
-                    <div className="text-center mb-20">
-                      <h2 className="text-4xl font-bold mb-4">{page.testimonials.title}</h2>
+                    <div className="text-center mb-16 md:mb-20">
+                      <h2 className="text-3xl md:text-4xl font-bold mb-4">{page.testimonials.title}</h2>
                       <div className="w-16 h-1 mx-auto mt-6" style={{ backgroundColor: primary }}></div>
                     </div>
                     <div className="grid md:grid-cols-2 gap-12">
@@ -287,10 +313,10 @@ export function WarmShowcaseTheme(props: Props) {
 
             case 'faq':
               return page.faq.show && page.faq.items.length > 0 && (
-                <section id="faq" key="faq" className="py-24 px-6 bg-[#fffbf5]">
+                <section id="faq" key="faq" className="py-16 md:py-24 px-6 bg-[#fffbf5]">
                   <div className="mx-auto max-w-4xl">
-                    <div className="text-center mb-16">
-                      <h2 className="text-4xl font-bold mb-4 text-[#2d241c]">{page.faq.title}</h2>
+                    <div className="text-center mb-12 md:mb-16">
+                      <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#2d241c]">{page.faq.title}</h2>
                       <p className="text-lg text-[#6b5a4a]">{page.faq.subtitle}</p>
                     </div>
                     <div className="space-y-6">
@@ -307,9 +333,9 @@ export function WarmShowcaseTheme(props: Props) {
 
             case 'subscribe':
               return page.subscribe.show && (
-                <section id="subscribe" key="subscribe" className="py-24 px-6 bg-white border-y border-[#f3e8d6]">
+                <section id="subscribe" key="subscribe" className="py-16 md:py-24 px-6 bg-white border-y border-[#f3e8d6]">
                   <div className="mx-auto max-w-4xl text-center">
-                    <h2 className="text-4xl font-bold mb-6 text-[#2d241c]">{page.subscribe.title}</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-6 text-[#2d241c]">{page.subscribe.title}</h2>
                     <p className="text-lg text-[#6b5a4a] mb-12 max-w-2xl mx-auto">{page.subscribe.subtitle}</p>
                     <div className="max-w-md mx-auto">
                       <NewsletterForm 
@@ -328,11 +354,11 @@ export function WarmShowcaseTheme(props: Props) {
 
             case 'blogs':
               return page.blogs.show && page.blogs.items.length > 0 && (
-                <section id="blogs" key="blogs" className="py-24 px-6 bg-white border-y border-[#f3e8d6]">
+                <section id="blogs" key="blogs" className="py-16 md:py-24 px-6 bg-white border-y border-[#f3e8d6]">
                   <div className="mx-auto max-w-6xl">
-                    <div className="flex justify-between items-end mb-16 border-b border-[#f3e8d6] pb-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-16 border-b border-[#f3e8d6] pb-6 gap-4">
                       <div>
-                        <h2 className="text-4xl font-bold mb-2">{page.blogs.title}</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold mb-2">{page.blogs.title}</h2>
                         <p className="text-lg text-[#6b5a4a]">{page.blogs.subtitle}</p>
                       </div>
                     </div>
@@ -353,10 +379,10 @@ export function WarmShowcaseTheme(props: Props) {
 
             case 'contact':
               return page.contact.show && (
-                <section id="contact" key="contact" className="py-24 px-6">
+                <section id="contact" key="contact" className="py-16 md:py-24 px-6">
                   <div className="mx-auto max-w-5xl">
-                    <div className="text-center mb-16">
-                      <h2 className="text-4xl font-bold mb-4">{page.contact.title}</h2>
+                    <div className="text-center mb-12 md:mb-16">
+                      <h2 className="text-3xl md:text-4xl font-bold mb-4">{page.contact.title}</h2>
                       <p className="text-lg text-[#6b5a4a]">{page.contact.subtitle}</p>
                     </div>
                     

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/server/middleware/auth';
 import { CompanyService } from '@/server/services/company.service';
 import { apiSuccess, apiError } from '@/server/utils/api-response';
+import { hashPassword } from '@/lib/auth';
 
 export async function PATCH(
   request: NextRequest,
@@ -22,6 +23,12 @@ export async function PATCH(
     if (body.status) {
       const company = await CompanyService.updateStatus(id, body.status);
       return apiSuccess(company, `Company ${body.status}`);
+    }
+
+    if (body.password) {
+      const hashedPassword = await hashPassword(body.password);
+      await CompanyService.updateOwnerPassword(id, hashedPassword);
+      return apiSuccess({ success: true }, 'Owner password updated successfully');
     }
     
     return apiError('No valid status provided', 400);

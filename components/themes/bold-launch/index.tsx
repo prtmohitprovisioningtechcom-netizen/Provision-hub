@@ -69,6 +69,33 @@ export function BoldLaunchTheme(props: Props) {
             {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+        
+        {menuOpen && (
+          <div className="lg:hidden bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/10 absolute w-full left-0 mt-4 px-6 py-6 shadow-xl">
+            <div className="flex flex-col space-y-6">
+              {page.nav.map((item) => (
+                <a
+                  key={item.link + item.label}
+                  href={item.link}
+                  className="text-sm font-medium text-gray-300 hover:text-white transition"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              ))}
+              {page.navCta && (
+                <a
+                  href={page.navCta.link}
+                  className="inline-block px-5 py-3 text-sm font-bold text-white transition hover:opacity-90 text-center mt-2"
+                  style={{ backgroundColor: primary }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {page.navCta.label}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <main className="pt-20">
@@ -76,7 +103,7 @@ export function BoldLaunchTheme(props: Props) {
           switch (type) {
             case 'hero':
               return page.hero.show && (
-                <section id="home" key="hero" className="relative pt-32 pb-24 lg:pt-48 lg:pb-40 px-6 border-b border-white/10">
+                <section id="home" key="hero" className="relative pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-48 lg:pb-40 px-6 border-b border-white/10">
                   {/* Grid background */}
                   <div className="absolute inset-0 opacity-[0.03] z-0" style={{ backgroundImage: 'linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)', backgroundSize: '64px 64px' }}></div>
                   
@@ -88,7 +115,7 @@ export function BoldLaunchTheme(props: Props) {
                             {page.hero.eyebrow}
                           </span>
                         )}
-                        <h1 className="text-6xl lg:text-8xl font-black tracking-tighter leading-[0.9] mb-8 text-white uppercase">
+                        <h1 className="text-5xl md:text-6xl lg:text-8xl font-black tracking-tighter leading-[0.9] mb-8 text-white uppercase">
                           {page.hero.title}
                         </h1>
                         <p className="text-xl text-gray-400 mb-10 max-w-lg leading-relaxed">
@@ -124,12 +151,12 @@ export function BoldLaunchTheme(props: Props) {
 
             case 'about':
               return page.about.show && (
-                <section id="about" key="about" className="py-24 lg:py-40 px-6 border-b border-white/10 relative overflow-hidden">
+                <section id="about" key="about" className="py-16 md:py-24 lg:py-40 px-6 border-b border-white/10 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-white/5 to-transparent z-0"></div>
                   <div className="relative z-10 mx-auto max-w-7xl">
                     <div className="grid lg:grid-cols-12 gap-12 items-center">
                       <div className="lg:col-span-5">
-                        <h2 className="text-5xl lg:text-7xl font-black tracking-tighter uppercase mb-6">{page.about.title}</h2>
+                        <h2 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter uppercase mb-6">{page.about.title}</h2>
                       </div>
                       <div className="lg:col-span-7">
                         <p className="text-2xl text-white mb-8 font-medium">{page.about.subtitle}</p>
@@ -147,12 +174,12 @@ export function BoldLaunchTheme(props: Props) {
 
             case 'why-choose-us':
               return page.why.show && page.why.items.length > 0 && (
-                <section id="why-choose-us" key="why-choose-us" className="py-24 lg:py-40 px-6 border-b border-white/10">
+                <section id="why-choose-us" key="why-choose-us" className="py-16 md:py-24 lg:py-40 px-6 border-b border-white/10">
                   <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-20 gap-8">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 lg:mb-20 gap-8">
                       <div className="max-w-2xl">
-                        <h2 className="text-5xl font-black tracking-tighter uppercase mb-4">{page.why.title}</h2>
-                        <p className="text-xl text-gray-400">{page.why.subtitle}</p>
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">{page.why.title}</h2>
+                        <p className="text-lg md:text-xl text-gray-400">{page.why.subtitle}</p>
                       </div>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10">
@@ -172,12 +199,12 @@ export function BoldLaunchTheme(props: Props) {
 
             case 'services':
               return page.services.show && page.services.items.length > 0 && (
-                <section id="services" key="services" className="py-24 lg:py-40 px-6 border-b border-white/10">
+                <section id="services" key="services" className="py-16 md:py-24 lg:py-40 px-6 border-b border-white/10">
                   <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-20 gap-8">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 lg:mb-20 gap-8">
                       <div className="max-w-2xl">
-                        <h2 className="text-5xl font-black tracking-tighter uppercase mb-4">{page.services.title}</h2>
-                        <p className="text-xl text-gray-400">{page.services.subtitle}</p>
+                        <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">{page.services.title}</h2>
+                        <p className="text-lg md:text-xl text-gray-400">{page.services.subtitle}</p>
                       </div>
                     </div>
                     
@@ -211,11 +238,11 @@ export function BoldLaunchTheme(props: Props) {
 
             case 'products':
               return page.products.show && page.products.items.length > 0 && (
-                <section id="products" key="products" className="py-24 lg:py-40 px-6 border-b border-white/10 bg-white text-black">
+                <section id="products" key="products" className="py-16 md:py-24 lg:py-40 px-6 border-b border-white/10 bg-white text-black">
                   <div className="mx-auto max-w-7xl">
-                    <div className="mb-20">
-                      <h2 className="text-5xl font-black tracking-tighter uppercase mb-4">{page.products.title}</h2>
-                      <p className="text-xl text-gray-600 max-w-2xl">{page.products.subtitle}</p>
+                    <div className="mb-16 lg:mb-20">
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">{page.products.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-600 max-w-2xl">{page.products.subtitle}</p>
                     </div>
                     
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -248,11 +275,11 @@ export function BoldLaunchTheme(props: Props) {
 
             case 'gallery':
               return page.gallery.show && page.gallery.images.length > 0 && (
-                <section id="gallery" key="gallery" className="py-24 lg:py-40 px-6 border-b border-white/10">
+                <section id="gallery" key="gallery" className="py-16 md:py-24 lg:py-40 px-6 border-b border-white/10">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-20">
-                      <h2 className="text-5xl font-black tracking-tighter uppercase mb-4">{page.gallery.title}</h2>
-                      <p className="text-xl text-gray-400">{page.gallery.subtitle}</p>
+                    <div className="text-center mb-16 lg:mb-20">
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">{page.gallery.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-400">{page.gallery.subtitle}</p>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {page.gallery.images.map((img, i) => (
@@ -272,9 +299,9 @@ export function BoldLaunchTheme(props: Props) {
 
             case 'testimonials':
               return page.testimonials.show && page.testimonials.items.length > 0 && (
-                <section id="testimonials" key="testimonials" className="py-24 lg:py-40 px-6 border-b border-white/10">
+                <section id="testimonials" key="testimonials" className="py-16 md:py-24 lg:py-40 px-6 border-b border-white/10">
                   <div className="mx-auto max-w-7xl">
-                    <h2 className="text-5xl font-black tracking-tighter uppercase mb-20">{page.testimonials.title}</h2>
+                    <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-16 lg:mb-20">{page.testimonials.title}</h2>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {page.testimonials.items.map((test, i) => (
                         <div key={i} className="border border-white/10 p-10 flex flex-col justify-between">
@@ -299,11 +326,11 @@ export function BoldLaunchTheme(props: Props) {
 
             case 'faq':
               return page.faq.show && page.faq.items.length > 0 && (
-                <section id="faq" key="faq" className="py-24 lg:py-40 px-6 border-b border-white/10">
+                <section id="faq" key="faq" className="py-16 md:py-24 lg:py-40 px-6 border-b border-white/10">
                   <div className="mx-auto max-w-4xl">
-                    <div className="mb-20">
-                      <h2 className="text-5xl font-black tracking-tighter uppercase mb-4">{page.faq.title}</h2>
-                      <p className="text-xl text-gray-400">{page.faq.subtitle}</p>
+                    <div className="mb-16 lg:mb-20">
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">{page.faq.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-400">{page.faq.subtitle}</p>
                     </div>
                     <div className="space-y-8">
                       {page.faq.items.map((faq, i) => (
@@ -319,10 +346,10 @@ export function BoldLaunchTheme(props: Props) {
 
             case 'subscribe':
               return page.subscribe.show && (
-                <section id="subscribe" key="subscribe" className="py-24 lg:py-40 px-6 border-b border-white/10 bg-white text-black">
+                <section id="subscribe" key="subscribe" className="py-16 md:py-24 lg:py-40 px-6 border-b border-white/10 bg-white text-black">
                   <div className="mx-auto max-w-4xl text-center">
-                    <h2 className="text-5xl font-black tracking-tighter uppercase mb-6">{page.subscribe.title}</h2>
-                    <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">{page.subscribe.subtitle}</p>
+                    <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-6">{page.subscribe.title}</h2>
+                    <p className="text-lg md:text-xl text-gray-600 mb-12 max-w-2xl mx-auto">{page.subscribe.subtitle}</p>
                     <div className="max-w-md mx-auto">
                       <NewsletterForm 
                         companyId={props.company._id} 
@@ -340,11 +367,11 @@ export function BoldLaunchTheme(props: Props) {
 
             case 'blogs':
               return page.blogs.show && page.blogs.items.length > 0 && (
-                <section id="blogs" key="blogs" className="py-24 lg:py-40 px-6 border-b border-white/10">
+                <section id="blogs" key="blogs" className="py-16 md:py-24 lg:py-40 px-6 border-b border-white/10">
                   <div className="mx-auto max-w-7xl">
-                    <div className="mb-20">
-                      <h2 className="text-5xl font-black tracking-tighter uppercase mb-4">{page.blogs.title}</h2>
-                      <p className="text-xl text-gray-400">{page.blogs.subtitle}</p>
+                    <div className="mb-16 lg:mb-20">
+                      <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">{page.blogs.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-400">{page.blogs.subtitle}</p>
                     </div>
                     <div className="grid lg:grid-cols-2 gap-8">
                       {page.blogs.items.map((blog, i) => (
@@ -366,12 +393,12 @@ export function BoldLaunchTheme(props: Props) {
 
             case 'contact':
               return page.contact.show && (
-                <section id="contact" key="contact" className="py-24 lg:py-40 px-6 bg-white text-black">
+                <section id="contact" key="contact" className="py-16 md:py-24 lg:py-40 px-6 bg-white text-black">
                   <div className="mx-auto max-w-7xl">
-                    <div className="grid lg:grid-cols-2 gap-20">
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
                       <div>
-                        <h2 className="text-5xl lg:text-7xl font-black tracking-tighter uppercase mb-8">{page.contact.title}</h2>
-                        <p className="text-xl text-gray-600 mb-16">{page.contact.subtitle}</p>
+                        <h2 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter uppercase mb-8">{page.contact.title}</h2>
+                        <p className="text-lg md:text-xl text-gray-600 mb-12 lg:mb-16">{page.contact.subtitle}</p>
                         
                         <div className="space-y-10 font-mono text-sm uppercase tracking-widest">
                            {page.phone && (

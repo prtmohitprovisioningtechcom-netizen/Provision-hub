@@ -69,6 +69,32 @@ export function PremiumShowcaseTheme(props: Props) {
             {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+        {menuOpen && (
+          <div className="lg:hidden bg-[#050505]/95 backdrop-blur-2xl border-t border-white/5 absolute w-full left-0 mt-4 px-6 py-8">
+            <div className="flex flex-col space-y-6">
+              {page.nav.map((item) => (
+                <a
+                  key={item.link + item.label}
+                  href={item.link}
+                  className="text-sm tracking-[0.2em] uppercase text-gray-300 hover:text-white transition"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              ))}
+              {page.navCta && (
+                <a
+                  href={page.navCta.link}
+                  className="inline-block px-8 py-4 text-xs tracking-[0.2em] uppercase text-black font-semibold text-center transition hover:bg-white mt-4"
+                  style={{ backgroundColor: primary }}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {page.navCta.label}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <main>
@@ -95,7 +121,7 @@ export function PremiumShowcaseTheme(props: Props) {
                           {page.hero.eyebrow}
                         </span>
                       )}
-                      <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-8 leading-tight">
+                      <h1 className="text-4xl md:text-5xl lg:text-7xl xl:text-8xl font-serif text-white mb-8 leading-tight">
                         {page.hero.title}
                       </h1>
                       <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
@@ -118,7 +144,7 @@ export function PremiumShowcaseTheme(props: Props) {
 
             case 'about':
               return page.about.show && (
-                <section id="about" key="about" className="py-32 px-6">
+                <section id="about" key="about" className="py-20 lg:py-32 px-6">
                   <div className="mx-auto max-w-7xl">
                     <div className="grid lg:grid-cols-2 gap-24 items-center">
                       <div className="order-2 lg:order-1 relative">
@@ -128,8 +154,8 @@ export function PremiumShowcaseTheme(props: Props) {
                         )}
                       </div>
                       <div className="order-1 lg:order-2">
-                        <h2 className="text-4xl lg:text-6xl font-serif text-white mb-8">{page.about.title}</h2>
-                        <p className="text-2xl text-gray-400 mb-12 font-light italic">{page.about.subtitle}</p>
+                        <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-8">{page.about.title}</h2>
+                        <p className="text-xl md:text-2xl text-gray-400 mb-12 font-light italic">{page.about.subtitle}</p>
                         <div className="prose prose-invert prose-lg text-gray-400 font-light leading-loose" dangerouslySetInnerHTML={{ __html: page.about.content }} />
                       </div>
                     </div>
@@ -139,10 +165,10 @@ export function PremiumShowcaseTheme(props: Props) {
 
             case 'why-choose-us':
               return page.why.show && page.why.items.length > 0 && (
-                <section id="why-choose-us" key="why-choose-us" className="py-32 px-6 bg-[#0a0a0a]">
+                <section id="why-choose-us" key="why-choose-us" className="py-20 lg:py-32 px-6 bg-[#0a0a0a]">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-24">
-                      <h2 className="text-4xl lg:text-6xl font-serif text-white mb-6">{page.why.title}</h2>
+                    <div className="text-center mb-16 lg:mb-24">
+                      <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-6">{page.why.title}</h2>
                       <p className="text-xl text-gray-400 font-light max-w-2xl mx-auto">{page.why.subtitle}</p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -160,10 +186,10 @@ export function PremiumShowcaseTheme(props: Props) {
 
             case 'services':
               return page.services.show && page.services.items.length > 0 && (
-                <section id="services" key="services" className="py-32 px-6 bg-[#0a0a0a]">
+                <section id="services" key="services" className="py-20 lg:py-32 px-6 bg-[#0a0a0a]">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-24">
-                      <h2 className="text-4xl lg:text-6xl font-serif text-white mb-6">{page.services.title}</h2>
+                    <div className="text-center mb-16 lg:mb-24">
+                      <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-6">{page.services.title}</h2>
                       <p className="text-xl text-gray-400 font-light max-w-2xl mx-auto">{page.services.subtitle}</p>
                     </div>
                     
@@ -196,11 +222,11 @@ export function PremiumShowcaseTheme(props: Props) {
 
             case 'products':
               return page.products.show && page.products.items.length > 0 && (
-                <section id="products" key="products" className="py-32 px-6">
+                <section id="products" key="products" className="py-20 lg:py-32 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 lg:mb-24 gap-6">
                       <div className="max-w-2xl">
-                        <h2 className="text-4xl lg:text-6xl font-serif text-white mb-6">{page.products.title}</h2>
+                        <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-6">{page.products.title}</h2>
                         <p className="text-xl text-gray-400 font-light">{page.products.subtitle}</p>
                       </div>
                     </div>
@@ -233,10 +259,10 @@ export function PremiumShowcaseTheme(props: Props) {
 
             case 'gallery':
               return page.gallery.show && page.gallery.images.length > 0 && (
-                <section id="gallery" key="gallery" className="py-32 px-6 bg-[#0a0a0a]">
+                <section id="gallery" key="gallery" className="py-20 lg:py-32 px-6 bg-[#0a0a0a]">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-24">
-                      <h2 className="text-4xl lg:text-6xl font-serif text-white mb-6">{page.gallery.title}</h2>
+                    <div className="text-center mb-16 lg:mb-24">
+                      <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-6">{page.gallery.title}</h2>
                       <p className="text-xl text-gray-400 font-light">{page.gallery.subtitle}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4 lg:gap-8">
@@ -257,9 +283,9 @@ export function PremiumShowcaseTheme(props: Props) {
 
             case 'testimonials':
               return page.testimonials.show && page.testimonials.items.length > 0 && (
-                <section id="testimonials" key="testimonials" className="py-32 px-6">
+                <section id="testimonials" key="testimonials" className="py-20 lg:py-32 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <h2 className="text-4xl lg:text-6xl font-serif text-white mb-24 text-center">{page.testimonials.title}</h2>
+                    <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-16 lg:mb-24 text-center">{page.testimonials.title}</h2>
                     <div className="grid lg:grid-cols-2 gap-16">
                       {page.testimonials.items.map((test, i) => (
                         <div key={i} className="flex flex-col items-center text-center px-8">
@@ -280,10 +306,10 @@ export function PremiumShowcaseTheme(props: Props) {
 
             case 'faq':
               return page.faq.show && page.faq.items.length > 0 && (
-                <section id="faq" key="faq" className="py-32 px-6 bg-[#0a0a0a]">
+                <section id="faq" key="faq" className="py-20 lg:py-32 px-6 bg-[#0a0a0a]">
                   <div className="mx-auto max-w-4xl">
-                    <div className="text-center mb-24">
-                      <h2 className="text-4xl lg:text-6xl font-serif text-white mb-6">{page.faq.title}</h2>
+                    <div className="text-center mb-16 lg:mb-24">
+                      <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-6">{page.faq.title}</h2>
                       <p className="text-xl text-gray-400 font-light">{page.faq.subtitle}</p>
                     </div>
                     <div className="space-y-12">
@@ -300,9 +326,9 @@ export function PremiumShowcaseTheme(props: Props) {
 
             case 'subscribe':
               return page.subscribe.show && (
-                <section id="subscribe" key="subscribe" className="py-32 px-6">
+                <section id="subscribe" key="subscribe" className="py-20 lg:py-32 px-6">
                   <div className="mx-auto max-w-4xl text-center">
-                    <h2 className="text-4xl lg:text-6xl font-serif text-white mb-6">{page.subscribe.title}</h2>
+                    <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-6">{page.subscribe.title}</h2>
                     <p className="text-xl text-gray-400 font-light mb-16 max-w-2xl mx-auto">{page.subscribe.subtitle}</p>
                     <div className="max-w-md mx-auto relative">
                       <NewsletterForm 
@@ -321,10 +347,10 @@ export function PremiumShowcaseTheme(props: Props) {
 
             case 'blogs':
               return page.blogs.show && page.blogs.items.length > 0 && (
-                <section id="blogs" key="blogs" className="py-32 px-6">
+                <section id="blogs" key="blogs" className="py-20 lg:py-32 px-6">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-24">
-                      <h2 className="text-4xl lg:text-6xl font-serif text-white mb-6">{page.blogs.title}</h2>
+                    <div className="text-center mb-16 lg:mb-24">
+                      <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-6">{page.blogs.title}</h2>
                       <p className="text-xl text-gray-400 font-light">{page.blogs.subtitle}</p>
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
@@ -345,11 +371,11 @@ export function PremiumShowcaseTheme(props: Props) {
 
             case 'contact':
               return page.contact.show && (
-                <section id="contact" key="contact" className="py-32 px-6 bg-[#0a0a0a]">
+                <section id="contact" key="contact" className="py-20 lg:py-32 px-6 bg-[#0a0a0a]">
                   <div className="mx-auto max-w-7xl">
-                    <div className="grid lg:grid-cols-2 gap-24">
+                    <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
                       <div>
-                        <h2 className="text-4xl lg:text-6xl font-serif text-white mb-8">{page.contact.title}</h2>
+                        <h2 className="text-3xl md:text-4xl lg:text-6xl font-serif text-white mb-8">{page.contact.title}</h2>
                         <p className="text-xl text-gray-400 mb-16 font-light">{page.contact.subtitle}</p>
                         
                         <div className="space-y-12">

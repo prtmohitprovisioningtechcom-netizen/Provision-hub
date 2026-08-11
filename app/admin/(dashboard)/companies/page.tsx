@@ -13,10 +13,14 @@ import {
   Trash2,
   ExternalLink,
   Loader2,
+  Eye,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -39,6 +43,12 @@ interface AdminCompany {
   customDomain?: string;
   customDomainStatus?: 'none' | 'pending' | 'active' | 'failed';
   createdAt: string;
+  phone?: string;
+  description?: string;
+  website?: string;
+  ownerName?: string;
+  gst?: string;
+  pan?: string;
 }
 
 interface Pagination {
@@ -57,6 +67,8 @@ export default function AdminCompaniesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(1);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<AdminCompany | null>(null);
+  const [newPassword, setNewPassword] = useState('');
 
   const fetchCompanies = useCallback(async () => {
     setLoading(true);
@@ -126,6 +138,24 @@ export default function AdminCompaniesPage() {
       if (isUnauthorized(err)) return;
       const message = axios.isAxiosError(err) ? err.response?.data?.message : 'Delete failed';
       toast.error(message || 'Delete failed');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const updatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCompany || !newPassword) return;
+    setActionLoading(`pass-${selectedCompany._id}`);
+    try {
+      const res = await api.patch(`/api/admin/companies/${selectedCompany._id}`, { password: newPassword });
+      if (res.data.success) {
+        toast.success('Password updated successfully');
+        setNewPassword('');
+      }
+    } catch (err) {
+      if (isUnauthorized(err)) return;
+      toast.error('Failed to update password');
     } finally {
       setActionLoading(null);
     }
@@ -299,6 +329,14 @@ export default function AdminCompaniesPage() {
                           >
                             <Trash2 className="h-4 w-4 text-red-600" />
                           </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="View Details"
+                            onClick={() => setSelectedCompany(company)}
+                          >
+                            <Eye className="h-4 w-4 text-blue-600" />
+                          </Button>
                         </div>
                       </td>
                     </motion.tr>
@@ -329,6 +367,94 @@ export default function AdminCompaniesPage() {
           </Button>
         </div>
       )}
+
+      <Dialog open={!!selectedCompany} onOpenChange={(open) => !open && setSelectedCompany(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Company Details</DialogTitle>
+            <DialogDescription>Full details for {selectedCompany?.name}</DialogDescription>
+          </DialogHeader>
+          
+          {selectedCompany && (
+            <div className="space-y-6 mt-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="font-semibold text-gray-500">Name</p>
+                  <p>{selectedCompany.name}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">Owner Name</p>
+                  <p>{selectedCompany.ownerName || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">Email</p>
+                  <p>{selectedCompany.email}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">Phone</p>
+                  <p>{selectedCompany.phone || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">Category</p>
+                  <p>{selectedCompany.category}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">Status</p>
+                  <p className="mt-1">{statusBadge(selectedCompany.status)}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">Website</p>
+                  <p>{selectedCompany.website || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">Location</p>
+                  <p>
+                    {[selectedCompany.address?.city, selectedCompany.address?.state, selectedCompany.address?.country]
+                      .filter(Boolean)
+                      .join(', ') || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">GST Number</p>
+                  <p>{selectedCompany.gst || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-500">PAN Number</p>
+                  <p>{selectedCompany.pan || 'N/A'}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="font-semibold text-gray-500">Description</p>
+                  <p className="mt-1 whitespace-pre-wrap">{selectedCompany.description || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="border-t pt-4 mt-6">
+                <h3 className="font-medium mb-4">Update Owner Password</h3>
+                <form onSubmit={updatePassword} className="flex gap-2 items-end">
+                  <div className="flex-1 space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="text"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <Button type="submit" disabled={actionLoading === `pass-${selectedCompany._id}` || !newPassword}>
+                    {actionLoading === `pass-${selectedCompany._id}` ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : null}
+                    Update
+                  </Button>
+                </form>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
