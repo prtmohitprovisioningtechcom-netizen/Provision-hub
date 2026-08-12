@@ -9,37 +9,28 @@ let pool: mysql.Pool;
 
 const sslConfig = process.env.DB_SSL === 'true' ? { ssl: { rejectUnauthorized: false } } : {};
 
+const poolConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'multi-tenant',
+  port: parseInt(process.env.DB_PORT || '3306'),
+  waitForConnections: true,
+  connectionLimit: 3, // Reduced to prevent max connection issues on shared hosting
+  maxIdle: 3, // Max idle connections, should be same or less than connectionLimit
+  idleTimeout: 30000, // Close idle connections after 30 seconds to prevent server drops
+  queueLimit: 0,
+  namedPlaceholders: true,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000,
+  ...sslConfig,
+};
+
 if (process.env.NODE_ENV === 'production') {
-  pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'multi-tenant',
-    port: parseInt(process.env.DB_PORT || '3306'),
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    namedPlaceholders: true,
-    enableKeepAlive: true,
-    keepAliveInitialDelay: 10000,
-    ...sslConfig,
-  });
+  pool = mysql.createPool(poolConfig);
 } else {
   if (!global.mysqlPool) {
-    global.mysqlPool = mysql.createPool({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'multi-tenant',
-      port: parseInt(process.env.DB_PORT || '3306'),
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0,
-      namedPlaceholders: true,
-      enableKeepAlive: true,
-      keepAliveInitialDelay: 10000,
-      ...sslConfig,
-    });
+    global.mysqlPool = mysql.createPool(poolConfig);
   }
   pool = global.mysqlPool;
 }
