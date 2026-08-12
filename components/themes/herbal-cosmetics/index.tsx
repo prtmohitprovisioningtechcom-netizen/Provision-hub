@@ -256,8 +256,8 @@ export function HerbalCosmeticsTheme(props: Props) {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                      {page.products.items.slice(0, 8).map((product: any) => (
-                        <div key={product._id} className="border border-gray-200 bg-white group flex flex-col hover:shadow-lg transition-shadow duration-300">
+                      {page.products.items.slice(0, 8).map((product: any, i: number) => (
+                        <div key={product._id || `prod-${i}`} className="border border-gray-200 bg-white group flex flex-col hover:shadow-lg transition-shadow duration-300">
                           <div className="aspect-square relative overflow-hidden bg-gray-50 p-4">
                             {product.images?.[0] ? (
                               <img src={product.images[0]} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-105 transition duration-500" />
@@ -383,10 +383,10 @@ export function HerbalCosmeticsTheme(props: Props) {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                      {page.services.items.map((service: any) => {
+                      {page.services.items.map((service: any, i: number) => {
                         const img = getServiceImage(service);
                         return (
-                          <div key={service._id || service.name} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition overflow-hidden flex flex-col">
+                          <div key={service._id || service.name || `svc-${i}`} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition overflow-hidden flex flex-col">
                             {img && (
                               <img src={img} alt={service.name} loading="lazy" decoding="async" className="w-full aspect-[16/10] object-cover" />
                             )}
@@ -507,8 +507,8 @@ export function HerbalCosmeticsTheme(props: Props) {
                       <div className="h-px bg-gray-300 w-16 md:w-32"></div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                      {page.blogs.items.map((blog: any) => (
-                        <Link key={blog._id || blog.slug} href={`/${page.slug}/blog/${blog.slug}`} className="group block">
+                      {page.blogs.items.map((blog: any, i: number) => (
+                        <Link key={blog._id || blog.slug || `blog-${i}`} href={`/${page.slug}/blog/${blog.slug}`} className="group block">
                           <div className="bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-xl transition">
                             {blog.featuredImage && (
                               <img src={blog.featuredImage} alt={blog.title} loading="lazy" decoding="async" className="w-full aspect-[16/10] object-cover group-hover:scale-105 transition" />
@@ -579,8 +579,8 @@ export function HerbalCosmeticsTheme(props: Props) {
           <div>
             <h4 className="text-white font-serif text-xl mb-6 font-bold">Our Products</h4>
             <ul className="space-y-3">
-              {props.products.slice(0, 6).map(product => (
-                <li key={product._id}>
+              {props.products.slice(0, 6).map((product, i) => (
+                <li key={product._id || `ft-prod-${i}`}>
                   <a href={`#products`} className="hover:text-white transition flex items-center gap-2">
                     <span className="text-xs">›</span> {product.name}
                   </a>

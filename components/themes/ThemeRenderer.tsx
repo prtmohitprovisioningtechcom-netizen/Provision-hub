@@ -11,6 +11,7 @@ import { ElegantSerifTheme } from '@/components/themes/elegant-serif';
 import { SleekGlassTheme } from '@/components/themes/sleek-glass';
 import { NeonDarkTheme } from '@/components/themes/neon-dark';
 import { RoyalGlowTheme } from '@/components/themes/royal-glow';
+import { CarpenterWorksTheme } from '@/components/themes/carpenter-works';
 import { LAYOUT_MAP } from '@/components/themes/layouts';
 import { getThemeSkin } from '@/lib/theme-skins';
 import { normalizeLayoutId } from '@/lib/layout-id';
@@ -113,6 +114,14 @@ export const THEME_OPTIONS = [
       'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=800&q=80',
     tags: ['Cosmetics', 'Products', 'Retail', 'Vibrant'],
   },
+  {
+    id: 'carpenter-works',
+    name: 'Carpenter Works',
+    description: 'Earthy tones, elegant typography, perfect for carpenters, furniture, and local services.',
+    previewImg:
+      'https://images.unsplash.com/photo-1618220179428-22790b461013?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    tags: ['Carpenter', 'Furniture', 'Local Business', 'Earthy'],
+  },
 ] as const;
 
 export type ThemeTemplateId = (typeof THEME_OPTIONS)[number]['id'];
@@ -189,6 +198,8 @@ export function ThemeRenderer({
           return <RoyalGlowTheme {...shared} />;
         case 'herbal-cosmetics':
           return <HerbalCosmeticsTheme {...shared} />;
+        case 'carpenter-works':
+          return <CarpenterWorksTheme {...shared} />;
         default:
           return <CompanyProfileView {...shared} templateId={id} />;
       }

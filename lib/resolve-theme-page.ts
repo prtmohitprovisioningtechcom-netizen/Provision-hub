@@ -206,7 +206,15 @@ export function resolveThemePage(input: {
     .map(s => s.type) || [];
 
   if (orderedSectionTypes.length === 0) {
-    orderedSectionTypes.push('hero', 'about', 'why-choose-us', 'services', 'products', 'gallery', 'testimonials', 'faq', 'subscribe', 'blogs', 'contact');
+    orderedSectionTypes.push('hero', 'about', 'why-choose-us', 'services', 'products', 'gallery', 'testimonials', 'subscribe', 'faq', 'blogs', 'contact');
+  } else {
+    // Force subscribe before faq if both exist and are in the wrong order
+    const faqIdx = orderedSectionTypes.indexOf('faq');
+    const subIdx = orderedSectionTypes.indexOf('subscribe');
+    if (faqIdx !== -1 && subIdx !== -1 && faqIdx < subIdx) {
+      orderedSectionTypes[faqIdx] = 'subscribe';
+      orderedSectionTypes[subIdx] = 'faq';
+    }
   }
 
   return {
