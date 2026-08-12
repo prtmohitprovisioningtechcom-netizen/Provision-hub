@@ -424,9 +424,9 @@ export function CarpenterWorksTheme(props: Props) {
                       <p className="text-gray-600 max-w-2xl mx-auto relative z-10">{page.contact.subtitle}</p>
                     </div>
                     
-                    <div className="grid lg:grid-cols-5 gap-12">
+                    <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
                       <div className="lg:col-span-2">
-                        <div className="bg-light-gold rounded-2xl p-8 h-full">
+                        <div className="bg-light-gold rounded-2xl p-6 lg:p-8 h-full">
                           <h3 className="text-2xl mb-8 text-primary-brown">Contact Information</h3>
                           
                           {page.addressLine && (
@@ -460,7 +460,7 @@ export function CarpenterWorksTheme(props: Props) {
                               </div>
                               <div>
                                 <h4 className="text-lg text-primary-brown font-semibold mb-1 font-sans">Email</h4>
-                                <p className="text-gray-700">{page.email}</p>
+                                <p className="text-gray-700 break-all">{page.email}</p>
                               </div>
                             </div>
                           )}
@@ -476,7 +476,7 @@ export function CarpenterWorksTheme(props: Props) {
                       </div>
                       
                       <div className="lg:col-span-3">
-                        <div className="bg-white rounded-2xl p-8 shadow-sm h-full">
+                        <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-sm h-full">
                            <h3 className="text-2xl mb-6 text-primary-brown">Send us a Message</h3>
                            <ContactForm companyId={props.company._id} />
                         </div>
