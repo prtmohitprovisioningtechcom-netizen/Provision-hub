@@ -429,14 +429,14 @@ export function CarpenterWorksTheme(props: Props) {
                         <div className="bg-light-gold rounded-2xl p-8 h-full">
                           <h3 className="text-2xl mb-8 text-primary-brown">Contact Information</h3>
                           
-                          {page.address && (
+                          {page.addressLine && (
                             <div className="flex gap-4 mb-6">
                               <div className="w-12 h-12 bg-gold text-white rounded-full flex items-center justify-center shrink-0 shadow-md">
                                 <MapPin className="w-5 h-5" />
                               </div>
                               <div>
                                 <h4 className="text-lg text-primary-brown font-semibold mb-1 font-sans">Location</h4>
-                                <p className="text-gray-700">{page.address}</p>
+                                <p className="text-gray-700">{page.addressLine}</p>
                               </div>
                             </div>
                           )}
