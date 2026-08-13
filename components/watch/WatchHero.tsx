@@ -191,9 +191,8 @@ export function WatchHero({
     const saveData = Boolean(
       (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
     );
-    const cores = navigator.hardwareConcurrency || 4;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const step = saveData || mobile ? 3 : cores <= 4 ? 2 : 2;
+    const step = saveData || mobile ? 3 : 2;
     const steps = Math.ceil(FRAME_COUNT / step);
     const prefetchCount = mobile ? 3 : 4;
     const cache = new FrameCache(
@@ -204,21 +203,18 @@ export function WatchHero({
     );
 
     let frame = 0;
-    let painted = -1;
+    let shown = -1;
+    let requested = -1;
     let dir: 1 | -1 = 1;
     let raf = 0;
     let alive = true;
     let trackHeight = track.offsetHeight;
-    let cssW = 0;
-    let cssH = 0;
 
     const sizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
-      cssW = rect.width;
-      cssH = rect.height;
       const dpr = mobile ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
-      const w = Math.max(1, Math.round(cssW * dpr));
-      const h = Math.max(1, Math.round(cssH * dpr));
+      const w = Math.max(1, Math.round(rect.width * dpr));
+      const h = Math.max(1, Math.round(rect.height * dpr));
       if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w;
         canvas.height = h;
@@ -233,10 +229,8 @@ export function WatchHero({
       const iw = img.width || 960;
       const ih = img.height || 540;
       const scale = Math.max(w / iw, h / ih);
-      const dw = iw * scale;
-      const dh = ih * scale;
-      ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
-      painted = index;
+      ctx.drawImage(img, (w - iw * scale) / 2, (h - ih * scale) / 2, iw * scale, ih * scale);
+      shown = index;
       if (fallbackRef.current && fallbackRef.current.style.opacity !== '0') {
         fallbackRef.current.style.opacity = '0';
       }
@@ -253,13 +247,13 @@ export function WatchHero({
           : Math.min(1, Math.max(0, -track.getBoundingClientRect().top / total));
       const next = Math.min(FRAME_COUNT - 1, Math.round(p * (steps - 1)) * step);
       if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
+      if (next === shown && next === requested) return;
       if (next !== frame) dir = next > frame ? 1 : -1;
       frame = next;
-      if (painted !== frame) {
-        const img = cache.nearest(frame);
-        if (img) paint(img, frame);
-      }
-      if (painted !== frame) {
+      const approx = cache.nearest(frame);
+      if (approx) paint(approx, frame);
+      if (requested !== frame) {
+        requested = frame;
         void cache.load(frame).then((ready) => {
           if (alive && ready && frame === next) paint(ready, frame);
         });
@@ -274,7 +268,7 @@ export function WatchHero({
     const onResize = () => {
       trackHeight = track.offsetHeight;
       sizeCanvas();
-      painted = -1;
+      shown = -1;
       onScroll();
     };
 
@@ -282,12 +276,17 @@ export function WatchHero({
     void cache.load(0).then((img) => {
       if (alive && img) paint(img, 0);
     });
+    requested = 0;
     cache.prefetch(0, 1, step, prefetchCount);
 
-    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200));
-    idle(() => {
+    const warm = () => {
       if (alive) cache.prefetch(0, 1, step, 8);
-    });
+    };
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(warm, { timeout: 900 });
+    } else {
+      window.setTimeout(warm, 250);
+    }
 
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize, { passive: true });
@@ -382,7 +381,7 @@ export function WatchHero({
             <div className="relative h-full min-h-[230px] w-full overflow-hidden rounded-xl border-2 border-indigo-300 shadow-[0_16px_40px_rgba(79,70,229,0.16)] ring-1 ring-indigo-100 sm:min-h-[290px] sm:rounded-2xl sm:border-4 sm:ring-2 md:min-h-[330px] lg:aspect-[16/11] lg:h-auto lg:min-h-0 dark:border-indigo-700 dark:ring-indigo-900">
               <canvas
                 ref={canvasRef}
-                className="absolute inset-0 h-full w-full"
+                className="absolute inset-0 h-full w-full [contain:strict]"
                 aria-hidden
               />
               <img
