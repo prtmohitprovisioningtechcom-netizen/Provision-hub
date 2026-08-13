@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Check, Mail, MapPin, Menu, Phone, X, ArrowRight, MessageCircle, Star } from 'lucide-react';
@@ -29,6 +29,24 @@ export function CreativeStudioTheme(props: Props) {
   const page = resolveThemePage(props);
   
   const primary = page.primaryColor || '#ec4899'; // pink-500 fallback
+
+  // Auto-Slider Logic
+  const heroImages = page.hero.images?.length > 1 
+    ? page.hero.images 
+    : [
+        page.hero.image || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
+        ...(page.gallery.show && page.gallery.images?.length ? page.gallery.images.slice(0, 4).map(img => img.url) : [])
+      ];
+  const sliderImages = Array.from(new Set(heroImages));
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    if (sliderImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [sliderImages.length]);
   
   return (
     <div className="font-sans text-gray-900 bg-[#f8fafc] overflow-x-hidden">
@@ -105,11 +123,13 @@ export function CreativeStudioTheme(props: Props) {
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
                       <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
                         {page.hero.eyebrow && (
-                          <span className="inline-block py-1 px-3 rounded-full bg-white shadow-sm text-sm font-bold tracking-widest mb-6" style={{ color: primary }}>
-                            {page.hero.eyebrow}
-                          </span>
+                          <div className="mb-6">
+                            <span className="inline-block py-1.5 px-4 rounded-full bg-white shadow-sm text-sm font-bold tracking-widest uppercase" style={{ color: primary }}>
+                              {page.hero.eyebrow}
+                            </span>
+                          </div>
                         )}
-                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter leading-[1.1] mb-6 text-gray-900 whitespace-nowrap">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-tight mb-6 text-gray-900 break-words">
                           {page.hero.title}
                         </h1>
                         <p className="text-xl text-gray-600 mb-8 max-w-lg leading-relaxed">
@@ -128,13 +148,21 @@ export function CreativeStudioTheme(props: Props) {
                       </motion.div>
                       
                       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }}>
-                        <div className="relative">
+                        <div className="relative w-full h-[400px] md:h-[500px]">
                           <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-3xl" style={{ backgroundColor: primary }}></div>
-                          <img
-                            src={page.hero.image || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80'}
-                            alt="Hero"
-                            className="relative z-10 rounded-3xl w-full h-auto object-cover shadow-2xl border-4 border-white"
-                          />
+                          <div className="relative z-10 w-full h-full rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-gray-100">
+                            {sliderImages.map((img, idx) => (
+                              <img
+                                key={idx}
+                                src={img}
+                                alt={`Hero Slide ${idx + 1}`}
+                                className={cn(
+                                  "absolute inset-0 w-full h-full object-cover transition-opacity duration-1000",
+                                  currentSlide === idx ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                            ))}
+                          </div>
                         </div>
                       </motion.div>
                     </div>
