@@ -296,20 +296,37 @@ export function CreativeStudioTheme(props: Props) {
                 <section id="gallery" key="gallery" className="py-16 lg:py-24 px-6 bg-white overflow-hidden">
                   <div className="mx-auto max-w-7xl">
                     <div className="text-center mb-16">
-                      <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4">{page.gallery.title}</h2>
-                      <p className="text-lg md:text-xl text-gray-500">{page.gallery.subtitle}</p>
+                      <span className="inline-block py-1.5 px-4 rounded-full shadow-sm text-sm font-bold tracking-widest uppercase mb-4" style={{ backgroundColor: `${primary}15`, color: primary }}>
+                        Our Portfolio
+                      </span>
+                      <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-6">{page.gallery.title}</h2>
+                      <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto">{page.gallery.subtitle}</p>
                     </div>
-                    <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-                      {page.gallery.images.map((img, i) => (
-                        <div key={i} className="break-inside-avoid relative rounded-2xl overflow-hidden group">
-                          <img src={img.url} alt={img.caption || 'Gallery'} className="w-full h-auto object-cover transition duration-500 group-hover:scale-105" />
-                          {img.caption && (
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex items-end p-6">
-                              <p className="text-white font-bold">{img.caption}</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+                      {page.gallery.images.map((img, i) => {
+                        const isLarge = i % 5 === 0;
+                        return (
+                          <div 
+                            key={i} 
+                            className={cn(
+                              "relative rounded-3xl overflow-hidden group shadow-sm hover:shadow-2xl transition-all duration-500",
+                              isLarge ? "col-span-2 row-span-2 aspect-square md:aspect-auto" : "col-span-1 aspect-square"
+                            )}
+                          >
+                            <img 
+                              src={img.url} 
+                              alt={img.caption || 'Gallery Image'} 
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-6 md:p-8 translate-y-4 group-hover:translate-y-0">
+                              {img.caption && (
+                                <p className="text-white font-bold text-lg md:text-xl leading-tight mb-3 drop-shadow-md">{img.caption}</p>
+                              )}
+                              <div className="w-12 h-1.5 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" style={{ backgroundColor: primary }}></div>
                             </div>
-                          )}
-                        </div>
-                      ))}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </section>
