@@ -39,18 +39,18 @@ export function CreativeStudioTheme(props: Props) {
             {page.logo ? (
               <img src={page.logo} alt={page.brandName} className="h-10 w-auto object-contain" />
             ) : (
-              <span className="text-2xl font-black tracking-tighter" style={{ color: primary }}>
+              <span className="text-xl lg:text-2xl font-black tracking-tighter whitespace-nowrap truncate max-w-[200px]" style={{ color: primary }}>
                 {page.brandName}
               </span>
             )}
           </Link>
 
-          <div className="hidden lg:flex items-center gap-4 xl:gap-8">
+          <div className="hidden lg:flex items-center gap-3 lg:gap-4 xl:gap-6">
             {page.nav.map((item) => (
               <a
                 key={item.link + item.label}
                 href={item.link}
-                className="text-sm font-bold text-gray-600 hover:text-gray-900 uppercase tracking-widest transition whitespace-nowrap"
+                className="text-xs lg:text-sm font-bold text-gray-600 hover:text-gray-900 uppercase tracking-widest transition whitespace-nowrap"
               >
                 {item.label}
               </a>
@@ -58,7 +58,7 @@ export function CreativeStudioTheme(props: Props) {
             {page.navCta && (
               <a
                 href={page.navCta.link}
-                className="px-6 py-2.5 text-sm font-bold text-white rounded-full transition hover:opacity-90 shadow-lg whitespace-nowrap"
+                className="px-4 py-2 lg:px-6 lg:py-2.5 text-xs lg:text-sm font-bold text-white rounded-full transition hover:opacity-90 shadow-lg whitespace-nowrap"
                 style={{ backgroundColor: primary, boxShadow: `0 4px 14px 0 ${primary}66` }}
               >
                 {page.navCta.label}
