@@ -109,7 +109,7 @@ export function CreativeStudioTheme(props: Props) {
                             {page.hero.eyebrow}
                           </span>
                         )}
-                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter leading-[1.1] mb-6 text-gray-900">
+                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter leading-[1.1] mb-6 text-gray-900 whitespace-nowrap">
                           {page.hero.title}
                         </h1>
                         <p className="text-xl text-gray-600 mb-8 max-w-lg leading-relaxed">
