@@ -27,7 +27,8 @@ export default function CustomizePage() {
     faqConfig: { title: '', subtitle: '', items: [] },
     testimonialsConfig: { title: '', items: [] },
     contactConfig: { email: '', phone: '', address: '' },
-    footerConfig: { copyrightText: '', facebookLink: '', twitterLink: '', instagramLink: '', linkedinLink: '' }
+    footerConfig: { copyrightText: '', facebookLink: '', twitterLink: '', instagramLink: '', linkedinLink: '' },
+    templatesConfig: { title: '', subtitle: '', items: [] }
   });
 
   useEffect(() => {
@@ -99,6 +100,18 @@ export default function CustomizePage() {
               { name: 'Emily Rodriguez', role: 'Marketing Director, Bloom Studio', content: 'Beautiful templates, easy customization, and the analytics dashboard gives us insights we never had before.', rating: 5, initials: 'ER' },
             ]
           },
+          templatesConfig: {
+            title: d.templatesConfig?.title || 'Available Themes',
+            subtitle: d.templatesConfig?.subtitle || 'Choose from professionally designed themes for every industry',
+            items: d.templatesConfig?.items?.length > 0 ? d.templatesConfig.items : [
+              { name: 'Modern Business', style: 'Professional layout', color: 'from-blue-500 to-cyan-500', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' },
+              { name: 'Creative Studio', style: 'Creative layout', color: 'from-purple-500 to-pink-500', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80' },
+              { name: 'Warm Showcase', style: 'Elegant layout', color: 'from-orange-500 to-red-500', image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80' },
+              { name: 'Bold Launch', style: 'Modern layout', color: 'from-indigo-500 to-violet-500', image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80' },
+              { name: 'Clean Presence', style: 'Clean layout', color: 'from-green-500 to-teal-500', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80' },
+              { name: 'Premium Showcase', style: 'Premium layout', color: 'from-amber-500 to-orange-500', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80' },
+            ]
+          },
           footerConfig: d.footerConfig || { copyrightText: '© 2026 ProvisioningTechHub Inc. All rights reserved.', facebookLink: '#', twitterLink: '#', instagramLink: '#', linkedinLink: '#' },
         });
       }
@@ -167,7 +180,7 @@ export default function CustomizePage() {
 
       <div>
         <div className="flex space-x-1 border-b mb-6 overflow-x-auto pb-1">
-          {['hero', 'theme', 'toggles', 'features', 'howItWorks', 'pricing', 'faq', 'testimonials', 'contact', 'footer', 'seo'].map(tab => (
+          {['hero', 'theme', 'toggles', 'features', 'howItWorks', 'templates', 'pricing', 'faq', 'testimonials', 'contact', 'footer', 'seo'].map(tab => (
             <button 
               key={tab}
               className={`px-4 py-2 font-medium whitespace-nowrap capitalize ${activeTab === tab ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -423,6 +436,64 @@ export default function CustomizePage() {
                         <div>
                           <Label className="text-xs">Description</Label>
                           <Textarea value={item.description} onChange={e => updateItem('howItWorksConfig', idx, 'description', e.target.value)} className="h-16 text-sm" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'templates' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Available Themes</CardTitle>
+              <CardDescription>Manage the themes shown in the Available Themes section.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Section Title</Label>
+                  <Input value={settings.templatesConfig.title} onChange={e => updateSection('templatesConfig', 'title', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Section Subtitle</Label>
+                  <Input value={settings.templatesConfig.subtitle} onChange={e => updateSection('templatesConfig', 'subtitle', e.target.value)} />
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">Themes</h3>
+                  <Button size="sm" variant="outline" onClick={() => addItem('templatesConfig', { name: 'New Theme', style: 'Modern layout', color: 'from-blue-500 to-cyan-500', image: '' })}>
+                    <Plus className="h-4 w-4 mr-2" /> Add Theme
+                  </Button>
+                </div>
+                
+                <div className="grid gap-4 md:grid-cols-2">
+                  {settings.templatesConfig.items.map((item: any, idx: number) => (
+                    <div key={idx} className="border p-4 rounded-lg relative bg-gray-50 dark:bg-gray-900">
+                      <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeItem('templatesConfig', idx)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <div className="space-y-3 mt-2">
+                        <div>
+                          <Label className="text-xs">Theme Name</Label>
+                          <Input value={item.name} onChange={e => updateItem('templatesConfig', idx, 'name', e.target.value)} className="h-8" />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Style (e.g. Professional layout)</Label>
+                          <Input value={item.style} onChange={e => updateItem('templatesConfig', idx, 'style', e.target.value)} className="h-8" />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Color Gradient (e.g. from-blue-500 to-cyan-500)</Label>
+                          <Input value={item.color} onChange={e => updateItem('templatesConfig', idx, 'color', e.target.value)} className="h-8" />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Image URL (Thumbnail)</Label>
+                          <Input value={item.image} onChange={e => updateItem('templatesConfig', idx, 'image', e.target.value)} className="h-8" />
                         </div>
                       </div>
                     </div>

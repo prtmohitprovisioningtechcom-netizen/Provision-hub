@@ -9,7 +9,7 @@ import axios from 'axios';
 import { CompanyCard } from '@/components/company/CompanyCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const templates = [
+const defaultTemplates = [
   { name: 'Modern Business', style: 'Professional layout', color: 'from-blue-500 to-cyan-500', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' },
   { name: 'Creative Studio', style: 'Creative layout', color: 'from-purple-500 to-pink-500', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80' },
   { name: 'Warm Showcase', style: 'Elegant layout', color: 'from-orange-500 to-red-500', image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80' },
@@ -18,7 +18,7 @@ const templates = [
   { name: 'Premium Showcase', style: 'Premium layout', color: 'from-amber-500 to-orange-500', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80' },
 ];
 
-export function Templates() {
+export function Templates({ config }: { config?: any }) {
   const [liveCompanies, setLiveCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,17 +49,17 @@ export function Templates() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl font-bold sm:text-4xl text-gray-900 dark:text-white">
-            Available Themes
+            {config?.title || 'Available Themes'}
           </h2>
           <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-            Choose from professionally designed themes for every industry
+            {config?.subtitle || 'Choose from professionally designed themes for every industry'}
           </p>
         </motion.div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-24">
-          {templates.map((template, i) => (
+          {(config?.items || defaultTemplates).map((template: any, i: number) => (
             <motion.div
-              key={template.name}
+              key={template.name || i}
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}

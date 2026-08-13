@@ -51,7 +51,7 @@ export default async function HomePage() {
       />
       {config.featureToggles?.showFeatures !== false && <Features config={config.featuresConfig} />}
       {config.featureToggles?.showHowItWorks !== false && <HowItWorks config={config.howItWorksConfig} />}
-      {config.featureToggles?.showTemplates !== false && <Templates />}
+      {config.featureToggles?.showTemplates !== false && <Templates config={config.templatesConfig} />}
       {config.featureToggles?.showPricing !== false && <Pricing config={config.pricingConfig} />}
       {config.featureToggles?.showTestimonials !== false && <Testimonials config={config.testimonialsConfig} />}
       {config.featureToggles?.showFAQ !== false && <FAQ config={config.faqConfig} />}

@@ -7,35 +7,42 @@ import { LANDING_SECTIONS } from '@/constants';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 function buildSearchQuery(filters: SearchFilters) {
-  let queryStr = 'SELECT * FROM companies WHERE status = "approved"';
+  let queryStr = 'SELECT c.*, l.sections as landingPageSections FROM companies c LEFT JOIN landing_pages l ON c.id = l.companyId WHERE c.status = "approved"';
+  let countQueryStr = 'SELECT COUNT(*) as count FROM companies c WHERE c.status = "approved"';
   const params: unknown[] = [];
 
   if (filters.query) {
-    queryStr += ' AND (name LIKE ? OR description LIKE ?)';
+    queryStr += ' AND (c.name LIKE ? OR c.description LIKE ?)';
+    countQueryStr += ' AND (c.name LIKE ? OR c.description LIKE ?)';
     const term = `%${filters.query}%`;
     params.push(term, term);
   }
   if (filters.category) {
-    queryStr += ' AND category = ?';
+    queryStr += ' AND c.category = ?';
+    countQueryStr += ' AND c.category = ?';
     params.push(filters.category);
   }
   if (filters.city) {
-    queryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(address, "$.city")) LIKE ?';
+    queryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(c.address, "$.city")) LIKE ?';
+    countQueryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(c.address, "$.city")) LIKE ?';
     params.push(`%${filters.city}%`);
   }
   if (filters.state) {
-    queryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(address, "$.state")) LIKE ?';
+    queryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(c.address, "$.state")) LIKE ?';
+    countQueryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(c.address, "$.state")) LIKE ?';
     params.push(`%${filters.state}%`);
   }
   if (filters.country) {
-    queryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(address, "$.country")) LIKE ?';
+    queryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(c.address, "$.country")) LIKE ?';
+    countQueryStr += ' AND JSON_UNQUOTE(JSON_EXTRACT(c.address, "$.country")) LIKE ?';
     params.push(`%${filters.country}%`);
   }
   if (filters.verified) {
-    queryStr += ' AND isVerified = 1';
+    queryStr += ' AND c.isVerified = 1';
+    countQueryStr += ' AND c.isVerified = 1';
   }
 
-  return { queryStr, params };
+  return { queryStr, countQueryStr, params };
 }
 
 export class CompanyService {
@@ -44,17 +51,17 @@ export class CompanyService {
     const limit = Math.min(50, Math.max(1, filters.limit || 12));
     const skip = (page - 1) * limit;
 
-    const { queryStr, params } = buildSearchQuery(filters);
+    const { queryStr, countQueryStr, params } = buildSearchQuery(filters);
 
-    let orderBy = 'ORDER BY createdAt DESC';
-    if (filters.topRated) orderBy = 'ORDER BY rating DESC';
-    if (filters.newest) orderBy = 'ORDER BY createdAt DESC';
+    let orderBy = 'ORDER BY c.createdAt DESC';
+    if (filters.topRated) orderBy = 'ORDER BY c.rating DESC';
+    if (filters.newest) orderBy = 'ORDER BY c.createdAt DESC';
     if (filters.sortBy && ['createdAt', 'rating', 'name'].includes(filters.sortBy)) {
-      orderBy = `ORDER BY ${filters.sortBy} ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+      orderBy = `ORDER BY c.${filters.sortBy} ${filters.sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
     }
 
     const [[countResult], [companies]] = await Promise.all([
-      pool.execute<RowDataPacket[]>(`SELECT COUNT(*) as count FROM (${queryStr}) as t`, params),
+      pool.execute<RowDataPacket[]>(countQueryStr, params),
       pool.execute<RowDataPacket[]>(
         `${queryStr} ${orderBy} ${sqlLimitOffset(limit, skip)}`,
         params,
@@ -64,19 +71,26 @@ export class CompanyService {
     const total = countResult[0].count;
 
     return {
-      companies: companies.map(c => ({
-        _id: c.id,
-        name: c.name,
-        slug: c.slug,
-        logo: c.logo,
-        banner: c.banner,
-        category: c.category,
-        address: typeof c.address === 'string' ? JSON.parse(c.address) : c.address,
-        rating: Number(c.rating) || 0,
-        reviewCount: Number(c.reviewCount) || 0,
-        isVerified: Boolean(c.isVerified),
-        description: c.description
-      })),
+      companies: companies.map(c => {
+        const sections = typeof c.landingPageSections === 'string' ? JSON.parse(c.landingPageSections) : (c.landingPageSections || []);
+        const heroSection = sections.find((s: any) => s.type === 'hero');
+        const aboutSection = sections.find((s: any) => s.type === 'about');
+        const heroImage = heroSection?.image || heroSection?.images?.[0] || aboutSection?.image || aboutSection?.images?.[0];
+        
+        return {
+          _id: c.id,
+          name: c.name,
+          slug: c.slug,
+          logo: c.logo,
+          banner: heroImage || c.banner,
+          category: c.category,
+          address: typeof c.address === 'string' ? JSON.parse(c.address) : c.address,
+          rating: Number(c.rating) || 0,
+          reviewCount: Number(c.reviewCount) || 0,
+          isVerified: Boolean(c.isVerified),
+          description: c.description
+        };
+      }),
       pagination: getPaginationMeta(page, limit, total),
     };
   }

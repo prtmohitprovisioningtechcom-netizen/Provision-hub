@@ -39,16 +39,15 @@ export function CompanyCard({ company, index = 0 }: CompanyCardProps) {
     >
       <Link href={`/${company.slug}`}>
         <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
-          <div className="relative h-36 bg-linear-to-br from-indigo-100 to-purple-100 dark:from-indigo-950 dark:to-purple-950">
-            {company.banner ? (
-              <Image
-                src={company.banner}
-                alt={company.name}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover transition-transform group-hover:scale-105"
-              />
-            ) : null}
+          <div className="relative h-36 bg-linear-to-br from-indigo-100 to-purple-100 dark:from-indigo-950 dark:to-purple-950 overflow-hidden">
+            <Image
+              src={company.banner || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80'}
+              alt={company.name}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition-transform group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-black/10 transition-colors group-hover:bg-black/0" />
             <div className="absolute -bottom-6 left-4">
               <div className="relative h-14 w-14 overflow-hidden rounded-xl border-2 border-white bg-white shadow-md dark:border-gray-800 dark:bg-gray-900">
                 {company.logo ? (

@@ -208,6 +208,7 @@ CREATE TABLE `platform_settings` (
   `testimonialsConfig` JSON,
   `contactConfig` JSON,
   `footerConfig` JSON,
+  `templatesConfig` JSON,
   `updatedBy` VARCHAR(36),
   `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
