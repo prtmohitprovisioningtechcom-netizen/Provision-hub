@@ -45,12 +45,12 @@ export function CreativeStudioTheme(props: Props) {
             )}
           </Link>
 
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-4 xl:gap-8">
             {page.nav.map((item) => (
               <a
                 key={item.link + item.label}
                 href={item.link}
-                className="text-sm font-bold text-gray-600 hover:text-gray-900 uppercase tracking-widest transition"
+                className="text-sm font-bold text-gray-600 hover:text-gray-900 uppercase tracking-widest transition whitespace-nowrap"
               >
                 {item.label}
               </a>
@@ -58,7 +58,7 @@ export function CreativeStudioTheme(props: Props) {
             {page.navCta && (
               <a
                 href={page.navCta.link}
-                className="px-6 py-2.5 text-sm font-bold text-white rounded-full transition hover:opacity-90 shadow-lg"
+                className="px-6 py-2.5 text-sm font-bold text-white rounded-full transition hover:opacity-90 shadow-lg whitespace-nowrap"
                 style={{ backgroundColor: primary, boxShadow: `0 4px 14px 0 ${primary}66` }}
               >
                 {page.navCta.label}
