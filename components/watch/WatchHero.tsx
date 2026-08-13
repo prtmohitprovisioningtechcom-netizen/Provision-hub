@@ -265,8 +265,8 @@ export function WatchHero({
             </div>
           </motion.div>
 
-          <div className="flex min-h-0 items-stretch justify-center lg:pl-4">
-            <div className="relative h-full min-h-[230px] w-full overflow-hidden rounded-xl border-2 border-indigo-300 shadow-[0_16px_40px_rgba(79,70,229,0.16)] ring-1 ring-indigo-100 sm:min-h-[290px] sm:rounded-2xl sm:border-4 sm:ring-2 md:min-h-[330px] lg:aspect-[16/11] lg:h-auto lg:min-h-0 dark:border-indigo-700 dark:ring-indigo-900">
+          <div className="flex min-h-0 items-center justify-center py-2 sm:py-4 lg:py-0 lg:pl-4">
+            <div className="relative w-full overflow-hidden rounded-xl border-[4px] border-indigo-200 shadow-2xl sm:rounded-2xl sm:border-[6px] md:border-[8px] h-full min-h-[240px] sm:min-h-[300px] md:min-h-[360px] lg:aspect-[16/11] lg:h-auto lg:min-h-0 dark:border-indigo-800/60">
               <canvas
                 ref={canvasRef}
                 className="absolute inset-0 h-full w-full [contain:strict]"
