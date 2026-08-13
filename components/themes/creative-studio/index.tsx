@@ -39,7 +39,7 @@ export function CreativeStudioTheme(props: Props) {
             {page.logo ? (
               <img src={page.logo} alt={page.brandName} className="h-10 w-auto object-contain" />
             ) : (
-              <span className="text-xl lg:text-2xl font-black tracking-tighter whitespace-nowrap truncate max-w-[200px]" style={{ color: primary }}>
+              <span className="text-xl lg:text-2xl font-black tracking-tighter whitespace-nowrap" style={{ color: primary }}>
                 {page.brandName}
               </span>
             )}
