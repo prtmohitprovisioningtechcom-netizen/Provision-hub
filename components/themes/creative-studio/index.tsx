@@ -34,12 +34,12 @@ export function CreativeStudioTheme(props: Props) {
     <div className="font-sans text-gray-900 bg-[#f8fafc] overflow-x-hidden">
       {/* Navbar */}
       <nav className="fixed inset-x-0 top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 lg:gap-12 px-6 lg:px-8">
           <Link href={`/${page.slug}`} className="flex items-center gap-3">
             {page.logo ? (
               <img src={page.logo} alt={page.brandName} className="h-10 w-auto object-contain" />
             ) : (
-              <span className="text-xl lg:text-2xl font-black tracking-tighter whitespace-nowrap" style={{ color: primary }}>
+              <span className="text-lg lg:text-xl font-black tracking-tighter whitespace-nowrap shrink-0" style={{ color: primary }}>
                 {page.brandName}
               </span>
             )}
