@@ -127,7 +127,7 @@ export default async function CompanySitemapPage({ params }: PageProps) {
                   {services.map(s => (
                     <li key={s._id}>
                       <Link href={`/${slug}#services`} className="text-gray-600 hover:text-gray-900 flex items-center gap-2">
-                        <span style={{ color: primaryColor }}>•</span> {s.title}
+                        <span style={{ color: primaryColor }}>•</span> {s.name}
                       </Link>
                     </li>
                   ))}
