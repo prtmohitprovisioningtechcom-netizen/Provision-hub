@@ -35,7 +35,7 @@ export function WatchHero({
 }) {
   const defaultTitle = 'Build Stunning Company Landing Pages';
   const defaultSubtitle =
-    'Create beautiful, SEO-optimized landing pages for your business. Manage products, services, leads, and reviews — all from one powerful dashboard.';
+    'Create beautiful, SEO-optimized landing pages for your business. Manage products, services, leads, and reviews all from one powerful dashboard.';
   const titleText = config?.title || defaultTitle;
   const subtitleText = config?.subtitle || defaultSubtitle;
   const primaryLink =
@@ -125,12 +125,18 @@ export function WatchHero({
     const sync = () => {
       raf = 0;
       if (!alive || document.hidden) return;
-      const total = trackHeight - window.innerHeight;
+      const stickyChild = track.firstElementChild as HTMLElement;
+      const stickyHeight = stickyChild ? stickyChild.offsetHeight : 0;
+      // Use stickyHeight instead of window.innerHeight to prevent mobile address bar glitches
+      const dist = trackHeight - stickyHeight - 64; 
+      const progressTop = 64 - track.getBoundingClientRect().top;
+      
       const p = reduced
         ? 0
-        : total <= 0
+        : dist <= 0
           ? 0
-          : Math.min(1, Math.max(0, -track.getBoundingClientRect().top / total));
+          : Math.min(1, Math.max(0, progressTop / (dist + 64)));
+          
       const next = Math.round(p * (FRAME_COUNT - 1));
       if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
       if (next === shown) return;
@@ -191,20 +197,33 @@ export function WatchHero({
     };
   }, []);
 
+  const mobileScrollDist = (FRAME_COUNT - 1) * 5; // Faster on mobile (approx 1 scroll)
+  const desktopScrollDist = (FRAME_COUNT - 1) * 22; // Normal on desktop
+
   return (
-    <section
-      ref={trackRef}
-      className="relative"
-      style={{ height: `calc(100svh + ${(FRAME_COUNT - 1) * SCROLL_PX_PER_FRAME}px)` }}
-    >
-      <div className="sticky top-16 flex h-[calc(100svh-4rem)] min-h-0 flex-col overflow-hidden">
+    <>
+      <style>{`
+        .watch-hero-track {
+          height: calc(100svh + ${mobileScrollDist}px);
+        }
+        @media (min-width: 768px) {
+          .watch-hero-track {
+            height: calc(100svh + ${desktopScrollDist}px);
+          }
+        }
+      `}</style>
+      <section
+        ref={trackRef}
+        className="relative watch-hero-track"
+      >
+        <div className="sticky top-16 flex h-[calc(100svh-4rem)] min-h-0 flex-col overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950" />
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-30" />
         <div className="absolute top-1/4 left-1/4 hidden h-72 w-72 rounded-full bg-indigo-400/20 blur-3xl sm:block" />
         <div className="absolute bottom-1/4 right-1/4 hidden h-72 w-72 rounded-full bg-purple-400/20 blur-3xl sm:block" />
         <span className="pointer-events-none absolute inset-x-0 top-0 z-20 h-px origin-left scale-x-0 bg-indigo-500" ref={barRef} />
 
-        <div className="relative z-10 mx-auto grid h-full min-h-0 w-full max-w-7xl grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-3 px-4 py-3 sm:gap-4 sm:px-6 sm:py-5 md:gap-6 lg:grid-cols-2 lg:grid-rows-1 lg:items-start lg:gap-8 lg:px-8 lg:py-0 lg:pt-36">
+        <div className="relative z-10 mx-auto grid h-full min-h-0 w-full max-w-7xl grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-3 px-4 pt-3 pb-6 sm:gap-4 sm:px-6 sm:py-5 md:gap-6 lg:grid-cols-2 lg:grid-rows-1 lg:items-start lg:gap-8 lg:px-8 lg:py-0 lg:pt-36">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -216,7 +235,7 @@ export function WatchHero({
               <span className="leading-tight">Launch your business online in minutes</span>
             </div>
 
-            <h1 className="text-[1.7rem] font-bold leading-[1.15] tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
+            <h1 className="text-[1.45rem] font-bold leading-[1.15] tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
               <span className="bg-linear-to-r from-indigo-600 via-purple-600 to-cyan-500 bg-clip-text text-transparent">
                 {highlightText}
               </span>
@@ -232,15 +251,17 @@ export function WatchHero({
               {subtitleText}
             </p>
 
-            <div className="mt-4 flex w-full flex-col gap-2.5 sm:mt-6 sm:flex-row sm:items-center sm:gap-4 lg:mt-10">
-              <Button asChild variant="gradient" size="lg" className="h-11 w-full gap-2 sm:h-12 sm:w-auto">
+            <div className="mt-4 flex w-full flex-row gap-2 sm:mt-6 sm:items-center sm:gap-3 lg:mt-10">
+              <Button asChild variant="gradient" className="h-10 flex-1 gap-1.5 px-2 text-[11px] sm:h-11 sm:flex-none sm:gap-2 sm:px-6 sm:text-sm">
                 <Link href={primaryLink}>
-                  {config?.primaryCtaText || 'Start Free Trial'}
-                  <ArrowRight className="h-5 w-5" />
+                  <span className="truncate">{config?.primaryCtaText || 'Start Free Trial'}</span>
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="h-11 w-full sm:h-12 sm:w-auto">
-                <Link href={secondaryLink}>{secondaryText}</Link>
+              <Button asChild variant="outline" className="h-10 flex-1 px-2 text-[11px] sm:h-11 sm:flex-none sm:px-6 sm:text-sm">
+                <Link href={secondaryLink}>
+                  <span className="truncate">{secondaryText}</span>
+                </Link>
               </Button>
             </div>
 
@@ -265,8 +286,8 @@ export function WatchHero({
             </div>
           </motion.div>
 
-          <div className="flex min-h-0 items-center justify-center py-2 sm:py-4 lg:py-0 lg:pl-4">
-            <div className="relative w-full overflow-hidden rounded-xl border-[4px] border-indigo-200 shadow-2xl sm:rounded-2xl sm:border-[6px] md:border-[8px] h-full min-h-[240px] sm:min-h-[300px] md:min-h-[360px] lg:aspect-[16/11] lg:h-auto lg:min-h-0 dark:border-indigo-800/60">
+          <div className="flex min-h-0 items-center justify-center pt-2 pb-0 sm:py-4 lg:py-0 lg:pl-4">
+            <div className="relative w-full overflow-hidden rounded-xl border-[4px] border-indigo-200 shadow-2xl sm:rounded-2xl sm:border-[6px] md:border-[8px] h-full max-h-[65vw] sm:max-h-full sm:min-h-[300px] md:min-h-[360px] lg:aspect-[16/11] lg:h-auto lg:min-h-0 dark:border-indigo-800/60">
               <canvas
                 ref={canvasRef}
                 className="absolute inset-0 h-full w-full [contain:strict]"
@@ -287,5 +308,6 @@ export function WatchHero({
         </div>
       </div>
     </section>
+    </>
   );
 }
