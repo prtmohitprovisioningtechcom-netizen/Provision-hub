@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { authenticateRequest } from '@/server/middleware/auth';
+import { requireAuth } from '@/server/middleware/auth';
 import { apiSuccess, apiError } from '@/server/utils/api-response';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
@@ -42,10 +42,11 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const user = await authenticateRequest(request);
-    if (!user || user.role !== 'super_admin') {
-      return apiError('Unauthorized', 403);
+    const authResult = await requireAuth(request, ['super_admin']);
+    if (authResult instanceof Response) {
+      return authResult;
     }
+    const user = authResult;
 
     const data = await request.json();
     
@@ -104,8 +105,8 @@ export async function PUT(request: NextRequest) {
       templatesConfig: typeof settings.templatesConfig === 'string' ? JSON.parse(settings.templatesConfig) : settings.templatesConfig,
       customHeaderCode: settings.customHeaderCode || '',
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to update platform settings:', error);
-    return apiError('Failed to update settings', 500);
+    return apiError(error.message || 'Failed to update settings', 500);
   }
 }
