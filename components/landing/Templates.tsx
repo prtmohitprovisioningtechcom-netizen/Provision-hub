@@ -7,20 +7,17 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import axios from 'axios';
 import { CompanyCard } from '@/components/company/CompanyCard';
+import { THEME_OPTIONS } from '@/components/themes/ThemeRenderer';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const defaultTemplates = [
-  { name: 'Modern Business', style: 'Professional layout', color: 'from-blue-500 to-cyan-500', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Creative Studio', style: 'Creative layout', color: 'from-purple-500 to-pink-500', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Warm Showcase', style: 'Elegant layout', color: 'from-orange-500 to-red-500', image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Bold Launch', style: 'Modern layout', color: 'from-indigo-500 to-violet-500', image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Clean Presence', style: 'Clean layout', color: 'from-green-500 to-teal-500', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80' },
-  { name: 'Premium Showcase', style: 'Premium layout', color: 'from-amber-500 to-orange-500', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80' },
-];
 
 export function Templates({ config }: { config?: any }) {
   const [liveCompanies, setLiveCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Read admin config for enabled themes
+  const displayThemes = config?.enabledThemeIds 
+    ? THEME_OPTIONS.filter(t => config.enabledThemeIds.includes(t.id))
+    : THEME_OPTIONS;
 
   useEffect(() => {
     const fetchLiveCompanies = async () => {
@@ -57,19 +54,19 @@ export function Templates({ config }: { config?: any }) {
         </motion.div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-24">
-          {(config?.items || defaultTemplates).map((template: any, i: number) => (
+          {displayThemes.map((template: any, i: number) => (
             <motion.div
-              key={template.name || i}
+              key={template.id || i}
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
               whileHover={{ y: -5 }}
             >
-              <Card className="overflow-hidden group cursor-pointer">
-                <div className={`h-48 bg-linear-to-br ${template.color} relative overflow-hidden`}>
-                  {template.image && (
-                    <img src={template.image} alt={template.name} className="w-full h-full object-cover" />
+              <Card className="overflow-hidden group cursor-pointer h-full flex flex-col">
+                <div className={`h-48 bg-gray-100 dark:bg-gray-800 relative overflow-hidden`}>
+                  {template.previewImg && (
+                    <img src={template.previewImg} alt={template.name} className="w-full h-full object-cover" />
                   )}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                     <Button
@@ -81,9 +78,9 @@ export function Templates({ config }: { config?: any }) {
                     </Button>
                   </div>
                 </div>
-                <CardContent className="p-4">
+                <CardContent className="p-4 flex-1">
                   <h3 className="font-semibold text-gray-900 dark:text-white">{template.name}</h3>
-                  <p className="text-sm text-gray-500">{template.style}</p>
+                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">{template.description}</p>
                 </CardContent>
               </Card>
             </motion.div>

@@ -307,7 +307,10 @@ export function resolveThemePage(input: {
       title: clean(footer?.title) || company.name,
       subtitle: clean(footer?.subtitle),
       content: clean(footer?.content) || clean(company.description),
-      items: footerLinks.length ? footerLinks : defaultNav,
+      items: [
+        ...(footerLinks.length ? footerLinks : defaultNav),
+        { label: 'Sitemap', link: `/${company.slug}/sitemap` }
+      ],
     },
     orderedSectionTypes,
   };

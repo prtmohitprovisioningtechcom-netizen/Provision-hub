@@ -51,6 +51,7 @@ export function Footer({ config }: { config?: any }) {
       links: [
         { href: '#contact', label: 'Contact' },
         { href: '/search', label: 'Company Directory' },
+        { href: '/sitemap', label: 'Sitemap' },
         {
           href: user?.role === 'super_admin' ? '/admin' : '/admin/login',
           label: 'Admin Portal',

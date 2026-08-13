@@ -127,18 +127,16 @@ export function CreativeStudioTheme(props: Props) {
                         )}
                       </motion.div>
                       
-                      {page.hero.image && (
-                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }}>
-                          <div className="relative">
-                            <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-3xl" style={{ backgroundColor: primary }}></div>
-                            <img
-                              src={page.hero.image}
-                              alt="Hero"
-                              className="relative z-10 rounded-3xl w-full h-auto object-cover shadow-2xl border-4 border-white"
-                            />
-                          </div>
-                        </motion.div>
-                      )}
+                      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8, delay: 0.2 }}>
+                        <div className="relative">
+                          <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-3xl" style={{ backgroundColor: primary }}></div>
+                          <img
+                            src={page.hero.image || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80'}
+                            alt="Hero"
+                            className="relative z-10 rounded-3xl w-full h-auto object-cover shadow-2xl border-4 border-white"
+                          />
+                        </div>
+                      </motion.div>
                     </div>
                   </div>
                 </section>

@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import api from '@/services/api';
 import { setPlatformBranding } from '@/hooks/usePlatformBranding';
+import { THEME_OPTIONS } from '@/components/themes/ThemeRenderer';
 
 export default function CustomizePage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +29,7 @@ export default function CustomizePage() {
     testimonialsConfig: { title: '', items: [] },
     contactConfig: { email: '', phone: '', address: '' },
     footerConfig: { copyrightText: '', facebookLink: '', twitterLink: '', instagramLink: '', linkedinLink: '' },
-    templatesConfig: { title: '', subtitle: '', items: [] },
+    templatesConfig: { title: '', subtitle: '', enabledThemeIds: [] },
     customHeaderCode: ''
   });
 
@@ -104,14 +105,7 @@ export default function CustomizePage() {
           templatesConfig: {
             title: d.templatesConfig?.title || 'Available Themes',
             subtitle: d.templatesConfig?.subtitle || 'Choose from professionally designed themes for every industry',
-            items: d.templatesConfig?.items?.length > 0 ? d.templatesConfig.items : [
-              { name: 'Modern Business', style: 'Professional layout', color: 'from-blue-500 to-cyan-500', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' },
-              { name: 'Creative Studio', style: 'Creative layout', color: 'from-purple-500 to-pink-500', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80' },
-              { name: 'Warm Showcase', style: 'Elegant layout', color: 'from-orange-500 to-red-500', image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80' },
-              { name: 'Bold Launch', style: 'Modern layout', color: 'from-indigo-500 to-violet-500', image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80' },
-              { name: 'Clean Presence', style: 'Clean layout', color: 'from-green-500 to-teal-500', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80' },
-              { name: 'Premium Showcase', style: 'Premium layout', color: 'from-amber-500 to-orange-500', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=800&q=80' },
-            ]
+            enabledThemeIds: d.templatesConfig?.enabledThemeIds || THEME_OPTIONS.map(t => t.id),
           },
           footerConfig: d.footerConfig || { copyrightText: '© 2026 ProvisioningTechHub Inc. All rights reserved.', facebookLink: '#', twitterLink: '#', instagramLink: '#', linkedinLink: '#' },
           customHeaderCode: d.customHeaderCode || '',
@@ -452,7 +446,7 @@ export default function CustomizePage() {
           <Card>
             <CardHeader>
               <CardTitle>Available Themes</CardTitle>
-              <CardDescription>Manage the themes shown in the Available Themes section.</CardDescription>
+              <CardDescription>Select which themes to display on the Home Page.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
@@ -467,39 +461,31 @@ export default function CustomizePage() {
               </div>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-lg">Themes</h3>
-                  <Button size="sm" variant="outline" onClick={() => addItem('templatesConfig', { name: 'New Theme', style: 'Modern layout', color: 'from-blue-500 to-cyan-500', image: '' })}>
-                    <Plus className="h-4 w-4 mr-2" /> Add Theme
-                  </Button>
-                </div>
-                
-                <div className="grid gap-4 md:grid-cols-2">
-                  {settings.templatesConfig.items.map((item: any, idx: number) => (
-                    <div key={idx} className="border p-4 rounded-lg relative bg-gray-50 dark:bg-gray-900">
-                      <Button size="icon" variant="destructive" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeItem('templatesConfig', idx)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                      <div className="space-y-3 mt-2">
-                        <div>
-                          <Label className="text-xs">Theme Name</Label>
-                          <Input value={item.name} onChange={e => updateItem('templatesConfig', idx, 'name', e.target.value)} className="h-8" />
+                <h3 className="font-semibold text-lg border-b pb-2">Themes</h3>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {THEME_OPTIONS.map((theme) => {
+                    const isEnabled = settings.templatesConfig.enabledThemeIds.includes(theme.id);
+                    return (
+                      <div key={theme.id} className="border p-4 rounded-lg flex items-center justify-between bg-gray-50 dark:bg-gray-900">
+                        <div className="space-y-1">
+                          <Label className="font-semibold text-base cursor-pointer" htmlFor={`theme-${theme.id}`}>{theme.name}</Label>
+                          <p className="text-xs text-muted-foreground">{theme.tags.join(', ')}</p>
                         </div>
-                        <div>
-                          <Label className="text-xs">Style (e.g. Professional layout)</Label>
-                          <Input value={item.style} onChange={e => updateItem('templatesConfig', idx, 'style', e.target.value)} className="h-8" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Color Gradient (e.g. from-blue-500 to-cyan-500)</Label>
-                          <Input value={item.color} onChange={e => updateItem('templatesConfig', idx, 'color', e.target.value)} className="h-8" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Image URL (Thumbnail)</Label>
-                          <Input value={item.image} onChange={e => updateItem('templatesConfig', idx, 'image', e.target.value)} className="h-8" />
-                        </div>
+                        <input
+                          type="checkbox"
+                          id={`theme-${theme.id}`}
+                          checked={isEnabled}
+                          onChange={(e) => {
+                            const newIds = e.target.checked 
+                              ? [...settings.templatesConfig.enabledThemeIds, theme.id]
+                              : settings.templatesConfig.enabledThemeIds.filter((id: string) => id !== theme.id);
+                            updateSection('templatesConfig', 'enabledThemeIds', newIds);
+                          }}
+                          className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer"
+                        />
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </CardContent>
