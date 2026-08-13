@@ -131,13 +131,14 @@ export class CompanyService {
       isVerified: Boolean(companyRaw.isVerified),
     };
 
-    const [[products], [services], [reviews], [landingPages], [galleries], [blogs]] = await Promise.all([
+    const [[products], [services], [reviews], [landingPages], [galleries], [blogs], [settingsRows]] = await Promise.all([
       pool.execute<RowDataPacket[]>('SELECT * FROM products WHERE companyId = ? AND status = "active" LIMIT 12', [companyId]),
       pool.execute<RowDataPacket[]>('SELECT * FROM services WHERE companyId = ? LIMIT 12', [companyId]),
       pool.execute<RowDataPacket[]>('SELECT * FROM reviews WHERE companyId = ? AND status = "approved" ORDER BY createdAt DESC LIMIT 10', [companyId]),
       pool.execute<RowDataPacket[]>('SELECT * FROM landing_pages WHERE companyId = ?', [companyId]),
       pool.execute<RowDataPacket[]>('SELECT * FROM galleries WHERE companyId = ?', [companyId]),
       pool.execute<RowDataPacket[]>('SELECT title, slug, content, excerpt, category, featuredImage, status, createdAt, updatedAt, companyId FROM blogs WHERE companyId = ? AND status = "published" ORDER BY createdAt DESC LIMIT 6', [companyId]),
+      pool.execute<RowDataPacket[]>('SELECT customHeaderCode FROM settings WHERE companyId = ?', [companyId]),
     ]);
 
     const landingPageRaw = landingPages[0];
@@ -221,6 +222,7 @@ export class CompanyService {
       landingPage: completeLandingPage,
       gallery,
       blogs: blogs.map(b => ({ ...b, _id: b.id })),
+      settings: settingsRows[0] || {},
     };
   }
 

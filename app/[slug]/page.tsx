@@ -91,9 +91,14 @@ export default async function CompanyPage({ params }: PageProps) {
     const gallery = result.gallery
       ? serialize<{ images?: Array<{ url: string; caption?: string }> }>(result.gallery)
       : null;
+    const settings = result.settings as { customHeaderCode?: string };
 
     return (
-      <ThemeRenderer
+      <>
+        {settings?.customHeaderCode && (
+          <div dangerouslySetInnerHTML={{ __html: settings.customHeaderCode }} style={{ display: 'none' }} />
+        )}
+        <ThemeRenderer
         templateId={landingPage?.templateId}
         layoutId={landingPage?.layoutId}
         company={company}
@@ -103,7 +108,8 @@ export default async function CompanyPage({ params }: PageProps) {
         blogs={blogs}
         landingPage={landingPage}
         gallery={gallery}
-      />
+        />
+      </>
     );
   } catch {
     notFound();

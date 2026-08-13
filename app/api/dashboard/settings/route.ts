@@ -13,6 +13,7 @@ type SettingsRow = {
   subscriptionAlerts: boolean;
   customDomain: string;
   googleAnalyticsId: string;
+  customHeaderCode: string;
 };
 
 const DEFAULTS: SettingsRow = {
@@ -23,6 +24,7 @@ const DEFAULTS: SettingsRow = {
   subscriptionAlerts: true,
   customDomain: '',
   googleAnalyticsId: '',
+  customHeaderCode: '',
 };
 
 let ensureTablePromise: Promise<void> | null = null;
@@ -64,6 +66,7 @@ function mapRow(row?: RowDataPacket | null): SettingsRow {
     subscriptionAlerts: Boolean(row.subscriptionAlerts),
     customDomain: String(row.customDomain || ''),
     googleAnalyticsId: String(row.googleAnalyticsId || ''),
+    customHeaderCode: String(row.customHeaderCode || ''),
   };
 }
 
@@ -77,7 +80,7 @@ export async function GET(request: NextRequest) {
 
     try {
       const [rows] = await pool.execute<RowDataPacket[]>(
-        'SELECT emailNotifications, leadNotifications, reviewNotifications, loginAlerts, subscriptionAlerts, customDomain, googleAnalyticsId FROM settings WHERE companyId = ?',
+        'SELECT emailNotifications, leadNotifications, reviewNotifications, loginAlerts, subscriptionAlerts, customDomain, googleAnalyticsId, customHeaderCode FROM settings WHERE companyId = ?',
         [auth.companyId],
       );
       return apiSuccess(mapRow(rows[0]));
@@ -121,6 +124,7 @@ export async function PUT(request: NextRequest) {
           : DEFAULTS.subscriptionAlerts,
       customDomain: String(body.customDomain || '').trim(),
       googleAnalyticsId: String(body.googleAnalyticsId || '').trim(),
+      customHeaderCode: String(body.customHeaderCode || ''),
     };
 
     const [existing] = await pool.execute<RowDataPacket[]>(
@@ -132,8 +136,8 @@ export async function PUT(request: NextRequest) {
       await pool.execute(
         `INSERT INTO settings (
           id, companyId, emailNotifications, leadNotifications, reviewNotifications,
-          loginAlerts, subscriptionAlerts, customDomain, googleAnalyticsId
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          loginAlerts, subscriptionAlerts, customDomain, googleAnalyticsId, customHeaderCode
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           crypto.randomUUID(),
           auth.companyId,
@@ -144,6 +148,7 @@ export async function PUT(request: NextRequest) {
           next.subscriptionAlerts ? 1 : 0,
           next.customDomain || null,
           next.googleAnalyticsId || null,
+          next.customHeaderCode || null,
         ],
       );
     } else {
@@ -155,7 +160,8 @@ export async function PUT(request: NextRequest) {
           loginAlerts = ?,
           subscriptionAlerts = ?,
           customDomain = ?,
-          googleAnalyticsId = ?
+          googleAnalyticsId = ?,
+          customHeaderCode = ?
         WHERE companyId = ?`,
         [
           next.emailNotifications ? 1 : 0,
@@ -165,6 +171,7 @@ export async function PUT(request: NextRequest) {
           next.subscriptionAlerts ? 1 : 0,
           next.customDomain || null,
           next.googleAnalyticsId || null,
+          next.customHeaderCode || null,
           auth.companyId,
         ],
       );

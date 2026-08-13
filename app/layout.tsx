@@ -56,6 +56,9 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100`}
       >
+        {settings?.customHeaderCode && (
+          <div dangerouslySetInnerHTML={{ __html: settings.customHeaderCode }} style={{ display: 'none' }} />
+        )}
         <Providers initialBranding={initialBranding}>{children}</Providers>
       </body>
     </html>

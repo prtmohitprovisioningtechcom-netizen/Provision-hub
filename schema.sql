@@ -209,6 +209,7 @@ CREATE TABLE `platform_settings` (
   `contactConfig` JSON,
   `footerConfig` JSON,
   `templatesConfig` JSON,
+  `customHeaderCode` TEXT,
   `updatedBy` VARCHAR(36),
   `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -287,6 +288,7 @@ CREATE TABLE `settings` (
   `subscriptionAlerts` BOOLEAN DEFAULT TRUE,
   `customDomain` VARCHAR(255),
   `googleAnalyticsId` VARCHAR(255),
+  `customHeaderCode` TEXT,
   `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`companyId`) REFERENCES `companies`(`id`) ON DELETE CASCADE

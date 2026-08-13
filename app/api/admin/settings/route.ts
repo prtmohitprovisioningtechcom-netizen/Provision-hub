@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
       contactConfig: typeof settings.contactConfig === 'string' ? JSON.parse(settings.contactConfig) : settings.contactConfig,
       footerConfig: typeof settings.footerConfig === 'string' ? JSON.parse(settings.footerConfig) : settings.footerConfig,
       templatesConfig: typeof settings.templatesConfig === 'string' ? JSON.parse(settings.templatesConfig) : settings.templatesConfig,
+      customHeaderCode: settings.customHeaderCode || '',
     });
   } catch (error) {
     console.error('Failed to fetch platform settings:', error);
@@ -61,13 +62,13 @@ export async function PUT(request: NextRequest) {
     const updateFields = [
       'heroConfig', 'themeConfig', 'featureToggles', 'seoConfig', 'featuresConfig',
       'howItWorksConfig', 'pricingConfig', 'faqConfig', 'testimonialsConfig',
-      'contactConfig', 'footerConfig', 'templatesConfig'
+      'contactConfig', 'footerConfig', 'templatesConfig', 'customHeaderCode'
     ];
 
     const updates: Record<string, string> = {};
     for (const field of updateFields) {
       if (data[field] !== undefined) {
-        updates[field] = JSON.stringify(data[field]);
+        updates[field] = field === 'customHeaderCode' ? data[field] : JSON.stringify(data[field]);
       }
     }
 
@@ -101,6 +102,7 @@ export async function PUT(request: NextRequest) {
       contactConfig: typeof settings.contactConfig === 'string' ? JSON.parse(settings.contactConfig) : settings.contactConfig,
       footerConfig: typeof settings.footerConfig === 'string' ? JSON.parse(settings.footerConfig) : settings.footerConfig,
       templatesConfig: typeof settings.templatesConfig === 'string' ? JSON.parse(settings.templatesConfig) : settings.templatesConfig,
+      customHeaderCode: settings.customHeaderCode || '',
     });
   } catch (error) {
     console.error('Failed to update platform settings:', error);

@@ -70,6 +70,7 @@ interface PrefsForm {
   subscriptionAlerts: boolean;
   customDomain: string;
   googleAnalyticsId: string;
+  customHeaderCode: string;
 }
 
 const DAYS = [
@@ -128,6 +129,7 @@ export default function SettingsPage() {
     subscriptionAlerts: true,
     customDomain: '',
     googleAnalyticsId: '',
+    customHeaderCode: '',
   });
 
   const [customDomain, setCustomDomain] = useState('');
@@ -207,6 +209,7 @@ export default function SettingsPage() {
             subscriptionAlerts: Boolean(foundSettings.subscriptionAlerts ?? true),
             customDomain: foundSettings.customDomain || '',
             googleAnalyticsId: foundSettings.googleAnalyticsId || '',
+            customHeaderCode: foundSettings.customHeaderCode || '',
           });
         }
 
@@ -760,6 +763,20 @@ export default function SettingsPage() {
                   setPrefs((current) => ({ ...current, googleAnalyticsId: e.target.value }))
                 }
               />
+            </div>
+            <div className="sm:col-span-2">
+              <Label htmlFor="customHeaderCode">Custom Header Code</Label>
+              <Textarea
+                id="customHeaderCode"
+                className="mt-1 font-mono text-xs"
+                rows={4}
+                placeholder="<script>...</script>"
+                value={prefs.customHeaderCode}
+                onChange={(e) =>
+                  setPrefs((current) => ({ ...current, customHeaderCode: e.target.value }))
+                }
+              />
+              <p className="text-xs text-gray-500 mt-1">Inject custom scripts (like Google Tag Manager) into your website's header.</p>
             </div>
           </div>
 

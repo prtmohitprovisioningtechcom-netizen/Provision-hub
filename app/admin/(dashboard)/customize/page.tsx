@@ -28,7 +28,8 @@ export default function CustomizePage() {
     testimonialsConfig: { title: '', items: [] },
     contactConfig: { email: '', phone: '', address: '' },
     footerConfig: { copyrightText: '', facebookLink: '', twitterLink: '', instagramLink: '', linkedinLink: '' },
-    templatesConfig: { title: '', subtitle: '', items: [] }
+    templatesConfig: { title: '', subtitle: '', items: [] },
+    customHeaderCode: ''
   });
 
   useEffect(() => {
@@ -113,6 +114,7 @@ export default function CustomizePage() {
             ]
           },
           footerConfig: d.footerConfig || { copyrightText: '© 2026 ProvisioningTechHub Inc. All rights reserved.', facebookLink: '#', twitterLink: '#', instagramLink: '#', linkedinLink: '#' },
+          customHeaderCode: d.customHeaderCode || '',
         });
       }
     } catch (error) {
@@ -180,7 +182,7 @@ export default function CustomizePage() {
 
       <div>
         <div className="flex space-x-1 border-b mb-6 overflow-x-auto pb-1">
-          {['hero', 'theme', 'toggles', 'features', 'howItWorks', 'templates', 'pricing', 'faq', 'testimonials', 'contact', 'footer', 'seo'].map(tab => (
+          {['hero', 'theme', 'toggles', 'features', 'howItWorks', 'templates', 'pricing', 'faq', 'testimonials', 'contact', 'footer', 'seo', 'scripts'].map(tab => (
             <button 
               key={tab}
               className={`px-4 py-2 font-medium whitespace-nowrap capitalize ${activeTab === tab ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -740,6 +742,28 @@ export default function CustomizePage() {
               <div className="space-y-2">
                 <Label>Meta Description</Label>
                 <Textarea value={settings.seoConfig.description} onChange={e => updateSection('seoConfig', 'description', e.target.value)} />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        {activeTab === 'scripts' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom Scripts (Global)</CardTitle>
+              <CardDescription>Inject custom HTML, Google Analytics, or Google Tag Manager scripts into the platform head.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Header Code (Raw HTML/JS)</Label>
+                <Textarea 
+                  value={settings.customHeaderCode} 
+                  onChange={e => setSettings({ ...settings, customHeaderCode: e.target.value })} 
+                  placeholder="<script>...</script>"
+                  className="font-mono h-64 text-xs"
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  This code will be injected at the top of the body on all global platform pages. E.g., paste your Google Tag Manager (gtag.js) script here.
+                </p>
               </div>
             </CardContent>
           </Card>
