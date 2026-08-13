@@ -193,20 +193,31 @@ export function CreativeStudioTheme(props: Props) {
 
             case 'why-choose-us':
               return page.why.show && page.why.items.length > 0 && (
-                <section id="why-choose-us" key="why-choose-us" className="py-16 lg:py-24 px-6 bg-[#f8fafc]">
-                  <div className="mx-auto max-w-7xl">
-                    <div className="text-center max-w-3xl mx-auto mb-16">
-                      <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6">{page.why.title}</h2>
-                      <p className="text-lg md:text-xl text-gray-500">{page.why.subtitle}</p>
+                <section id="why-choose-us" key="why-choose-us" className="py-16 lg:py-24 px-6 bg-[#f8fafc] relative overflow-hidden">
+                  <div className="mx-auto max-w-7xl relative z-10">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+                      <div className="max-w-2xl">
+                        <span className="inline-block py-1.5 px-4 rounded-full shadow-sm text-sm font-bold tracking-widest uppercase mb-4 bg-white" style={{ color: primary }}>
+                          Why Choose Us
+                        </span>
+                        <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-6">{page.why.title}</h2>
+                        <p className="text-lg md:text-xl text-gray-500">{page.why.subtitle}</p>
+                      </div>
                     </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
                       {page.why.items.map((item, i) => (
-                        <div key={i} className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl transition-all duration-300">
-                          <div className="w-14 h-14 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: `${primary}15`, color: primary }}>
-                            <Check className="w-6 h-6" />
+                        <div key={i} className="group bg-white rounded-[2rem] p-8 lg:p-10 shadow-sm border border-gray-100 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 relative overflow-hidden">
+                          <div className="absolute -bottom-6 -right-6 text-9xl font-black text-gray-50 opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none group-hover:-translate-y-4">
+                            {String(i + 1).padStart(2, '0')}
                           </div>
-                          <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                          <p className="text-gray-600 leading-relaxed">{item.description}</p>
+                          <div className="absolute top-0 left-0 w-full h-1.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" style={{ backgroundColor: primary }}></div>
+                          <div className="relative z-10">
+                            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 transform group-hover:rotate-12 transition-transform duration-500 shadow-sm" style={{ backgroundColor: `${primary}15`, color: primary }}>
+                              <Check className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-xl md:text-2xl font-bold mb-4">{item.title}</h3>
+                            <p className="text-gray-600 leading-relaxed font-medium">{item.description}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
