@@ -107,14 +107,14 @@ export function NeonDarkTheme(props: Props) {
                   <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ background: `radial-gradient(circle at 80% 20%, ${primary}, transparent 50%)` }}></div>
                   <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none mix-blend-overlay"></div>
                   
-                  <div className="relative z-10 mx-auto max-w-7xl w-full grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                  <div className="relative z-10 mx-auto max-w-7xl w-full grid lg:grid-cols-2 gap-8 lg:gap-20 items-center">
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }}>
                       {page.hero.eyebrow && (
-                        <span className="inline-block mb-6 text-sm font-bold tracking-widest uppercase px-4 py-1.5 rounded-full border border-white/10" style={{ color: primary, backgroundColor: `${primary}15` }}>
+                        <span className="inline-block mb-6 text-xs sm:text-sm font-bold tracking-widest uppercase px-4 py-1.5 rounded-full border border-white/10" style={{ color: primary, backgroundColor: `${primary}15` }}>
                           {page.hero.eyebrow}
                         </span>
                       )}
-                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 text-white leading-[1.15]">
+                      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 text-white leading-[1.15] break-words">
                         {page.hero.title}
                       </h1>
                       <p className="text-lg lg:text-xl text-slate-300 mb-10 leading-relaxed max-w-xl">
@@ -133,7 +133,7 @@ export function NeonDarkTheme(props: Props) {
                     </motion.div>
                     
                     {page.hero.image && (
-                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.2 }} className="relative h-[400px] lg:h-[550px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.2 }} className="relative h-[300px] sm:h-[400px] lg:h-[550px] rounded-2xl overflow-hidden shadow-2xl border border-white/10 mt-8 lg:mt-0">
                         <img src={page.hero.image} alt="Hero" className="relative w-full h-full object-cover z-10" />
                       </motion.div>
                     )}
@@ -145,8 +145,8 @@ export function NeonDarkTheme(props: Props) {
               return page.about.show && (
                 <section id="about" key="about" className="py-20 lg:py-28 px-6 lg:px-8 bg-slate-50 border-y border-gray-200">
                   <div className="mx-auto max-w-7xl">
-                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                      <div className="order-2 lg:order-1 relative h-[450px] rounded-2xl overflow-hidden shadow-lg border border-gray-200">
+                    <div className="grid lg:grid-cols-2 gap-8 lg:gap-20 items-center">
+                      <div className="order-2 lg:order-1 relative h-[300px] sm:h-[400px] lg:h-[450px] rounded-2xl overflow-hidden shadow-lg border border-gray-200">
                         {page.about.image ? (
                           <img src={page.about.image} alt="About" className="absolute inset-0 w-full h-full object-cover" />
                         ) : (
@@ -155,13 +155,13 @@ export function NeonDarkTheme(props: Props) {
                       </div>
                       <div className="order-1 lg:order-2">
                         {page.about.eyebrow && (
-                           <span className="inline-block mb-3 text-sm font-semibold tracking-widest uppercase" style={{ color: primary }}>
+                           <span className="inline-block mb-3 text-xs sm:text-sm font-semibold tracking-widest uppercase" style={{ color: primary }}>
                              {page.about.eyebrow}
                            </span>
                         )}
-                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-6 text-slate-900">{page.about.title}</h2>
-                        <p className="text-xl text-slate-700 mb-6 font-medium">{page.about.subtitle}</p>
-                        <div className="prose prose-lg text-slate-600" dangerouslySetInnerHTML={{ __html: page.about.content }} />
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-6 text-slate-900 break-words">{page.about.title}</h2>
+                        <p className="text-lg sm:text-xl text-slate-700 mb-6 font-medium">{page.about.subtitle}</p>
+                        <div className="prose prose-base sm:prose-lg text-slate-600" dangerouslySetInnerHTML={{ __html: page.about.content }} />
                       </div>
                     </div>
                   </div>
@@ -172,11 +172,11 @@ export function NeonDarkTheme(props: Props) {
               return page.why.show && page.why.items.length > 0 && (
                 <section id="why-choose-us" key="why-choose-us" className="py-20 lg:py-28 px-6 lg:px-8 bg-white">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-16 max-w-3xl mx-auto">
-                      <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.why.title}</h2>
-                      <p className="text-lg text-slate-500">{page.why.subtitle}</p>
+                    <div className="text-center mb-10 sm:mb-16 max-w-3xl mx-auto">
+                      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 break-words">{page.why.title}</h2>
+                      <p className="text-base sm:text-lg text-slate-500">{page.why.subtitle}</p>
                     </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
                       {page.why.items.map((item, i) => (
                         <div key={i} className="p-8 rounded-2xl border border-gray-200 bg-white hover:border-gray-300 transition-colors shadow-sm">
                           <div className="w-12 h-12 mb-6 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${primary}15`, color: primary }}>
@@ -195,12 +195,12 @@ export function NeonDarkTheme(props: Props) {
               return page.services.show && page.services.items.length > 0 && (
                 <section id="services" key="services" className="py-20 lg:py-28 px-6 lg:px-8 bg-slate-50 border-y border-gray-200">
                   <div className="mx-auto max-w-7xl">
-                    <div className="text-center mb-16 max-w-3xl mx-auto">
-                      <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.services.title}</h2>
-                      <p className="text-lg text-slate-500">{page.services.subtitle}</p>
+                    <div className="text-center mb-10 sm:mb-16 max-w-3xl mx-auto">
+                      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900 break-words">{page.services.title}</h2>
+                      <p className="text-base sm:text-lg text-slate-500">{page.services.subtitle}</p>
                     </div>
                     
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                       {page.services.items.map((service, i) => {
                         const img = getServiceImage(service);
                         return (
@@ -216,12 +216,23 @@ export function NeonDarkTheme(props: Props) {
                                 </div>
                               </div>
                             )}
-                            <div className="p-8">
-                              <h3 className="text-xl font-bold mb-3 text-slate-900">{service.name}</h3>
-                              <p className="text-slate-600 mb-6 line-clamp-3">{service.description}</p>
-                              <div className="flex justify-between items-center pt-6 border-t border-gray-100">
-                                <span className="text-xl font-bold text-slate-900">{formatCurrency(service.price)}</span>
-                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-100 px-3 py-1 rounded-md">{service.duration}</span>
+                            <div className="p-6 sm:p-8">
+                              <h3 className="text-lg sm:text-xl font-bold mb-3 text-slate-900 break-words">{service.name}</h3>
+                              <p className="text-sm sm:text-base text-slate-600 mb-6 line-clamp-3">{service.description}</p>
+                              <div className="flex flex-col gap-4 pt-6 border-t border-gray-100">
+                                <div className="flex flex-wrap gap-2 justify-between items-center">
+                                  <span className="text-lg sm:text-xl font-bold text-slate-900">{formatCurrency(service.price)}</span>
+                                  <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-100 px-3 py-1 rounded-md">{service.duration}</span>
+                                </div>
+                                {((service.description && service.description.length > 80) || (service.gallery && service.gallery.length > 0)) && (
+                                  <Link 
+                                    href={`/${page.slug}/service/${service.slug}`}
+                                    className="w-full text-center py-3 px-4 rounded-lg font-bold text-white transition-all hover:opacity-90 shadow-sm"
+                                    style={{ backgroundColor: primary }}
+                                  >
+                                    Read More
+                                  </Link>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -413,26 +424,26 @@ export function NeonDarkTheme(props: Props) {
                         <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-6 text-slate-900">{page.contact.title}</h2>
                         <p className="text-lg text-slate-500 mb-10">{page.contact.subtitle}</p>
                         
-                        <div className="space-y-8">
+                        <div className="space-y-6 sm:space-y-8">
                            {page.phone && (
-                             <div className="flex items-start gap-4">
+                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-slate-50 border border-gray-200">
                                  <Phone className="w-5 h-5 text-slate-700" />
                                </div>
                                <div>
-                                 <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Call Us</p>
-                                 <p className="text-lg text-slate-900 font-semibold">{page.phone}</p>
+                                 <p className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Call Us</p>
+                                 <p className="text-base sm:text-lg text-slate-900 font-semibold break-words">{page.phone}</p>
                                </div>
                              </div>
                            )}
                            {page.email && (
-                             <div className="flex items-start gap-4">
+                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-slate-50 border border-gray-200">
                                  <Mail className="w-5 h-5 text-slate-700" />
                                </div>
                                <div>
-                                 <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Email Us</p>
-                                 <p className="text-lg text-slate-900 font-semibold">{page.email}</p>
+                                 <p className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Email Us</p>
+                                 <p className="text-base sm:text-lg text-slate-900 font-semibold break-words">{page.email}</p>
                                </div>
                              </div>
                            )}
@@ -482,8 +493,8 @@ export function NeonDarkTheme(props: Props) {
             &copy; {new Date().getFullYear()} {page.brandName}. All rights reserved.
           </div>
           <div className="flex flex-wrap justify-center gap-6">
-             {page.nav.map((item) => (
-                <a key={item.link} href={item.link} className="text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors">{item.label}</a>
+             {page.nav.map((item, idx) => (
+                <a key={item.link + item.label + idx} href={item.link} className="text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors">{item.label}</a>
              ))}
           </div>
         </div>

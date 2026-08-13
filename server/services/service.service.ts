@@ -40,6 +40,18 @@ export class ServiceService {
     };
   });
 
+  static getBySlug = cache(async (companyId: string, slug: string) => {
+    const [services] = await pool.execute<RowDataPacket[]>('SELECT * FROM services WHERE companyId = ? AND slug = ?', [companyId, slug]);
+    if (services.length === 0) return null;
+    const s = services[0];
+    
+    return {
+      ...s,
+      _id: s.id,
+      gallery: typeof s.gallery === 'string' ? JSON.parse(s.gallery) : s.gallery
+    };
+  });
+
   static async getById(id: string) {
     const [services] = await pool.execute<RowDataPacket[]>('SELECT * FROM services WHERE id = ?', [id]);
     if (services.length === 0) throw new Error('Service not found');
