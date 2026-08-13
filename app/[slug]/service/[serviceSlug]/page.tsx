@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const result = await getCompanyBySlug(slug);
     const company = result.company as ICompany;
-    const service = await ServiceService.getBySlug(company._id, serviceSlug);
+    const service = (await ServiceService.getBySlug(company._id, serviceSlug)) as IService | null;
     if (!service) return { title: 'Service Not Found' };
     
     return {
