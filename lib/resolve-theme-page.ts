@@ -234,7 +234,7 @@ export function resolveThemePage(input: {
       show: isSectionVisible(landingPage, 'hero'),
       eyebrow: clean(hero?.eyebrow),
       title: clean(hero?.title) || company.name,
-      subtitle: clean(hero?.subtitle) || clean(company.description),
+      subtitle: clean(hero?.content) || clean(hero?.subtitle) || clean(company.description),
       buttonText: clean(hero?.buttonText),
       buttonLink: clean(hero?.buttonLink) || '#contact',
       image: sectionImage(hero, company.banner || ''),

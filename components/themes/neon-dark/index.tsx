@@ -221,18 +221,15 @@ export function NeonDarkTheme(props: Props) {
                               <p className="text-sm sm:text-base text-slate-600 mb-6 line-clamp-3">{service.description}</p>
                               <div className="flex flex-col gap-4 pt-6 border-t border-gray-100">
                                 <div className="flex flex-wrap gap-2 justify-between items-center">
-                                  <span className="text-lg sm:text-xl font-bold text-slate-900">{formatCurrency(service.price)}</span>
-                                  <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-100 px-3 py-1 rounded-md">{service.duration}</span>
+                                  {service.price > 0 ? (
+                                    <span className="text-lg sm:text-xl font-bold text-slate-900">{formatCurrency(service.price)}</span>
+                                  ) : (
+                                    <div />
+                                  )}
+                                  {service.duration && (
+                                    <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-100 px-3 py-1 rounded-md">{service.duration}</span>
+                                  )}
                                 </div>
-                                {((service.description && service.description.length > 80) || (service.gallery && service.gallery.length > 0)) && (
-                                  <Link 
-                                    href={`/${page.slug}/service/${service.slug}`}
-                                    className="w-full text-center py-3 px-4 rounded-lg font-bold text-white transition-all hover:opacity-90 shadow-sm"
-                                    style={{ backgroundColor: primary }}
-                                  >
-                                    Read More
-                                  </Link>
-                                )}
                               </div>
                             </div>
                           </div>
@@ -269,14 +266,14 @@ export function NeonDarkTheme(props: Props) {
                             <h3 className="font-bold text-lg mb-1 text-slate-900 truncate">{product.name}</h3>
                             <p className="text-slate-500 text-sm mb-4 line-clamp-2">{product.description}</p>
                             <div className="flex items-center gap-3">
-                                {product.offerPrice ? (
+                                {product.offerPrice && product.offerPrice > 0 ? (
                                   <>
                                     <span className="font-bold text-lg text-slate-900">{formatCurrency(product.offerPrice)}</span>
-                                    <span className="text-sm text-slate-400 line-through">{formatCurrency(product.price)}</span>
+                                    {product.price > 0 && <span className="text-sm text-slate-400 line-through">{formatCurrency(product.price)}</span>}
                                   </>
-                                ) : (
+                                ) : product.price > 0 ? (
                                   <span className="font-bold text-lg text-slate-900">{formatCurrency(product.price)}</span>
-                                )}
+                                ) : null}
                             </div>
                           </div>
                         </div>
@@ -294,12 +291,14 @@ export function NeonDarkTheme(props: Props) {
                       <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">{page.gallery.title}</h2>
                       <p className="text-lg text-slate-500">{page.gallery.subtitle}</p>
                     </div>
-                    <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {page.gallery.images.map((img, i) => (
-                        <div key={i} className="relative group overflow-hidden rounded-2xl break-inside-avoid border border-gray-200 bg-white">
-                          <img src={img.url} alt={img.caption || 'Gallery Image'} className="w-full h-auto object-cover" />
+                        <div key={i} className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                          <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100 relative">
+                            <img src={img.url} alt={img.caption || 'Gallery Image'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          </div>
                           {img.caption && (
-                            <div className="p-4 border-t border-gray-100 bg-white">
+                            <div className="p-4 border-t border-gray-100 bg-white text-center">
                               <p className="text-slate-900 font-semibold">{img.caption}</p>
                             </div>
                           )}

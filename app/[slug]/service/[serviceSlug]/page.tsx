@@ -86,10 +86,12 @@ export default async function ServiceDetailsPage({ params }: PageProps) {
                 </h1>
                 
                 <div className="flex flex-wrap items-center gap-6 text-slate-600">
-                  <div className="flex items-center gap-2">
-                    <Tag className="w-5 h-5 opacity-70" />
-                    <span className="text-xl font-bold text-slate-900">{formatCurrency(service.price)}</span>
-                  </div>
+                  {service.price > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-5 h-5 opacity-70" />
+                      <span className="text-xl font-bold text-slate-900">{formatCurrency(service.price)}</span>
+                    </div>
+                  )}
                   {service.duration && (
                     <div className="flex items-center gap-2 bg-slate-100 px-4 py-1.5 rounded-full text-sm font-bold">
                       <Clock className="w-4 h-4 opacity-70" />
