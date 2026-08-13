@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -48,6 +48,17 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { mode, toggle } = useTheme();
   const { isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const visibleLinks = links.filter(
     (link) => featureToggles?.[link.toggle] !== false,
@@ -122,7 +133,7 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
             {mode === 'dark' ? <Sun /> : <Moon />}
           </Button>
 
-          <div className="relative">
+          <div className="relative hidden lg:block">
             <Button
               variant="outline"
               size="sm"
@@ -225,6 +236,13 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
                 onClick={closeMenu}
               >
                 Company Directory
+              </Link>
+              <Link
+                href="/search?verified=true"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900"
+                onClick={closeMenu}
+              >
+                Verified Businesses
               </Link>
 
               <Link

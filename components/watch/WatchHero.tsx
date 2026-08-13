@@ -254,13 +254,13 @@ export function WatchHero({
             <div className="mt-4 flex w-full flex-row gap-2 sm:mt-6 sm:items-center sm:gap-3 lg:mt-10">
               <Button asChild variant="gradient" className="h-10 flex-1 gap-1.5 px-2 text-[11px] sm:h-11 sm:flex-none sm:gap-2 sm:px-6 sm:text-sm">
                 <Link href={primaryLink}>
-                  <span className="truncate">{config?.primaryCtaText || 'Start Free Trial'}</span>
+                  <span>{config?.primaryCtaText || 'Start Free Trial'}</span>
                   <ArrowRight className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" className="h-10 flex-1 px-2 text-[11px] sm:h-11 sm:flex-none sm:px-6 sm:text-sm">
                 <Link href={secondaryLink}>
-                  <span className="truncate">{secondaryText}</span>
+                  <span>{secondaryText}</span>
                 </Link>
               </Button>
             </div>

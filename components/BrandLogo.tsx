@@ -53,7 +53,7 @@ export function BrandLogo({
       {showText && (
         <span
           className={cn(
-            'text-xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent',
+            'text-sm sm:text-xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap',
             textClassName,
           )}
         >
