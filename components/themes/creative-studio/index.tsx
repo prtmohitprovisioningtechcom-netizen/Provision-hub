@@ -431,11 +431,22 @@ export function CreativeStudioTheme(props: Props) {
                 </section>
               );
 
-            case 'contact':
+            case 'contact': {
+              let mapSrc = page.contact.mapUrl || '';
+              if (mapSrc.includes('<iframe')) {
+                const match = mapSrc.match(/src="([^"]+)"/);
+                if (match) mapSrc = match[1];
+              } else if (mapSrc && !mapSrc.includes('embed') && !mapSrc.includes('output=embed')) {
+                mapSrc = '';
+              }
+              if (!mapSrc && page.addressLine) {
+                mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(page.addressLine)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+              }
+              
               return page.contact.show && (
                 <section id="contact" key="contact" className="py-16 lg:py-24 px-6 bg-gray-900 text-white">
                   <div className="mx-auto max-w-7xl">
-                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
                       <div>
                         <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6">{page.contact.title}</h2>
                         <p className="text-lg md:text-xl text-gray-400 mb-12">{page.contact.subtitle}</p>
@@ -475,9 +486,15 @@ export function CreativeStudioTheme(props: Props) {
                             </div>
                           )}
                         </div>
+                        
+                        {mapSrc && (
+                          <div className="mt-12 w-full h-[250px] lg:h-[300px] rounded-3xl overflow-hidden shadow-2xl relative group bg-gray-800">
+                            <iframe src={mapSrc} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="relative z-10 opacity-90 group-hover:opacity-100 transition-all duration-500 filter grayscale group-hover:grayscale-0"></iframe>
+                          </div>
+                        )}
                       </div>
                       
-                      <div className="bg-white text-gray-900 rounded-3xl p-8 lg:p-12 shadow-2xl">
+                      <div className="bg-white text-gray-900 rounded-3xl p-8 lg:p-12 shadow-2xl lg:sticky lg:top-24">
                         <h3 className="text-2xl font-bold mb-8">Send a Message</h3>
                         <ContactForm companyId={props.company._id} />
                       </div>
@@ -485,6 +502,7 @@ export function CreativeStudioTheme(props: Props) {
                   </div>
                 </section>
               );
+            }
 
             default:
               return null;

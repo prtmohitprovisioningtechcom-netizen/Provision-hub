@@ -107,6 +107,7 @@ export type ThemePageModel = {
     title: string;
     subtitle: string;
     content: string;
+    mapUrl?: string;
   };
   footer: {
     title: string;
@@ -302,6 +303,7 @@ export function resolveThemePage(input: {
       title: clean(contact?.title),
       subtitle: clean(contact?.subtitle),
       content: clean(contact?.content),
+      mapUrl: clean(contact?.mapUrl),
     },
     footer: {
       title: clean(footer?.title) || company.name,
