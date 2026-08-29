@@ -139,8 +139,10 @@ export interface ThemeRendererProps {
     isPublished?: boolean;
     templateId?: string | null;
     layoutId?: string | null;
+    websiteType?: 'single_page' | 'multi_page';
   } | null;
   gallery: { images?: Array<{ url: string; caption?: string }> } | null;
+  activePath?: string[];
 }
 
 export function ThemeRenderer({
@@ -153,6 +155,7 @@ export function ThemeRenderer({
   blogs,
   landingPage,
   gallery,
+  activePath,
 }: ThemeRendererProps) {
   const id = templateId || landingPage?.templateId || 'default';
   const resolvedLayout = normalizeLayoutId(layoutId || landingPage?.layoutId);
@@ -167,6 +170,7 @@ export function ThemeRenderer({
       ? { ...landingPage, templateId: id, layoutId: resolvedLayout }
       : { templateId: id, layoutId: resolvedLayout, sections: [] as ILandingPageSection[] },
     gallery,
+    activePath,
   };
 
   const renderTheme = () => {

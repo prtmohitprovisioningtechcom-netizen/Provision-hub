@@ -124,6 +124,7 @@ CREATE TABLE `landing_pages` (
   `sections` JSON,
   `templateId` VARCHAR(255),
   `layoutId` VARCHAR(16) NOT NULL DEFAULT '1',
+  `websiteType` ENUM('single_page', 'multi_page') DEFAULT 'single_page',
   `pages` JSON,
   `isPublished` BOOLEAN DEFAULT TRUE,
   `createdAt` DATETIME DEFAULT CURRENT_TIMESTAMP,

@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     await ensureLandingPageLayoutColumn();
 
     const body = await request.json();
-    const { templateId } = body;
+    const { templateId, websiteType } = body;
     const layoutId = normalizeLayoutId(body.layoutId);
 
     if (!templateId || typeof templateId !== 'string') {
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     const [companies] = await pool.execute<RowDataPacket[]>(
-      'SELECT id FROM companies WHERE id = ?',
+      'SELECT id, theme FROM companies WHERE id = ?',
       [companyId],
     );
     if (companies.length === 0) {
@@ -72,6 +72,21 @@ export async function POST(request: NextRequest) {
         [id, companyId, templateId, layoutId, defaultSections, '[]', 1],
       );
     }
+
+    // Save websiteType in company theme JSON
+    const company = companies[0];
+    let themeObj: any = {};
+    try {
+      themeObj = typeof company.theme === 'string' ? JSON.parse(company.theme) : (company.theme || {});
+    } catch (e) {
+      // ignore
+    }
+    themeObj.websiteType = websiteType || 'single_page';
+
+    await pool.execute(
+      'UPDATE companies SET theme = ? WHERE id = ?',
+      [JSON.stringify(themeObj), companyId]
+    );
 
     return NextResponse.json({
       success: true,

@@ -11,14 +11,20 @@ import { LAYOUT_OPTIONS, type LayoutId } from '@/lib/layout-id';
 
 export default function SelectThemePage() {
   const router = useRouter();
-  const [step, setStep] = useState<'theme' | 'layout'>('theme');
+  const [step, setStep] = useState<'theme' | 'layout' | 'structure'>('theme');
   const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
   const [selectedLayoutId, setSelectedLayoutId] = useState<LayoutId>('1');
+  const [selectedWebsiteType, setSelectedWebsiteType] = useState<'single_page' | 'multi_page'>('single_page');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleContinueFromTheme = () => {
     if (!selectedThemeId) return;
     setStep('layout');
+  };
+
+  const handleContinueFromLayout = () => {
+    if (!selectedLayoutId) return;
+    setStep('structure');
   };
 
   const handleSelectTheme = async () => {
@@ -32,6 +38,7 @@ export default function SelectThemePage() {
         body: JSON.stringify({
           templateId: selectedThemeId,
           layoutId: selectedLayoutId,
+          websiteType: selectedWebsiteType,
         }),
       });
 
@@ -53,15 +60,17 @@ export default function SelectThemePage() {
     <div className="container mx-auto max-w-6xl py-10">
       <div className="mb-10 text-center">
         <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-indigo-600">
-          Step {step === 'theme' ? '1' : '2'} of 2
+          Step {step === 'theme' ? '1' : step === 'layout' ? '2' : '3'} of 3
         </p>
         <h1 className="mb-3 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-          {step === 'theme' ? 'Select Your Website Theme' : 'Choose Your Layout'}
+          {step === 'theme' ? 'Select Your Website Theme' : step === 'layout' ? 'Choose Your Layout' : 'Choose Website Structure'}
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-gray-500 dark:text-gray-400">
           {step === 'theme'
             ? 'Pick a color & style pack for your company brand.'
-            : 'Layout 1 = theme ka original design. Layout 2/3 = same colors, different page structure.'}
+            : step === 'layout'
+            ? 'Layout 1 = theme ka original design. Layout 2/3 = same colors, different page structure.'
+            : 'Do you want a simple single-page scrolling website, or a traditional multi-page setup?'}
         </p>
       </div>
 
@@ -145,7 +154,7 @@ export default function SelectThemePage() {
             </Button>
           </div>
         </>
-      ) : (
+      ) : (step === 'layout') ? (
         <>
           <div className="grid gap-8 md:grid-cols-3">
             {LAYOUT_OPTIONS.map((layout) => {
@@ -239,6 +248,60 @@ export default function SelectThemePage() {
             >
               <ChevronLeft className="mr-2 h-5 w-5" />
               Back to themes
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleContinueFromLayout}
+              className="rounded-xl px-8 py-6 text-lg shadow-lg transition-all hover:shadow-xl"
+            >
+              Next: Choose structure
+              <ChevronRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+            {[
+              { id: 'single_page', name: 'Single Page Website', description: 'Everything is on one page. Users click links to scroll smoothly to sections.' },
+              { id: 'multi_page', name: 'Multi Page Website', description: 'Sections like About, Services, Contact are on their own separate pages (/about, /services).' }
+            ].map((structure) => {
+              const isSelected = selectedWebsiteType === structure.id;
+              return (
+                <Card
+                  key={structure.id}
+                  className={`cursor-pointer overflow-hidden border-2 transition-all duration-300 ${
+                    isSelected
+                      ? 'border-indigo-600 shadow-xl ring-2 ring-indigo-600 ring-offset-2'
+                      : 'border-transparent hover:border-indigo-300 hover:shadow-lg'
+                  }`}
+                  onClick={() => setSelectedWebsiteType(structure.id as 'single_page' | 'multi_page')}
+                >
+                  <CardHeader className="text-center">
+                    <CardTitle className="text-2xl mb-2">{structure.name}</CardTitle>
+                    <CardDescription className="text-lg">{structure.description}</CardDescription>
+                  </CardHeader>
+                  <CardFooter className="justify-center">
+                    {isSelected && (
+                      <div className="flex items-center text-indigo-600 font-semibold">
+                        <CheckCircle2 className="mr-2 h-6 w-6" /> Selected
+                      </div>
+                    )}
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+          <div className="mt-12 flex flex-wrap justify-center gap-3">
+            <Button
+              size="lg"
+              variant="outline"
+              disabled={isSubmitting}
+              onClick={() => setStep('layout')}
+              className="rounded-xl px-6 py-6 text-lg"
+            >
+              <ChevronLeft className="mr-2 h-5 w-5" />
+              Back to layouts
             </Button>
             <Button
               size="lg"

@@ -154,8 +154,9 @@ export function resolveThemePage(input: {
   blogs?: IBlog[];
   landingPage: ThemeLandingPage;
   gallery: ThemeGallery;
+  activePath?: string[];
 }): ThemePageModel {
-  const { company, landingPage, gallery } = input;
+  const { company, landingPage, gallery, activePath } = input;
   const products = input.products || [];
   const services = input.services || [];
   const blogs = input.blogs || [];
@@ -183,28 +184,39 @@ export function resolveThemePage(input: {
   const testimonials = resolveTestimonials(landingPage, input.reviews);
   const faqItems = resolveFaq(landingPage);
 
-  const nav = navFromSection(navbar);
-  const footerLinks = navFromSection(footer);
+  const isMultiPage = company?.theme?.websiteType === 'multi_page';
+  const processLink = (link: string) => {
+    if (isMultiPage && link.startsWith('#')) {
+      const target = link.substring(1);
+      if (target === 'home' || target === '') return `/${company.slug}`;
+      return `/${company.slug}/${target}`;
+    }
+    return link;
+  };
+  const processNav = (navLinks: NavLink[]) => navLinks.map(n => ({ ...n, link: processLink(n.link) }));
+
+  const nav = processNav(navFromSection(navbar));
+  const footerLinks = processNav(navFromSection(footer));
   const defaultNav: NavLink[] = [
-    isSectionVisible(landingPage, 'about') ? { label: clean(about?.title) || 'About', link: '#about' } : null,
+    isSectionVisible(landingPage, 'about') ? { label: clean(about?.title) || 'About', link: processLink('#about') } : null,
     isSectionVisible(landingPage, 'services') && services.length
-      ? { label: clean(servicesSec?.title) || 'Services', link: '#services' }
+      ? { label: clean(servicesSec?.title) || 'Services', link: processLink('#services') }
       : null,
     isSectionVisible(landingPage, 'gallery') && galleryImages.length
-      ? { label: clean(gallerySec?.title) || 'Gallery', link: '#gallery' }
+      ? { label: clean(gallerySec?.title) || 'Gallery', link: processLink('#gallery') }
       : null,
     isSectionVisible(landingPage, 'contact')
-      ? { label: clean(contact?.title) || 'Contact', link: '#contact' }
+      ? { label: clean(contact?.title) || 'Contact', link: processLink('#contact') }
       : null,
   ].filter(Boolean) as NavLink[];
 
   const navCtaLabel = clean(navbar?.buttonText) || clean(hero?.buttonText);
-  const navCtaLink = clean(navbar?.buttonLink) || clean(hero?.buttonLink) || '#contact';
+  const navCtaLink = processLink(clean(navbar?.buttonLink) || clean(hero?.buttonLink) || '#contact');
 
-  const orderedSectionTypes = landingPage?.sections
+  let orderedSectionTypes: string[] = landingPage?.sections
     ?.filter(s => s.isVisible !== false && s.type !== 'navbar' && s.type !== 'footer')
     .sort((a, b) => (a.order || 0) - (b.order || 0))
-    .map(s => s.type) || [];
+    .map(s => s.type as string) || [];
 
   if (orderedSectionTypes.length === 0) {
     orderedSectionTypes.push('hero', 'about', 'why-choose-us', 'services', 'products', 'gallery', 'testimonials', 'subscribe', 'faq', 'blogs', 'contact');
@@ -215,6 +227,19 @@ export function resolveThemePage(input: {
     if (faqIdx !== -1 && subIdx !== -1 && faqIdx < subIdx) {
       orderedSectionTypes[faqIdx] = 'subscribe';
       orderedSectionTypes[subIdx] = 'faq';
+    }
+  }
+
+  // Multi-page routing logic
+  if (isMultiPage && activePath && activePath.length > 0) {
+    const pageTarget = activePath[0];
+    if (orderedSectionTypes.includes(pageTarget)) {
+      orderedSectionTypes = [pageTarget];
+    } else {
+      // Custom mapping for some routes
+      if (pageTarget === 'home') {
+        // keep all or maybe hero, about, etc
+      }
     }
   }
 

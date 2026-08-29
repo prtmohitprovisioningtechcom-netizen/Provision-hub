@@ -50,6 +50,7 @@ export interface ThemeSettings {
   accentColor: string;
   fontFamily: string;
   darkMode: boolean;
+  websiteType?: 'single_page' | 'multi_page';
 }
 
 export interface SEOSettings {

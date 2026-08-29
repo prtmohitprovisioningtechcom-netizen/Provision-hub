@@ -5,6 +5,7 @@ export type ThemeLandingPage = {
   isPublished?: boolean;
   templateId?: string | null;
   layoutId?: string | null;
+  websiteType?: 'single_page' | 'multi_page';
 } | null;
 
 export type ThemeGallery = {

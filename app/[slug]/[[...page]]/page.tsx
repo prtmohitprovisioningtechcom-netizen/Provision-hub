@@ -16,7 +16,7 @@ import {
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; page?: string[] }>;
 }
 
 function serialize<T>(data: unknown): T {
@@ -24,7 +24,7 @@ function serialize<T>(data: unknown): T {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, page } = await params;
 
   try {
     const result = await getCompanyBySlug(slug);
@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CompanyPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, page } = await params;
 
   try {
     const result = await getCompanyBySlug(slug);
@@ -82,10 +82,11 @@ export default async function CompanyPage({ params }: PageProps) {
           templateId?: string;
           layoutId?: string;
         }>({
-          sections: (result.landingPage as { sections?: ILandingPageSection[] }).sections,
-          isPublished: (result.landingPage as { isPublished?: boolean }).isPublished,
-          templateId: (result.landingPage as { templateId?: string }).templateId,
-          layoutId: (result.landingPage as { layoutId?: string }).layoutId,
+          sections: (result.landingPage as any).sections,
+          isPublished: (result.landingPage as any).isPublished,
+          templateId: (result.landingPage as any).templateId,
+          layoutId: (result.landingPage as any).layoutId,
+          websiteType: (result.landingPage as any).websiteType,
         })
       : null;
     const gallery = result.gallery
@@ -106,8 +107,9 @@ export default async function CompanyPage({ params }: PageProps) {
         services={services}
         reviews={reviews}
         blogs={blogs}
-        landingPage={landingPage}
+        landingPage={landingPage as any}
         gallery={gallery}
+        activePath={page}
         />
       </>
     );
