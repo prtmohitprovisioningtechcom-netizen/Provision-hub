@@ -28,8 +28,8 @@ export default async function GlobalSitemapPage() {
     <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
       <Navbar />
       
-      <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <main className="flex-1 pt-24">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
               Platform Sitemap

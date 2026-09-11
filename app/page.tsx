@@ -5,6 +5,7 @@ import { Navbar } from '@/components/landing/Navbar';
 import { WatchHero } from '@/components/watch/WatchHero';
 import { FIRST_FRAME_SRC } from '@/lib/watch-frames';
 import { Features } from '@/components/landing/Features';
+import { PopularCategories } from '@/components/landing/PopularCategories';
 import { HowItWorks } from '@/components/landing/HowItWorks';
 import { Templates } from '@/components/landing/Templates';
 import { Pricing } from '@/components/landing/Pricing';
@@ -52,6 +53,7 @@ export default async function HomePage() {
         config={config.heroConfig}
         showTemplates={config.featureToggles?.showTemplates !== false}
       />
+      <PopularCategories />
       {config.featureToggles?.showFeatures !== false && <Features config={config.featuresConfig} />}
       {config.featureToggles?.showHowItWorks !== false && <HowItWorks config={config.howItWorksConfig} />}
       {config.featureToggles?.showTemplates !== false && <Templates config={config.templatesConfig} />}

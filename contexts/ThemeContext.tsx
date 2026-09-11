@@ -17,28 +17,37 @@ const ThemeContext = createContext<ThemeContextType>({
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch();
   const mode = useAppSelector((state) => state.theme.mode);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    requestAnimationFrame(() => setMounted(true));
     const saved = localStorage.getItem('theme') as 'light' | 'dark' | null;
     if (saved) {
       dispatch(setTheme(saved));
+      document.documentElement.classList.toggle('dark', saved === 'dark');
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       dispatch(setTheme('dark'));
+      document.documentElement.classList.toggle('dark', true);
+    } else {
+      document.documentElement.classList.remove('dark');
     }
   }, [dispatch]);
 
   useEffect(() => {
-    if (!mounted) return;
     document.documentElement.classList.toggle('dark', mode === 'dark');
-    localStorage.setItem('theme', mode);
-  }, [mode, mounted]);
+    try {
+      localStorage.setItem('theme', mode);
+    } catch (e) {}
+  }, [mode]);
 
-  const toggle = useCallback(() => dispatch(toggleTheme()), [dispatch]);
+  const toggle = useCallback(() => {
+    const nextMode = mode === 'dark' ? 'light' : 'dark';
+    dispatch(setTheme(nextMode));
+    document.documentElement.classList.toggle('dark', nextMode === 'dark');
+    try {
+      localStorage.setItem('theme', nextMode);
+    } catch (e) {}
+  }, [mode, dispatch]);
+
   const value = useMemo(() => ({ mode, toggle }), [mode, toggle]);
-
-  if (!mounted) return <>{children}</>;
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

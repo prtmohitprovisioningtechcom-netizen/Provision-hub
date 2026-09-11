@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BadgeCheck,
-  ChevronDown,
   ClipboardPlus,
   Home,
   Menu,
@@ -13,13 +12,17 @@ import {
   Search,
   Settings,
   Shield,
+  ShieldCheck,
+  Sparkles,
   Sun,
   X,
+  Zap,
 } from 'lucide-react';
 import { BrandLogo } from '@/components/BrandLogo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface NavbarProps {
   config?: {
@@ -45,7 +48,6 @@ const links = [
 
 export function Navbar({ config, featureToggles }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { mode, toggle } = useTheme();
   const { isAuthenticated, user } = useAuth();
 
@@ -84,14 +86,48 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
           ? '/search'
           : '/login';
   const quickLinks = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/post-requirement', label: 'Post Requirement', icon: ClipboardPlus },
-    { href: '/search', label: 'Company Directory', icon: Search },
-    { href: '/search?verified=true', label: 'Verified Businesses', icon: BadgeCheck },
-    ...(accountLabel !== 'Browse Companies' ? [{ href: accountLink, label: accountLabel, icon: Settings }] : []),
-    { href: '/login', label: 'Sign in', icon: Shield },
-    { href: '/register/company', label: 'Get Started', icon: ClipboardPlus },
-    { href: '/admin/login', label: 'Admin Sign in', icon: Shield }
+    {
+      href: '/',
+      label: 'Home',
+      icon: Home,
+      variant: 'default' as const,
+    },
+    {
+      href: '/post-requirement',
+      label: 'Post Requirement',
+      icon: ClipboardPlus,
+      variant: 'accent-indigo' as const,
+    },
+    {
+      href: '/search',
+      label: 'Company Directory',
+      icon: Search,
+      variant: 'default' as const,
+    },
+    {
+      href: '/search?verified=true',
+      label: 'Verified Businesses',
+      icon: BadgeCheck,
+      variant: 'accent-emerald' as const,
+    },
+    {
+      href: isAuthenticated ? accountLink : '/login',
+      label: isAuthenticated ? accountLabel : 'Sign in',
+      icon: Shield,
+      variant: 'default' as const,
+    },
+    {
+      href: '/register/company',
+      label: 'Get Started',
+      icon: Sparkles,
+      variant: 'primary' as const,
+    },
+    {
+      href: '/admin/login',
+      label: 'Admin Sign in',
+      icon: ShieldCheck,
+      variant: 'accent-amber' as const,
+    },
   ];
 
   const closeMenu = () => setIsOpen(false);
@@ -100,112 +136,85 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
     <motion.nav
       initial={{ y: -80 }}
       animate={{ y: 0 }}
-      className="fixed inset-x-0 top-0 z-50 border-b border-gray-200/70 bg-white/90 backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/90"
+      className="fixed inset-x-0 top-0 z-50 border-b border-gray-200/80 bg-white/95 backdrop-blur-xl dark:border-gray-800/80 dark:bg-gray-950/95 shadow-xs"
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <BrandLogo branding={config} className="min-w-0 shrink" />
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        {/* Left: Bigger Brand Logo */}
+        <BrandLogo
+          branding={config}
+          className="min-w-0 shrink-0 gap-3"
+          imageClassName="h-11 sm:h-13 w-auto max-w-44 sm:max-w-52 object-contain rounded-md"
+          textClassName="text-xl sm:text-2xl font-black tracking-tight"
+        />
 
-        <div className="hidden flex-1 items-center justify-center gap-6 lg:flex">
-          {visibleLinks.map((link) => (
-            <a
-              key={link.href}
+        {/* Right: All Buttons Ek Side, Badi Badi Halki Se, Achi Se */}
+        <div className="hidden lg:flex items-center gap-2 xl:gap-2.5 overflow-x-auto no-scrollbar py-1">
+          {quickLinks.map((link) => (
+            <Link
+              key={`${link.href}-${link.label}`}
               href={link.href}
-              className="text-sm font-medium text-gray-600 transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
+              className={cn(
+                'group inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs xl:text-sm font-semibold transition-all duration-200 shadow-2xs hover:shadow-xs active:scale-95 hover:-translate-y-0.5',
+                link.variant === 'primary' &&
+                  'bg-linear-to-r from-indigo-600 via-indigo-700 to-purple-600 text-white shadow-indigo-500/25 hover:shadow-indigo-500/35 hover:from-indigo-500 hover:to-purple-500',
+                link.variant === 'accent-indigo' &&
+                  'border border-indigo-200/80 bg-indigo-50/70 text-indigo-700 hover:bg-indigo-100/80 hover:border-indigo-300 dark:border-indigo-800/70 dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-900/60',
+                link.variant === 'accent-emerald' &&
+                  'border border-emerald-200/80 bg-emerald-50/70 text-emerald-700 hover:bg-emerald-100/80 hover:border-emerald-300 dark:border-emerald-800/70 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60',
+                link.variant === 'accent-amber' &&
+                  'border border-amber-200/80 bg-amber-50/70 text-amber-700 hover:bg-amber-100/80 hover:border-amber-300 dark:border-amber-800/70 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/60',
+                link.variant === 'default' &&
+                  'border border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/80 text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-850 hover:border-gray-300 dark:hover:border-gray-700 hover:text-gray-900 dark:hover:text-white',
+              )}
             >
-              {link.label}
-            </a>
+              <link.icon className="h-4 w-4 shrink-0 transition-transform group-hover:scale-110" />
+              <span>{link.label}</span>
+            </Link>
           ))}
-          <Link
-            href="/search"
-            className="text-sm font-medium text-gray-600 transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
+
+          {/* Theme Toggle Button right with the buttons */}
+          <button
+            type="button"
+            onClick={toggle}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 hover:bg-white dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-200 shadow-2xs hover:shadow-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 cursor-pointer"
+            aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
+            title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
           >
-            Directory
-          </Link>
+            {mode === 'dark' ? (
+              <Sun className="h-4 w-4 text-amber-400" />
+            ) : (
+              <Moon className="h-4 w-4 text-indigo-600" />
+            )}
+          </button>
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
+        {/* Mobile controls */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            type="button"
             onClick={toggle}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 shadow-2xs cursor-pointer"
             aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
           >
-            {mode === 'dark' ? <Sun /> : <Moon />}
-          </Button>
-
-          <div className="relative hidden lg:block">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => {
-                setIsDropdownOpen((open) => !open);
-                setIsOpen(false);
-              }}
-              aria-label="Open quick links"
-              aria-expanded={isDropdownOpen}
-              aria-controls="navbar-quick-links"
-            >
-              <span className="hidden xl:inline">Quick links</span>
-              <ChevronDown
-                className={`h-4 w-4 transition-transform ${
-                  isDropdownOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </Button>
-            <AnimatePresence>
-              {isDropdownOpen && (
-                <motion.div
-                  id="navbar-quick-links"
-                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-60 overflow-hidden rounded-xl border border-gray-200 bg-white p-2 shadow-2xl dark:border-gray-800 dark:bg-gray-950"
-                >
-                  {quickLinks.map((link) => (
-                    <Link
-                      key={`${link.href}-${link.label}`}
-                      href={link.href}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-900 dark:hover:text-indigo-400"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      <link.icon className="h-4 w-4" />
-                      {link.label}
-                    </Link>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <div className="hidden items-center gap-2 lg:flex">
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="border-orange-300 text-orange-600 hover:bg-orange-50 dark:border-orange-800 dark:text-orange-400"
-              >
-                <Link href="/admin/login">
-                  <Shield />
-                  Admin
-                </Link>
-              </Button>
-          </div>
+            {mode === 'dark' ? (
+              <Sun className="h-4 w-4 text-amber-400" />
+            ) : (
+              <Moon className="h-4 w-4 text-indigo-600" />
+            )}
+          </button>
 
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="h-10 w-10 rounded-xl"
             onClick={() => {
               setIsOpen((open) => !open);
-              setIsDropdownOpen(false);
             }}
             aria-label="Toggle navigation menu"
             aria-expanded={isOpen}
             aria-controls="mobile-navigation"
           >
-            {isOpen ? <X /> : <Menu />}
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>

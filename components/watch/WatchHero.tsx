@@ -128,14 +128,14 @@ export function WatchHero({
       const stickyChild = track.firstElementChild as HTMLElement;
       const stickyHeight = stickyChild ? stickyChild.offsetHeight : 0;
       // Use stickyHeight instead of window.innerHeight to prevent mobile address bar glitches
-      const dist = trackHeight - stickyHeight - 64; 
-      const progressTop = 64 - track.getBoundingClientRect().top;
+      const dist = trackHeight - stickyHeight - 80; 
+      const progressTop = 80 - track.getBoundingClientRect().top;
       
       const p = reduced
         ? 0
         : dist <= 0
           ? 0
-          : Math.min(1, Math.max(0, progressTop / (dist + 64)));
+          : Math.min(1, Math.max(0, progressTop / (dist + 80)));
           
       const next = Math.round(p * (FRAME_COUNT - 1));
       if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
@@ -216,14 +216,14 @@ export function WatchHero({
         ref={trackRef}
         className="relative watch-hero-track"
       >
-        <div className="sticky top-16 flex h-[calc(100svh-4rem)] min-h-0 flex-col overflow-hidden">
+        <div className="sticky top-20 flex h-[calc(100svh-5rem)] min-h-0 flex-col overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950" />
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-30" />
         <div className="absolute top-1/4 left-1/4 hidden h-72 w-72 rounded-full bg-indigo-400/20 blur-3xl sm:block" />
         <div className="absolute bottom-1/4 right-1/4 hidden h-72 w-72 rounded-full bg-purple-400/20 blur-3xl sm:block" />
         <span className="pointer-events-none absolute inset-x-0 top-0 z-20 h-px origin-left scale-x-0 bg-indigo-500" ref={barRef} />
 
-        <div className="relative z-10 mx-auto grid h-full min-h-0 w-full max-w-7xl grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-3 px-4 pt-3 pb-6 sm:gap-4 sm:px-6 sm:py-5 md:gap-6 lg:grid-cols-2 lg:grid-rows-1 lg:items-start lg:gap-8 lg:px-8 lg:py-0 lg:pt-36">
+        <div className="relative z-10 mx-auto grid h-full min-h-0 w-full max-w-7xl grid-cols-1 grid-rows-[auto_minmax(0,1fr)] gap-3 px-4 pt-3 pb-6 sm:gap-4 sm:px-6 sm:py-5 md:gap-6 lg:grid-cols-2 lg:grid-rows-1 lg:items-start lg:gap-8 lg:px-8 lg:py-0 lg:pt-32">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
