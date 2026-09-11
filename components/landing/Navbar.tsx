@@ -66,10 +66,10 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
     { href: '/', label: 'Home', emoji: '🏠', show: true },
     { href: '#features', label: 'Features', emoji: '⚡', show: featureToggles?.showFeatures !== false },
     { href: '#how-it-works', label: 'How It Works', emoji: '⚙️', show: featureToggles?.showHowItWorks !== false },
-    { href: '#templates', label: 'Templates', emoji: '🎨', show: featureToggles?.showTemplates !== false },
+    { href: '#templates', label: 'Themes', emoji: '🎨', show: featureToggles?.showTemplates !== false },
     { href: '#pricing', label: 'Pricing', emoji: '💳', show: featureToggles?.showPricing !== false },
-    { href: '/search', label: 'Company Directory', emoji: '🏢', show: true },
-    { href: '/search?verified=true', label: 'Verified Businesses', emoji: '✅', show: true },
+    { href: '/search', label: 'Directory', emoji: '🏢', show: true },
+    { href: '/search?verified=true', label: 'Verified', emoji: '✅', show: true },
   ].filter((btn) => btn.show);
 
   // Row 2 buttons (Platform Actions & Access)
@@ -120,9 +120,9 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
           </div>
         </Link>
 
-        {/* Right: Two Rows of Pill Buttons (Matching Reference Design Layout) */}
-        <div className="hidden lg:flex flex-col items-start justify-center gap-2 overflow-x-auto no-scrollbar">
-          {/* Row 1: Core Navigation Pills + Theme Switcher */}
+        {/* Right: Two Rows of Pill Buttons (No scroll, perfectly fitted) */}
+        <div className="hidden lg:flex flex-col items-start justify-center gap-2">
+          {/* Row 1: Core Navigation Pills */}
           <div className="flex items-center gap-1.5 xl:gap-2">
             {row1Buttons.map((btn) => (
               <Link
@@ -134,24 +134,9 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
                 <span>{btn.label}</span>
               </Link>
             ))}
-
-            {/* Theme toggle pill button */}
-            <button
-              type="button"
-              onClick={toggle}
-              className="inline-flex items-center justify-center h-8 w-8 rounded-2xl border border-slate-300/80 dark:border-slate-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 shadow-2xs hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-150 active:scale-95 cursor-pointer shrink-0"
-              aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
-              title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
-            >
-              {mode === 'dark' ? (
-                <Sun className="h-4 w-4 text-amber-400" />
-              ) : (
-                <Moon className="h-4 w-4 text-indigo-600" />
-              )}
-            </button>
           </div>
 
-          {/* Row 2: Action Buttons & Authentication */}
+          {/* Row 2: Action Buttons & Authentication + Dark/Light Theme Button */}
           <div className="flex items-center gap-1.5 xl:gap-2">
             {row2Buttons.map((btn) => (
               <Link
@@ -173,6 +158,27 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
                 <span>{btn.label}</span>
               </Link>
             ))}
+
+            {/* Dark / Light Theme toggle button in Row 2 */}
+            <button
+              type="button"
+              onClick={toggle}
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-300/80 dark:border-slate-700 bg-white dark:bg-gray-900 px-3.5 py-1.5 text-xs xl:text-[13px] font-bold text-gray-800 dark:text-gray-100 shadow-2xs hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-150 active:scale-95 whitespace-nowrap shrink-0 cursor-pointer"
+              aria-label={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
+              title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {mode === 'dark' ? (
+                <>
+                  <Sun className="h-4 w-4 text-amber-400" />
+                  <span>Light Theme</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="h-4 w-4 text-indigo-600" />
+                  <span>Dark Theme</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -246,6 +252,19 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
                   <span>{btn.label}</span>
                 </Link>
               ))}
+
+              <div className="my-2 border-t border-gray-200 dark:border-gray-800" />
+              <button
+                type="button"
+                onClick={() => {
+                  toggle();
+                  closeMenu();
+                }}
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-900 w-full text-left cursor-pointer"
+              >
+                <span className="text-base">{mode === 'dark' ? '☀️' : '🌙'}</span>
+                <span>{mode === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}</span>
+              </button>
             </div>
           </motion.div>
         )}
