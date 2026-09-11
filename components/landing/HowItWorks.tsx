@@ -43,13 +43,13 @@ export function HowItWorks({ config }: { config?: HowItWorksConfig }) {
   };
 
   return (
-    <section id="how-it-works" className="py-24">
+    <section id="how-it-works" className="py-10 sm:py-14">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-6 sm:mb-8"
         >
           <h2 className="text-3xl font-bold sm:text-4xl text-gray-900 dark:text-white">
             {title}

@@ -76,10 +76,10 @@ const POPULAR_CATEGORIES: CategoryItem[] = [
 
 export function PopularCategories() {
   return (
-    <section className="relative py-12 sm:py-16 bg-gray-50/50 dark:bg-gray-950/50 border-b border-gray-100 dark:border-gray-900">
+    <section className="relative py-8 sm:py-10 bg-gray-50/50 dark:bg-gray-950/50 border-b border-gray-100 dark:border-gray-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header with Title & All Services button */}
-        <div className="mb-6 sm:mb-8 flex flex-col items-start gap-3">
+        <div className="mb-4 sm:mb-5 flex flex-col items-start gap-2.5">
           <motion.h2
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}

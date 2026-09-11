@@ -10,7 +10,6 @@ import { HowItWorks } from '@/components/landing/HowItWorks';
 import { Templates } from '@/components/landing/Templates';
 import { Pricing } from '@/components/landing/Pricing';
 import { Testimonials } from '@/components/landing/Testimonials';
-import { FAQ } from '@/components/landing/FAQ';
 import { Contact } from '@/components/landing/Contact';
 import { Footer } from '@/components/landing/Footer';
 import { siteConfig } from '@/config/site';
@@ -59,7 +58,6 @@ export default async function HomePage() {
       {config.featureToggles?.showTemplates !== false && <Templates config={config.templatesConfig} />}
       {config.featureToggles?.showPricing !== false && <Pricing config={config.pricingConfig} />}
       {config.featureToggles?.showTestimonials !== false && <Testimonials config={config.testimonialsConfig} />}
-      {config.featureToggles?.showFAQ !== false && <FAQ config={config.faqConfig} />}
       <Contact config={config.contactConfig} />
       <Footer config={config} />
     </main>

@@ -53,13 +53,13 @@ export function Testimonials({ config }: { config?: TestimonialsConfig }) {
   const items = config?.items && config.items.length > 0 ? config.items : defaultTestimonials;
 
   return (
-    <section id="testimonials" className="py-24">
+    <section id="testimonials" className="py-10 sm:py-14">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="flex flex-col sm:flex-row items-center justify-between mb-16 gap-6"
+          className="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8 gap-4"
         >
           <h2 className="text-3xl font-bold sm:text-4xl text-gray-900 dark:text-white">
             {title}

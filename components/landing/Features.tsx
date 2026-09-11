@@ -91,13 +91,13 @@ export function Features({ config }: { config?: FeatureConfig }) {
   };
 
   return (
-    <section id="features" className="py-24 bg-gray-50 dark:bg-gray-900">
+    <section id="features" className="py-10 sm:py-14 bg-gray-50 dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-6 sm:mb-8"
         >
           <h2 className="text-3xl font-bold sm:text-4xl text-gray-900 dark:text-white">
             {title}
