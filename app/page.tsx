@@ -4,6 +4,7 @@ import { preload } from 'react-dom';
 import { Navbar } from '@/components/landing/Navbar';
 import { WatchHero } from '@/components/watch/WatchHero';
 import { FIRST_FRAME_SRC } from '@/lib/watch-frames';
+import { VyapariTicker } from '@/components/landing/VyapariTicker';
 import { Features } from '@/components/landing/Features';
 import { PopularCategories } from '@/components/landing/PopularCategories';
 import { HowItWorks } from '@/components/landing/HowItWorks';
@@ -19,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getPlatformSettings();
   const brandName = settings?.themeConfig?.logoText || siteConfig.name;
   const configuredTitle =
-    settings?.seoConfig?.title || `${brandName} - Build Stunning Company Landing Pages`;
+    settings?.seoConfig?.title || `${brandName} — Har Dukan Ki Shaan, Har Vyapari Ka Naam`;
   const title = configuredTitle.replaceAll('TenantHub', brandName);
   const description = settings?.seoConfig?.description || siteConfig.description;
 
@@ -52,6 +53,7 @@ export default async function HomePage() {
         config={config.heroConfig}
         showTemplates={config.featureToggles?.showTemplates !== false}
       />
+      <VyapariTicker />
       <PopularCategories />
       {config.featureToggles?.showFeatures !== false && <Features config={config.featuresConfig} />}
       {config.featureToggles?.showHowItWorks !== false && <HowItWorks config={config.howItWorksConfig} />}

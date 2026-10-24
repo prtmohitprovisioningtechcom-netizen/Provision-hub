@@ -87,7 +87,7 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
 
   const closeMenu = () => setIsOpen(false);
 
-  const brandName = config?.logoText || siteConfig.name || 'ProvisioningTechHub';
+  const brandName = config?.logoText || siteConfig.name || 'Bhartiyebazar';
 
   return (
     <motion.nav
@@ -115,7 +115,7 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
               {brandName}
             </span>
             <span className="text-[10px] sm:text-[11px] font-semibold text-gray-500 dark:text-gray-400 tracking-tight leading-tight mt-0.5 whitespace-nowrap">
-              Multi-Tenant SaaS Platform
+              Har dukan ki shaan, har vyapari ka naam
             </span>
           </div>
         </Link>

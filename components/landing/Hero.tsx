@@ -12,8 +12,9 @@ export function Hero({
   config?: any;
   showTemplates?: boolean;
 }) {
-  const defaultTitle = 'Build Stunning Company Landing Pages';
-  const defaultSubtitle = 'Create beautiful, SEO-optimized landing pages for your business. Manage products, services, leads, and reviews — all from one powerful dashboard.';
+  const defaultTitle = 'Har Dukan Ki Shaan, Har Vyapari Ka Naam';
+  const defaultSubtitle =
+    'Chhota vyapar ho ya bada karobaar — Bhartiyebazar par banayein apni verified digital pehchan. Google par rank karein, WhatsApp se seedhe grahak paayein, aur apne business ko banayein local brand.';
   const titleText = config?.title || defaultTitle;
   const subtitleText = config?.subtitle || defaultSubtitle;
   const primaryLink =
@@ -33,10 +34,18 @@ export function Hero({
       ? 'Browse Companies'
       : config?.secondaryCtaText || 'Explore Companies';
   
-  // Split title for styling (first two words highlighted)
-  const titleWords = titleText.split(' ');
-  const highlightText = titleWords.slice(0, 2).join(' ');
-  const restText = titleWords.slice(2).join(' ');
+  let highlightText = '';
+  let restText = '';
+  if (titleText.includes(',')) {
+    const parts = titleText.split(',');
+    highlightText = parts[0].trim() + ',';
+    restText = parts.slice(1).join(',').trim();
+  } else {
+    const titleWords = titleText.split(' ');
+    const half = Math.ceil(titleWords.length / 2);
+    highlightText = titleWords.slice(0, half).join(' ');
+    restText = titleWords.slice(half).join(' ');
+  }
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
@@ -52,35 +61,35 @@ export function Hero({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-sm text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">
-            <Sparkles className="h-4 w-4" />
-            Launch your business online in minutes
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-300/80 bg-linear-to-r from-amber-50 to-orange-50 px-4 py-1.5 text-sm font-semibold text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300 shadow-xs font-display">
+            <span className="text-base select-none">🇮🇳</span>
+            <span className="tracking-wide font-medium">Chhota ho ya bada kaam, Bhartiyebazar par hoga har vyapari ka naam</span>
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-            <span className="bg-linear-to-r from-indigo-600 via-purple-600 to-cyan-500 bg-clip-text text-transparent">
+          <h1 className="font-display text-4xl font-black tracking-[-0.03em] sm:text-6xl lg:text-7xl leading-[1.08]">
+            <span className="bg-linear-to-r from-indigo-600 via-purple-600 to-amber-600 dark:from-indigo-400 dark:via-purple-300 dark:to-amber-300 bg-clip-text text-transparent">
               {highlightText}
             </span>
             {restText && (
               <>
                 <br />
-                <span className="text-gray-900 dark:text-white">{restText}</span>
+                <span className="text-gray-900 dark:text-white drop-shadow-xs">{restText}</span>
               </>
             )}
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-400">
+          <p className="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-gray-600 dark:text-gray-300 font-normal leading-relaxed tracking-[-0.01em]">
             {subtitleText}
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild variant="gradient" size="lg" className="gap-2">
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 font-display">
+            <Button asChild variant="gradient" size="lg" className="gap-2 rounded-2xl font-bold tracking-wide">
               <Link href={primaryLink}>
                 {config?.primaryCtaText || "Start Free Trial"}
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline" size="lg" className="rounded-2xl font-bold tracking-wide">
               <Link href={secondaryLink}>
                 {secondaryText}
               </Link>

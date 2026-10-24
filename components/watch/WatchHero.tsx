@@ -33,9 +33,9 @@ export function WatchHero({
   };
   showTemplates?: boolean;
 }) {
-  const defaultTitle = 'Build Stunning Company Landing Pages';
+  const defaultTitle = 'Har Dukan Ki Shaan, Har Vyapari Ka Naam';
   const defaultSubtitle =
-    'Create beautiful, SEO-optimized landing pages for your business. Manage products, services, leads, and reviews all from one powerful dashboard.';
+    'Chhota vyapar ho ya bada karobaar — Bhartiyebazar par banayein apni verified digital pehchan. Google par rank karein, WhatsApp se seedhe grahak paayein, aur apne business ko banayein local brand.';
   const titleText = config?.title || defaultTitle;
   const subtitleText = config?.subtitle || defaultSubtitle;
   const primaryLink =
@@ -53,9 +53,19 @@ export function WatchHero({
   const secondaryText =
     config?.secondaryCtaText ||
     (secondaryLink === '#templates' ? 'Available Themes' : 'Browse Companies');
-  const titleWords = titleText.split(' ');
-  const highlightText = titleWords.slice(0, 2).join(' ');
-  const restText = titleWords.slice(2).join(' ');
+  
+  let highlightText = '';
+  let restText = '';
+  if (titleText.includes(',')) {
+    const parts = titleText.split(',');
+    highlightText = parts[0].trim() + ',';
+    restText = parts.slice(1).join(',').trim();
+  } else {
+    const titleWords = titleText.split(' ');
+    const half = Math.ceil(titleWords.length / 2);
+    highlightText = titleWords.slice(0, half).join(' ');
+    restText = titleWords.slice(half).join(' ');
+  }
 
   const trackRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -232,38 +242,38 @@ export function WatchHero({
             transition={{ duration: 0.5 }}
             className="flex min-h-0 flex-col justify-center lg:pr-6"
           >
-            <div className="mb-2 inline-flex w-fit max-w-full items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-3 py-1 text-xs text-indigo-700 sm:mb-3 sm:px-3.5 sm:py-1.5 sm:text-xs font-semibold dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300">
-              <Sparkles className="h-3.5 w-3.5 shrink-0" />
-              <span className="leading-tight">Launch your business online in minutes</span>
+            <div className="mb-2 inline-flex w-fit max-w-full items-center gap-2 rounded-full border border-amber-300/80 bg-linear-to-r from-amber-50 to-orange-50 px-3.5 py-1.5 text-xs text-amber-900 sm:mb-3 font-semibold dark:border-amber-700/60 dark:bg-linear-to-r dark:from-amber-950/40 dark:to-orange-950/30 dark:text-amber-300 shadow-2xs font-display">
+              <span className="text-sm select-none">🇮🇳</span>
+              <span className="leading-tight tracking-wide font-medium">Chhota ho ya bada kaam, Bhartiyebazar par har vyapari ka naam</span>
             </div>
 
-            <h1 className="text-2xl font-black leading-[1.12] tracking-tight sm:text-4xl md:text-4xl lg:text-5xl">
-              <span className="bg-linear-to-r from-indigo-600 via-purple-600 to-cyan-500 bg-clip-text text-transparent">
+            <h1 className="font-display text-3xl font-black leading-[1.08] tracking-[-0.03em] sm:text-4xl md:text-5xl lg:text-[3.5rem]">
+              <span className="bg-linear-to-r from-indigo-600 via-purple-600 to-amber-600 dark:from-indigo-400 dark:via-purple-300 dark:to-amber-300 bg-clip-text text-transparent">
                 {highlightText}
               </span>
               {restText && (
                 <>
-                  {' '}
-                  <span className="text-gray-900 dark:text-white">{restText}</span>
+                  <br className="hidden sm:inline" />
+                  <span className="text-gray-900 dark:text-white drop-shadow-xs"> {restText}</span>
                 </>
               )}
             </h1>
 
-            <p className="mt-2.5 max-w-xl text-xs leading-relaxed text-gray-600 sm:mt-3 sm:text-sm md:text-base dark:text-gray-300 line-clamp-3 sm:line-clamp-none">
+            <p className="mt-3.5 max-w-xl text-xs sm:text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-300 font-normal tracking-[-0.01em]">
               {subtitleText}
             </p>
 
             {/* CTAs with clean Available Themes button */}
-            <div className="mt-3.5 flex flex-wrap items-center gap-2.5 sm:mt-5 sm:gap-3">
-              <Button asChild variant="gradient" className="h-10 sm:h-11 rounded-2xl px-5 sm:px-6 font-bold text-xs sm:text-sm shadow-md shadow-indigo-500/25 active:scale-95 transition-all">
+            <div className="mt-4 flex flex-wrap items-center gap-2.5 sm:mt-6 sm:gap-3.5 font-display">
+              <Button asChild variant="gradient" className="h-11 sm:h-12 rounded-2xl px-6 sm:px-7 font-bold text-xs sm:text-sm shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/40 active:scale-95 transition-all tracking-wide">
                 <Link href={primaryLink} className="inline-flex items-center gap-2">
                   <span>✨</span>
                   <span>{config?.primaryCtaText || 'Start Free Trial'}</span>
                   <ArrowRight className="h-4 w-4 shrink-0" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="h-10 sm:h-11 rounded-2xl border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-gray-900/80 px-4 sm:px-5 font-bold text-xs sm:text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 shadow-2xs active:scale-95 transition-all">
-                <Link href={secondaryLink} className="inline-flex items-center gap-1.5">
+              <Button asChild variant="outline" className="h-11 sm:h-12 rounded-2xl border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-gray-900/90 px-5 sm:px-6 font-bold text-xs sm:text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 shadow-xs active:scale-95 transition-all tracking-wide">
+                <Link href={secondaryLink} className="inline-flex items-center gap-2">
                   <span>🎨</span>
                   <span>{secondaryText}</span>
                 </Link>
@@ -271,27 +281,27 @@ export function WatchHero({
             </div>
 
             {/* Premium trial & trust indicator */}
-            <div className="mt-2.5 flex items-center gap-2 text-[11px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-              <span>14-Day Free Trial • Premium Themes Included • No Card Needed</span>
+            <div className="mt-3 flex items-center gap-2 text-[11px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-tight">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
+              <span>14-Day Free Trial • Premium Themes Included • 🇮🇳 Bharat Ke Har Vyapari Ke Liye</span>
             </div>
 
             {/* Feature Highlights with Premium / Theme indicators */}
-            <div className="mt-3.5 sm:mt-5 grid max-w-lg grid-cols-3 gap-2 sm:gap-3">
+            <div className="mt-4 sm:mt-6 grid max-w-lg grid-cols-3 gap-2.5 sm:gap-3.5">
               {[
-                { value: '12+ Themes', label: 'Available & Premium', emoji: '🎨' },
-                { value: 'Live Preview', label: 'Instant No-Code Editor', emoji: '⚡' },
-                { value: 'SEO Ready', label: 'Rank On Google Fast', emoji: '⭐' },
+                { value: '12+ Themes', label: 'Har Business Ke Liye', emoji: '🎨' },
+                { value: 'Live Preview', label: 'Instant No-Code Setup', emoji: '⚡' },
+                { value: 'SEO Ready', label: 'Google Pe Local Ranking', emoji: '⭐' },
               ].map((stat, i) => (
                 <div
                   key={stat.label}
-                  className="rounded-xl border border-gray-200/70 dark:border-gray-800/70 bg-white/70 dark:bg-gray-900/60 p-2 sm:p-2.5 backdrop-blur-xs shadow-2xs"
+                  className="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/80 dark:bg-gray-900/80 p-2.5 sm:p-3 backdrop-blur-md shadow-xs hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700 transition-all"
                 >
-                  <div className="text-xs sm:text-sm font-extrabold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
-                    <span>{stat.emoji}</span>
+                  <div className="font-display text-xs sm:text-sm font-extrabold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 tracking-tight">
+                    <span className="text-sm select-none">{stat.emoji}</span>
                     <span>{stat.value}</span>
                   </div>
-                  <div className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-tight mt-0.5">
+                  <div className="text-[10px] sm:text-[11px] text-gray-500 dark:text-gray-400 font-semibold leading-tight mt-0.5 tracking-normal">
                     {stat.label}
                   </div>
                 </div>

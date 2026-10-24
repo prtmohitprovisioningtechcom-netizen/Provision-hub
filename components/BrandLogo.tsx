@@ -28,7 +28,7 @@ export function BrandLogo({
   textClassName,
 }: BrandLogoProps) {
   const branding = usePlatformBranding(initialBranding);
-  const name = branding.logoText || 'ProvisioningTechHub';
+  const name = branding.logoText || 'Bhartiyebazar';
 
   return (
     <Link href={href} className={cn('flex items-center gap-2', className)}>

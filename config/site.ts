@@ -7,9 +7,9 @@ const deploymentUrl =
       : 'http://localhost:3000');
 
 export const siteConfig = {
-  name: process.env.NEXT_PUBLIC_APP_NAME || 'ProvisioningTechHub',
+  name: process.env.NEXT_PUBLIC_APP_NAME || 'Bhartiyebazar',
   description:
-    'Build stunning company landing pages in minutes. Multi-tenant SaaS platform for businesses to create, manage, and grow their online presence.',
+    'Bhartiyebazar — Har dukan ki shaan, har vyapari ka naam. Chhota ho ya bada kaam, Bhartiyebazar par hoga har vyapari ka naam.',
   url: deploymentUrl,
   ogImage: '/og-image.png',
   links: {

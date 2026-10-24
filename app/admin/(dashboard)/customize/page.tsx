@@ -51,17 +51,15 @@ export default function CustomizePage() {
           themeConfig: d.themeConfig || { logoText: 'ProvisioningTechHub', logoImage: '', primaryColor: '#4f46e5', secondaryColor: '#ec4899' },
           contactConfig: d.contactConfig || { email: 'hello@provisioningtechhub.com', phone: '+1 (555) 123-4567', address: '123 SaaS Street, San Francisco, CA' },
           featuresConfig: {
-            title: d.featuresConfig?.title || 'Everything You Need to Grow',
-            subtitle: d.featuresConfig?.subtitle || 'Powerful features designed to help businesses create, manage, and scale their online presence.',
+            title: d.featuresConfig?.title || 'Aap Kis Fayde Ke Liye Judna Chahte Hain?',
+            subtitle: d.featuresConfig?.subtitle || 'Apna vyapar chuniye aur dekhiye Bhartiyebazar ke fayde.',
             items: d.featuresConfig?.items?.length > 0 ? d.featuresConfig.items : [
-              { icon: 'Globe', title: 'Dynamic Website Builder', description: 'Create stunning landing pages with drag-and-drop sections. No coding required.' },
-              { icon: 'BarChart3', title: 'Advanced Analytics', description: 'Track visitors, leads, and conversions with real-time analytics dashboards.' },
-              { icon: 'Shield', title: 'Enterprise Security', description: 'JWT authentication, rate limiting, and XSS protection built-in.' },
-              { icon: 'Zap', title: 'Lightning Fast', description: 'Optimized with Next.js server components, caching, and image optimization.' },
-              { icon: 'Users', title: 'Lead Management', description: 'Capture, manage, and export leads with automated email notifications.' },
-              { icon: 'Palette', title: 'Custom Themes', description: 'Customize colors, fonts, and branding to match your business identity.' },
-              { icon: 'Search', title: 'Company Directory', description: 'Get discovered by customers searching by category, location, and ratings.' },
-              { icon: 'MessageSquare', title: 'Review System', description: 'Collect and manage customer reviews with approval workflows.' },
+              { icon: 'Smartphone', title: '2-Minute Me Dukan Live', description: 'Bina kisi coder ke phone se hi dukan ki photo, rate list aur offers live karein.' },
+              { icon: 'PhoneCall', title: 'Direct WhatsApp Grahak', description: 'Customer seedha aapke WhatsApp par order kare. ₹0 commission aur 100% munafa aapka.' },
+              { icon: 'Search', title: 'Google Pe Dukan Top Pe', description: 'Aapke shehar aur mohalle me log jab search karein, aapka vyapar sabse pehle dikhe.' },
+              { icon: 'Award', title: 'Verified Vyapari Badge', description: 'Dukan ke counter par lagane ke liye sundar Bhartiyebazar QR standee print karein.' },
+              { icon: 'Star', title: '5-Star Grahak Vishwas', description: 'Khush grahakon se reviews collect karein aur local market me apna asardaar brand banayein.' },
+              { icon: 'Users', title: 'Customer Data Hamesha Aapka', description: 'Bina kisi bicholiye ke har customer ka contact aur enquiry sirf aapke paas surakshit rehti hai.' },
             ]
           },
           howItWorksConfig: {

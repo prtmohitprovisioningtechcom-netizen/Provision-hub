@@ -1,19 +1,28 @@
-// @ts-nocheck
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Plus_Jakarta_Sans, Outfit, Geist_Mono } from 'next/font/google';
 import { Providers } from '@/components/providers/Providers';
 import { siteConfig } from '@/config/site';
 import { getPlatformSettings } from '@/lib/platform-settings';
 import './globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: '--font-sans',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+});
+
+const outfit = Outfit({
+  variable: '--font-display',
+  subsets: ['latin'],
+  weight: ['500', '600', '700', '800', '900'],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+  display: 'swap',
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -54,7 +63,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100`}
+        className={`${plusJakartaSans.variable} ${outfit.variable} ${geistMono.variable} font-sans min-h-screen antialiased bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100`}
       >
         {settings?.customHeaderCode && (
           <div dangerouslySetInnerHTML={{ __html: settings.customHeaderCode }} style={{ display: 'none' }} />
