@@ -93,13 +93,7 @@ export default function AdminLoginPage() {
               {isLoading ? 'Signing in...' : 'Admin Sign In'}
             </Button>
           </form>
-          <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            New admin?{' '}
-            <Link href="/admin/register" className="text-red-600 hover:underline font-medium">
-              Register here
-            </Link>
-          </p>
-          <p className="mt-3 text-center text-sm text-gray-500">
+          <p className="mt-6 text-center text-sm text-gray-500">
             <Link href="/" className="hover:text-gray-700">← Back to website</Link>
           </p>
         </CardContent>
