@@ -22,8 +22,8 @@ export function Templates({ config }: { config?: any }) {
   useEffect(() => {
     const fetchLiveCompanies = async () => {
       try {
-        // Fetch 3 most recent approved/live companies
-        const res = await axios.get('/api/companies/search?limit=3&newest=true');
+        // Fetch 3 most recent approved/live companies with timeout so page never stalls
+        const res = await axios.get('/api/companies/search?limit=3&newest=true', { timeout: 3500 });
         if (res.data?.success && res.data?.data) {
           setLiveCompanies(res.data.data);
         }
@@ -37,13 +37,13 @@ export function Templates({ config }: { config?: any }) {
   }, []);
 
   return (
-    <section id="templates" className="py-10 sm:py-14 bg-white dark:bg-gray-950">
+    <section id="templates" className="py-6 sm:py-14 bg-white dark:bg-gray-950">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-6 sm:mb-8"
+          className="text-center mb-4 sm:mb-8"
         >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300 mb-2">
             <span>🎨</span>
@@ -138,7 +138,7 @@ export function Templates({ config }: { config?: any }) {
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-6 sm:mb-8 mt-8 sm:mt-10"
+          className="text-center mb-4 sm:mb-8 mt-5 sm:mt-10"
         >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-50/70 px-3 py-1 text-xs font-bold text-purple-700 dark:border-purple-800 dark:bg-purple-950/50 dark:text-purple-300 mb-2">
             <span>⚡</span>

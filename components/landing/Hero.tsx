@@ -48,7 +48,7 @@ export function Hero({
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-12 sm:pt-28 sm:pb-16">
       <div className="absolute inset-0 bg-linear-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950" />
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-30" />
 
@@ -61,42 +61,42 @@ export function Hero({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-300/80 bg-linear-to-r from-amber-50 to-orange-50 px-4 py-1.5 text-sm font-semibold text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300 shadow-xs font-display">
-            <span className="text-base select-none">🇮🇳</span>
-            <span className="tracking-wide font-medium">Chhota ho ya bada kaam, Bhartiyebazar par hoga har vyapari ka naam</span>
+          <div className="mb-4 sm:mb-6 inline-flex max-w-full items-center gap-2 rounded-full border border-amber-300/80 bg-linear-to-r from-amber-50 to-orange-50 px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300 shadow-xs font-display">
+            <span className="text-base select-none shrink-0">🇮🇳</span>
+            <span className="tracking-wide font-medium leading-tight">Chhota ho ya bada kaam, Bhartiyebazar par hoga har vyapari ka naam</span>
           </div>
 
-          <h1 className="font-display text-4xl font-black tracking-[-0.03em] sm:text-6xl lg:text-7xl leading-[1.08]">
+          <h1 className="font-display text-3xl xs:text-4xl sm:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[1.12] sm:leading-[1.08]">
             <span className="bg-linear-to-r from-indigo-600 via-purple-600 to-amber-600 dark:from-indigo-400 dark:via-purple-300 dark:to-amber-300 bg-clip-text text-transparent">
               {highlightText}
             </span>
             {restText && (
               <>
-                <br />
-                <span className="text-gray-900 dark:text-white drop-shadow-xs">{restText}</span>
+                <br className="hidden sm:inline" />
+                <span className="text-gray-900 dark:text-white drop-shadow-xs"> {restText}</span>
               </>
             )}
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-gray-600 dark:text-gray-300 font-normal leading-relaxed tracking-[-0.01em]">
+          <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-xs sm:text-base md:text-lg text-gray-600 dark:text-gray-300 font-normal leading-relaxed tracking-[-0.01em]">
             {subtitleText}
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 font-display">
-            <Button asChild variant="gradient" size="lg" className="gap-2 rounded-2xl font-bold tracking-wide">
-              <Link href={primaryLink}>
+          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 font-display">
+            <Button asChild variant="gradient" size="lg" className="gap-2 rounded-2xl font-bold tracking-wide w-full sm:w-auto">
+              <Link href={primaryLink} className="inline-flex items-center justify-center gap-2">
                 {config?.primaryCtaText || "Start Free Trial"}
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="rounded-2xl font-bold tracking-wide">
-              <Link href={secondaryLink}>
+            <Button asChild variant="outline" size="lg" className="rounded-2xl font-bold tracking-wide w-full sm:w-auto">
+              <Link href={secondaryLink} className="inline-flex items-center justify-center">
                 {secondaryText}
               </Link>
             </Button>
           </div>
 
-          <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto">
+          <div className="mt-10 sm:mt-16 grid grid-cols-3 gap-2.5 sm:gap-8 max-w-lg mx-auto">
             {[
               { value: 'No-code', label: 'Easy builder' },
               { value: 'SEO-ready', label: 'Built to rank' },

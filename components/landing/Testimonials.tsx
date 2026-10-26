@@ -58,13 +58,13 @@ export function Testimonials({ config }: { config?: TestimonialsConfig }) {
   const items = config?.items && config.items.length > 0 ? config.items : defaultTestimonials;
 
   return (
-    <section id="testimonials" className="py-14 sm:py-20 bg-linear-to-b from-slate-50/60 to-white dark:from-gray-950 dark:to-gray-900 border-b border-gray-200/70 dark:border-gray-800/80 relative overflow-hidden">
+    <section id="testimonials" className="py-6 sm:py-16 bg-linear-to-b from-slate-50/60 to-white dark:from-gray-950 dark:to-gray-900 border-b border-gray-200/70 dark:border-gray-800/80 relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 sm:mb-14 gap-4"
+          className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-5 sm:mb-14 gap-3 sm:gap-4"
         >
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/80 bg-amber-50/90 px-3.5 py-1 text-xs font-bold text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/40 dark:text-amber-300 mb-3 shadow-2xs">

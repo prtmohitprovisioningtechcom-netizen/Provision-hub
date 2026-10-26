@@ -53,14 +53,14 @@ export function Contact({ config }: { config?: any }) {
   };
 
   return (
-    <section id="contact" className="py-12 sm:py-16 bg-slate-50/50 dark:bg-gray-950/50 border-t border-gray-200/70 dark:border-gray-800/80 relative overflow-hidden">
+    <section id="contact" className="py-6 sm:py-16 bg-slate-50/50 dark:bg-gray-950/50 border-t border-gray-200/70 dark:border-gray-800/80 relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-8 sm:mb-10"
+          className="text-center mb-5 sm:mb-10"
         >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 mb-2.5 shadow-2xs">
             <Sparkles className="h-3.5 w-3.5" />
@@ -83,7 +83,7 @@ export function Contact({ config }: { config?: any }) {
             viewport={{ once: true }}
             className="lg:col-span-5 h-full"
           >
-            <div className="h-full flex flex-col justify-between rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-linear-to-br from-indigo-900 via-indigo-950 to-purple-950 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
+            <div className="h-full flex flex-col justify-between rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-linear-to-br from-indigo-900 via-indigo-950 to-purple-950 text-white p-5 sm:p-8 shadow-xl relative overflow-hidden">
               {/* Subtle background glow */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
@@ -168,7 +168,7 @@ export function Contact({ config }: { config?: any }) {
             className="lg:col-span-7 h-full"
           >
             <Card className="h-full border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-xl rounded-3xl flex flex-col justify-between">
-              <CardContent className="p-6 sm:p-8 flex flex-col justify-between h-full">
+              <CardContent className="p-5 sm:p-8 flex flex-col justify-between h-full">
                 <div>
                   <div className="mb-5">
                     <h4 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">

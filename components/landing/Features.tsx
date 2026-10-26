@@ -266,7 +266,7 @@ export function Features({ config }: FeaturesProps) {
   return (
     <section
       id="features"
-      className="py-8 sm:py-12 bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 border-b border-gray-200/80 dark:border-gray-800/80 relative overflow-hidden"
+      className="py-5 sm:py-10 bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 border-b border-gray-200/80 dark:border-gray-800/80 relative overflow-hidden"
     >
       {/* Decorative Background Glows */}
       <div className="absolute top-1/4 -left-40 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -278,7 +278,7 @@ export function Features({ config }: FeaturesProps) {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-4 sm:mb-6"
+          className="text-center mb-3 sm:mb-6"
         >
           <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-indigo-200 bg-indigo-50/90 dark:border-indigo-800/90 dark:bg-indigo-950/70 px-3 py-1 sm:px-4 sm:py-1.5 text-[11px] sm:text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-2 shadow-xs">
             <span className="flex h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -307,7 +307,7 @@ export function Features({ config }: FeaturesProps) {
         </motion.div>
 
         {/* 1. Interactive Purpose Tabs (Responsive Grid) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2.5 md:gap-3 mb-4 sm:mb-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2.5 md:gap-3 mb-3.5 sm:mb-5">
           {PURPOSES.map((purpose, index) => {
             const isSelected = activeTab === index;
             const isLastOnTwoCols = index === 4;

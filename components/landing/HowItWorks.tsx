@@ -48,13 +48,13 @@ export function HowItWorks({ config }: { config?: HowItWorksConfig }) {
   };
 
   return (
-    <section id="how-it-works" className="py-14 sm:py-20 bg-white dark:bg-gray-950 border-b border-gray-200/70 dark:border-gray-800/80 relative overflow-hidden">
+    <section id="how-it-works" className="py-6 sm:py-16 bg-white dark:bg-gray-950 border-b border-gray-200/70 dark:border-gray-800/80 relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12 sm:mb-16"
+          className="text-center mb-6 sm:mb-14"
         >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 mb-3 shadow-2xs">
             <span>⚙️</span>

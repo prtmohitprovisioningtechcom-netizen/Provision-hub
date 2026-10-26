@@ -44,10 +44,19 @@ export interface PlatformSettings {
   [key: string]: any;
 }
 
+let cachedSettings: PlatformSettings | null = null;
+let lastCacheTime = 0;
+const CACHE_TTL_MS = 60000; // 60 seconds memory cache
+
 /**
- * Deduplicates settings reads during a server render.
+ * Deduplicates settings reads during a server render and caches across requests.
  */
 export const getPlatformSettings = cache(async (): Promise<PlatformSettings> => {
+  const now = Date.now();
+  if (cachedSettings && now - lastCacheTime < CACHE_TTL_MS) {
+    return cachedSettings;
+  }
+
   try {
     const [settingsList] = await pool.execute<RowDataPacket[]>('SELECT * FROM platform_settings LIMIT 1');
     
@@ -68,8 +77,13 @@ export const getPlatformSettings = cache(async (): Promise<PlatformSettings> => 
       settings.templatesConfig = typeof settings.templatesConfig === 'string' ? JSON.parse(settings.templatesConfig) : settings.templatesConfig || {};
     }
     
-    return settings || {};
+    cachedSettings = settings || {};
+    lastCacheTime = now;
+    return cachedSettings;
   } catch (error) {
+    // If cached version exists, return it even if expired during DB blip
+    if (cachedSettings) return cachedSettings;
+
     // Keep public pages deployable when build-time database access is unavailable.
     console.warn(
       'Using default platform settings because DB is unavailable:',

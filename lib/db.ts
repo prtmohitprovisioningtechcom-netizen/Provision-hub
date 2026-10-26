@@ -16,9 +16,9 @@ const poolConfig = {
   database: process.env.DB_NAME || 'multi-tenant',
   port: parseInt(process.env.DB_PORT || '3306'),
   waitForConnections: true,
-  connectionLimit: 3, // Reduced to prevent max connection issues on shared hosting
-  maxIdle: 3, // Max idle connections, should be same or less than connectionLimit
-  idleTimeout: 30000, // Close idle connections after 30 seconds to prevent server drops
+  connectionLimit: 10, // Increased to support fast concurrent requests without queuing
+  maxIdle: 10,
+  idleTimeout: 30000,
   queueLimit: 0,
   namedPlaceholders: true,
   enableKeepAlive: true,

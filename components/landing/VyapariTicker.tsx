@@ -15,7 +15,7 @@ export function VyapariTicker() {
   const repeatedItems = [...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS];
 
   return (
-    <div className="relative w-full overflow-hidden border-y border-amber-300/60 dark:border-amber-800/40 bg-linear-to-r from-amber-500/10 via-orange-500/10 to-indigo-500/10 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-indigo-950/40 py-3 backdrop-blur-md select-none shadow-2xs">
+    <div className="relative w-full overflow-hidden border-y border-amber-300/60 dark:border-amber-800/40 bg-linear-to-r from-amber-500/10 via-orange-500/10 to-indigo-500/10 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-indigo-950/40 py-2 sm:py-2.5 backdrop-blur-md select-none shadow-2xs">
       {/* Side gradient fade masks for smooth infinity look */}
       <div className="pointer-events-none absolute inset-y-0 left-0 w-12 sm:w-20 bg-linear-to-r from-white dark:from-gray-950 to-transparent z-10" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-12 sm:w-20 bg-linear-to-l from-white dark:from-gray-950 to-transparent z-10" />

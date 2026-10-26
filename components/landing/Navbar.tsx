@@ -95,26 +95,26 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
       animate={{ y: 0 }}
       className="fixed inset-x-0 top-0 z-50 border-b border-gray-200/90 bg-white/95 backdrop-blur-xl dark:border-gray-800/90 dark:bg-gray-950/95 shadow-2xs"
     >
-      <div className="mx-auto flex h-[106px] max-w-7xl items-center justify-start gap-4 lg:gap-7 px-4 sm:px-6 lg:px-8 py-2">
+      <div className="mx-auto flex h-16 lg:h-[106px] max-w-7xl items-center justify-between lg:justify-start gap-3 lg:gap-7 px-3.5 sm:px-6 lg:px-8 py-1.5 lg:py-2">
         {/* Left: User's Brand Logo with Name & Tagline */}
-        <Link href="/" className="flex items-center gap-3 shrink-0 group select-none">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 group select-none min-w-0">
           {config?.logoImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={config.logoImage}
               alt={`${brandName} Logo`}
-              className="h-11 sm:h-13 w-auto max-w-44 sm:max-w-48 object-contain rounded-2xl shadow-2xs group-hover:scale-105 transition-transform"
+              className="h-8 sm:h-10 lg:h-13 w-auto max-w-28 sm:max-w-40 lg:max-w-48 object-contain rounded-xl sm:rounded-2xl shadow-2xs group-hover:scale-105 transition-transform shrink-0"
             />
           ) : (
-            <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-linear-to-br from-indigo-600 via-purple-600 to-indigo-700 text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform shrink-0">
-              <Building2 className="h-6 w-6 text-white" />
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 items-center justify-center rounded-xl sm:rounded-2xl bg-linear-to-br from-indigo-600 via-purple-600 to-indigo-700 text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform shrink-0">
+              <Building2 className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
             </div>
           )}
-          <div className="flex flex-col justify-center">
-            <span className="text-lg sm:text-xl font-black tracking-tight bg-linear-to-r from-indigo-600 via-purple-600 to-indigo-700 bg-clip-text text-transparent leading-snug">
+          <div className="flex flex-col justify-center min-w-0">
+            <span className="text-base sm:text-lg lg:text-xl font-black tracking-tight bg-linear-to-r from-indigo-600 via-purple-600 to-indigo-700 bg-clip-text text-transparent leading-snug truncate">
               {brandName}
             </span>
-            <span className="text-[10px] sm:text-[11px] font-semibold text-gray-500 dark:text-gray-400 tracking-tight leading-tight mt-0.5 whitespace-nowrap">
+            <span className="text-[9px] sm:text-[10px] lg:text-[11px] font-semibold text-gray-500 dark:text-gray-400 tracking-tight leading-tight mt-0.5 truncate max-w-[140px] xs:max-w-[200px] sm:max-w-none">
               Har dukan ki shaan, har vyapari ka naam
             </span>
           </div>
