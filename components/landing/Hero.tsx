@@ -66,15 +66,14 @@ export function Hero({
             <span className="tracking-wide font-medium leading-tight">Chhota ho ya bada kaam, Bhartiyebazar par hoga har vyapari ka naam</span>
           </div>
 
-          <h1 className="font-display text-3xl xs:text-4xl sm:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[1.12] sm:leading-[1.08]">
-            <span className="bg-linear-to-r from-indigo-600 via-purple-600 to-amber-600 dark:from-indigo-400 dark:via-purple-300 dark:to-amber-300 bg-clip-text text-transparent">
+          <h1 className="font-cursive text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-normal leading-[1.25] sm:leading-[1.18] py-1">
+            <span className="block whitespace-nowrap bg-linear-to-r from-indigo-600 via-purple-600 to-amber-600 dark:from-indigo-400 dark:via-purple-300 dark:to-amber-300 bg-clip-text text-transparent text-3d-gradient pr-2">
               {highlightText}
             </span>
             {restText && (
-              <>
-                <br className="hidden sm:inline" />
-                <span className="text-gray-900 dark:text-white drop-shadow-xs"> {restText}</span>
-              </>
+              <span className="block whitespace-nowrap text-gray-900 dark:text-white text-3d-solid pr-2 mt-1 sm:mt-2">
+                {restText}
+              </span>
             )}
           </h1>
 

@@ -257,7 +257,7 @@ export function WatchHero({
         ref={trackRef}
         className="relative watch-hero-track"
       >
-        <div className="relative lg:sticky top-0 lg:top-[106px] flex flex-col justify-start lg:justify-center min-h-0 h-auto lg:h-[calc(100svh-106px)] overflow-hidden pt-[72px] pb-3 sm:pt-20 sm:pb-4 lg:py-6 px-4 sm:px-6 lg:px-8">
+        <div className="relative lg:sticky top-0 lg:top-[106px] flex flex-col justify-start lg:justify-center min-h-0 h-auto lg:h-[calc(100svh-106px)] overflow-hidden pt-[82px] pb-3 sm:pt-24 sm:pb-4 lg:py-6 px-4 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-linear-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950" />
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-30" />
         <div className="absolute top-1/4 left-1/4 hidden h-72 w-72 rounded-full bg-indigo-400/20 blur-3xl sm:block" />
@@ -271,20 +271,19 @@ export function WatchHero({
             transition={{ duration: 0.5 }}
             className="flex min-h-0 flex-col justify-start lg:justify-center lg:pr-6 shrink-0"
           >
-            <div className="mb-1.5 sm:mb-2.5 inline-flex w-fit max-w-full items-center gap-1.5 sm:gap-2 rounded-full border border-amber-300/80 bg-linear-to-r from-amber-50 to-orange-50 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-xs text-amber-900 font-semibold dark:border-amber-700/60 dark:bg-linear-to-r dark:from-amber-950/40 dark:to-orange-950/30 dark:text-amber-300 shadow-2xs font-display">
+            <div className="mb-2 sm:mb-2.5 inline-flex items-center gap-1.5 sm:gap-2 rounded-2xl sm:rounded-full border border-amber-300/80 bg-linear-to-r from-amber-50 to-orange-50 px-3 sm:px-3.5 py-1.5 text-[11px] sm:text-xs text-amber-900 font-semibold dark:border-amber-700/60 dark:bg-linear-to-r dark:from-amber-950/40 dark:to-orange-950/30 dark:text-amber-300 shadow-2xs font-display max-w-full">
               <span className="text-xs sm:text-sm select-none shrink-0">🇮🇳</span>
-              <span className="leading-tight tracking-wide font-medium">Chhota ho ya bada kaam, Bhartiyebazar par har vyapari ka naam</span>
+              <span className="leading-snug tracking-wide font-medium break-words">Chhota ho ya bada kaam, Bhartiyebazar par har vyapari ka naam</span>
             </div>
 
-            <h1 className="font-display text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-[3.5rem] font-black leading-[1.1] sm:leading-[1.08] tracking-[-0.03em]">
-              <span className="bg-linear-to-r from-indigo-600 via-purple-600 to-amber-600 dark:from-indigo-400 dark:via-purple-300 dark:to-amber-300 bg-clip-text text-transparent">
+            <h1 className="font-cursive text-[1.35rem] xs:text-[1.65rem] sm:text-3xl md:text-5xl lg:text-[4rem] font-bold leading-[1.25] sm:leading-[1.18] tracking-normal py-1">
+              <span className="block whitespace-nowrap bg-linear-to-r from-indigo-600 via-purple-600 to-amber-600 dark:from-indigo-400 dark:via-purple-300 dark:to-amber-300 bg-clip-text text-transparent text-3d-gradient pr-2">
                 {highlightText}
               </span>
               {restText && (
-                <>
-                  <br className="hidden sm:inline" />
-                  <span className="text-gray-900 dark:text-white drop-shadow-xs"> {restText}</span>
-                </>
+                <span className="block whitespace-nowrap text-gray-900 dark:text-white text-3d-solid pr-2 mt-0.5 sm:mt-1">
+                  {restText}
+                </span>
               )}
             </h1>
 
