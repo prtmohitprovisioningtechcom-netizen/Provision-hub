@@ -3,14 +3,55 @@ import { cache } from 'react';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 
+export interface PlatformSettings {
+  id?: string;
+  heroConfig?: any;
+  themeConfig?: {
+    logoText?: string;
+    logoImage?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    [key: string]: any;
+  };
+  featureToggles?: {
+    showFeatures?: boolean;
+    showHowItWorks?: boolean;
+    showTemplates?: boolean;
+    showPricing?: boolean;
+    showTestimonials?: boolean;
+    showFAQ?: boolean;
+    showContact?: boolean;
+    [key: string]: any;
+  };
+  seoConfig?: {
+    title?: string;
+    description?: string;
+    keywords?: string;
+    [key: string]: any;
+  };
+  featuresConfig?: any;
+  howItWorksConfig?: any;
+  pricingConfig?: any;
+  faqConfig?: any;
+  testimonialsConfig?: any;
+  contactConfig?: any;
+  footerConfig?: any;
+  templatesConfig?: any;
+  customHeaderCode?: string;
+  updatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: any;
+}
+
 /**
  * Deduplicates settings reads during a server render.
  */
-export const getPlatformSettings = cache(async () => {
+export const getPlatformSettings = cache(async (): Promise<PlatformSettings> => {
   try {
     const [settingsList] = await pool.execute<RowDataPacket[]>('SELECT * FROM platform_settings LIMIT 1');
     
-    let settings = settingsList[0];
+    let settings = settingsList[0] as unknown as PlatformSettings | undefined;
     
     if (settings) {
       settings.heroConfig = typeof settings.heroConfig === 'string' ? JSON.parse(settings.heroConfig) : settings.heroConfig || {};
@@ -24,6 +65,7 @@ export const getPlatformSettings = cache(async () => {
       settings.testimonialsConfig = typeof settings.testimonialsConfig === 'string' ? JSON.parse(settings.testimonialsConfig) : settings.testimonialsConfig || {};
       settings.contactConfig = typeof settings.contactConfig === 'string' ? JSON.parse(settings.contactConfig) : settings.contactConfig || {};
       settings.footerConfig = typeof settings.footerConfig === 'string' ? JSON.parse(settings.footerConfig) : settings.footerConfig || {};
+      settings.templatesConfig = typeof settings.templatesConfig === 'string' ? JSON.parse(settings.templatesConfig) : settings.templatesConfig || {};
     }
     
     return settings || {};
