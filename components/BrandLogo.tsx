@@ -38,17 +38,15 @@ export function BrandLogo({
         <img
           src={branding.logoImage}
           alt={`${name} logo`}
-          className={cn('h-9 w-auto max-w-32 object-contain', imageClassName)}
+          className={cn('h-10 sm:h-11.5 w-auto max-w-36 object-contain drop-shadow-xs', imageClassName)}
         />
       ) : (
-        <span
-          className={cn(
-            'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-linear-to-br from-indigo-600 to-purple-600',
-            iconClassName,
-          )}
-        >
-          <Building2 className="h-5 w-5 text-white" />
-        </span>
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src="/logo-icon-transparent.png"
+          alt={`${name} logo`}
+          className={cn('h-10 sm:h-11.5 w-auto max-w-36 object-contain drop-shadow-xs', imageClassName)}
+        />
       )}
       {showText && (
         <span

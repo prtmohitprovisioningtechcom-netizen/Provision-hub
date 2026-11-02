@@ -51,8 +51,8 @@ export default function CustomizePage() {
           themeConfig: d.themeConfig || { logoText: 'ProvisioningTechHub', logoImage: '', primaryColor: '#4f46e5', secondaryColor: '#ec4899' },
           contactConfig: d.contactConfig || { email: 'hello@provisioningtechhub.com', phone: '+1 (555) 123-4567', address: '123 SaaS Street, San Francisco, CA' },
           featuresConfig: {
-            title: d.featuresConfig?.title || 'Aap Kis Fayde Ke Liye Judna Chahte Hain?',
-            subtitle: d.featuresConfig?.subtitle || 'Apna vyapar chuniye aur dekhiye Bhartiyebazar ke fayde.',
+            title: d.featuresConfig?.title || 'Dukan Wahi, Pehchan Nayi — Apne Vyapar Ko Dein Digital Raftaar!',
+            subtitle: d.featuresConfig?.subtitle || 'Gali-mohalle se poore shehar tak — Chuniye apni dukan aur dekhiye 0% commission ke sath bikri kaise doguni hoti hai.',
             items: d.featuresConfig?.items?.length > 0 ? d.featuresConfig.items : [
               { icon: 'Smartphone', title: '2-Minute Me Dukan Live', description: 'Bina kisi coder ke phone se hi dukan ki photo, rate list aur offers live karein.' },
               { icon: 'PhoneCall', title: 'Direct WhatsApp Grahak', description: 'Customer seedha aapke WhatsApp par order kare. ₹0 commission aur 100% munafa aapka.' },

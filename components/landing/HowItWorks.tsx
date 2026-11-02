@@ -1,7 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Layout, Rocket, UserPlus, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Layout, Rocket, UserPlus, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface HowItWorksConfig {
   title?: string;
@@ -14,32 +15,32 @@ interface HowItWorksConfig {
 }
 
 export function HowItWorks({ config }: { config?: HowItWorksConfig }) {
+  const { t } = useLanguage();
+
   const defaultSteps = [
     {
       step: '01',
-      title: 'Dukan Register Karein',
-      description: 'Apni dukan ya company ka naam, category aur contact details dalein. Sirf 2 minute me account ready.',
-      points: ['No technical skill required', 'Free 14-day full access'],
+      title: t('howItWorks.step1.title'),
+      description: t('howItWorks.step1.desc'),
+      points: [t('howItWorks.step1.pt1'), t('howItWorks.step1.pt2')],
     },
     {
       step: '02',
-      title: 'Theme Chunein & Details Dalein',
-      description: '12+ ready-made themes me se pasandida design chunein. Apne products, services aur photos upload karein.',
-      points: ['Live instant preview', 'WhatsApp click-to-chat button'],
+      title: t('howItWorks.step2.title'),
+      description: t('howItWorks.step2.desc'),
+      points: [t('howItWorks.step2.pt1'), t('howItWorks.step2.pt2')],
     },
     {
       step: '03',
-      title: 'Google Pe Live & Grahak Paayein',
-      description: 'Aapki verified landing page live hoti hai. Local log Google search se aap tak pahuche aur orders dein.',
-      points: ['Google SEO optimized', 'Shareable digital visiting card'],
+      title: t('howItWorks.step3.title'),
+      description: t('howItWorks.step3.desc'),
+      points: [t('howItWorks.step3.pt1'), t('howItWorks.step3.pt2')],
     },
   ];
 
-  const title = config?.title || 'Sirf 3 Aasan Steps Mein Dukan Online';
-  const subtitle =
-    config?.subtitle ||
-    'Chhota vyapar ho ya bada kaam — dekhiye kaise 5 minute me aapka business ban jaata hai digital brand.';
-  const items = config?.items && config.items.length > 0 ? config.items : defaultSteps;
+  const title = t('howItWorks.title');
+  const subtitle = t('howItWorks.subtitle');
+  const items = defaultSteps;
 
   const getIconForStep = (index: number) => {
     if (index === 0) return <UserPlus className="h-7 w-7 text-white" />;
@@ -58,7 +59,7 @@ export function HowItWorks({ config }: { config?: HowItWorksConfig }) {
         >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 mb-3 shadow-2xs">
             <span>⚙️</span>
-            <span>Simple 3-Step Process</span>
+            <span>{t('howItWorks.badge')}</span>
           </div>
           <h2 className="text-3xl font-black sm:text-4xl lg:text-5xl tracking-tight text-gray-900 dark:text-white">
             {title}

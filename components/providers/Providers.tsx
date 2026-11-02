@@ -5,6 +5,7 @@ import { ReduxProvider } from '@/components/providers/ReduxProvider';
 import { ToastProvider } from '@/components/providers/ToastProvider';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import {
   initializePlatformBranding,
   type PlatformBranding,
@@ -37,8 +38,10 @@ export function Providers({
     <ReduxProvider>
       <ThemeProvider>
         <AuthProvider>
-          {children}
-          <ToastProvider />
+          <LanguageProvider>
+            {children}
+            <ToastProvider />
+          </LanguageProvider>
         </AuthProvider>
       </ThemeProvider>
     </ReduxProvider>

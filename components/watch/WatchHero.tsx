@@ -1,23 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FRAME_COUNT, FIRST_FRAME_SRC, frameSrc } from '@/lib/watch-frames';
-
-const SCROLL_PX_PER_FRAME = 22;
-
-function loadFrame(src: string) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image();
-    img.decoding = 'async';
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('frame'));
-    img.src = src;
-  });
-}
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function WatchHero({
   config,
@@ -33,11 +20,13 @@ export function WatchHero({
   };
   showTemplates?: boolean;
 }) {
-  const defaultTitle = 'Har Dukan Ki Shaan, Har Vyapari Ka Naam';
-  const defaultSubtitle =
-    'Chhota vyapar ho ya bada karobaar — Bhartiyebazar par banayein apni verified digital pehchan. Google par rank karein, WhatsApp se seedhe grahak paayein, aur apne business ko banayein local brand.';
-  const titleText = config?.title || defaultTitle;
-  const subtitleText = config?.subtitle || defaultSubtitle;
+  const { t } = useLanguage();
+
+  const titleLine1 = t('hero.titleLine1');
+  const titleLine2 = t('hero.titleLine2');
+  const subtitleText = t('hero.subtitle');
+  const badgeText = t('hero.badge');
+
   const primaryLink =
     !config?.primaryCtaLink || config.primaryCtaLink === '/register'
       ? '/register/company'
@@ -50,286 +39,120 @@ export function WatchHero({
     configuredSecondaryLink === '#templates' && !showTemplates
       ? '/search'
       : configuredSecondaryLink;
+
+  const primaryText = t('hero.startTrial');
   const secondaryText =
-    config?.secondaryCtaText ||
-    (secondaryLink === '#templates' ? 'Available Themes' : 'Browse Companies');
-  
-  let highlightText = '';
-  let restText = '';
-  if (titleText.includes(',')) {
-    const parts = titleText.split(',');
-    highlightText = parts[0].trim() + ',';
-    restText = parts.slice(1).join(',').trim();
-  } else {
-    const titleWords = titleText.split(' ');
-    const half = Math.ceil(titleWords.length / 2);
-    highlightText = titleWords.slice(0, half).join(' ');
-    restText = titleWords.slice(half).join(' ');
-  }
-
-  const trackRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fallbackRef = useRef<HTMLImageElement>(null);
-  const barRef = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    const track = trackRef.current;
-    const canvas = canvasRef.current;
-    if (!track || !canvas) return;
-
-    const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
-    if (!ctx) return;
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'low';
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const isMobile = () => window.innerWidth < 1024;
-    const frames: Array<HTMLImageElement | null> = new Array(FRAME_COUNT).fill(null);
-    let shown = -1;
-    let raf = 0;
-    let alive = true;
-
-    const sizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = isMobile() ? 1 : Math.min(window.devicePixelRatio || 1, 1.25);
-      const w = Math.max(1, Math.round(rect.width * dpr));
-      const h = Math.max(1, Math.round(rect.height * dpr));
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'low';
-      }
-    };
-
-    const nearest = (i: number) => {
-      if (frames[i]) return frames[i];
-      for (let d = 1; d < FRAME_COUNT; d++) {
-        const a = frames[i - d];
-        if (a) return a;
-        const b = frames[i + d];
-        if (b) return b;
-      }
-      return null;
-    };
-
-    const paint = (img: HTMLImageElement, idx: number) => {
-      shown = idx;
-      if (canvas.width === 0 || canvas.height === 0) return;
-      const cw = canvas.width;
-      const ch = canvas.height;
-      const iw = img.naturalWidth || img.width;
-      const ih = img.naturalHeight || img.height;
-      if (!iw || !ih) return;
-
-      const scale = Math.max(cw / iw, ch / ih);
-      const nw = iw * scale;
-      const nh = ih * scale;
-      const ox = (cw - nw) * 0.5;
-      const oy = (ch - nh) * 0.5;
-
-      ctx.drawImage(img, ox, oy, nw, nh);
-      if (fallbackRef.current && fallbackRef.current.style.opacity !== '0') {
-        fallbackRef.current.style.opacity = '0';
-      }
-    };
-
-    const sync = () => {
-      raf = 0;
-      if (!alive || document.hidden) return;
-
-      const mobile = isMobile();
-      let p = 0;
-
-      if (mobile) {
-        // On mobile, scrub frames smoothly over 240px as the hero scrolls through the viewport
-        const rect = track.getBoundingClientRect();
-        const scrubDistance = 240;
-        const progress = 64 - rect.top;
-        p = reduced
-          ? 0
-          : Math.min(1, Math.max(0, progress / scrubDistance));
-      } else {
-        const stickyChild = track.firstElementChild as HTMLElement;
-        const stickyHeight = stickyChild ? stickyChild.offsetHeight : 0;
-        const dist = Math.max(1, track.offsetHeight - stickyHeight);
-        const progressTop = 106 - track.getBoundingClientRect().top;
-        p = reduced
-          ? 0
-          : Math.min(1, Math.max(0, progressTop / dist));
-      }
-
-      const next = Math.round(p * (FRAME_COUNT - 1));
-      if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
-      if (next === shown) return;
-      const img = nearest(next);
-      if (img) paint(img, next);
-    };
-
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(sync);
-    };
-
-    const onResize = () => {
-      sizeCanvas();
-      shown = -1;
-      sync();
-    };
-
-    sizeCanvas();
-    sync();
-
-    const boot = async () => {
-      try {
-        const first = await loadFrame(frameSrc(0));
-        if (!alive) return;
-        frames[0] = first;
-        paint(first, 0);
-      } catch {
-        return;
-      }
-
-      // Small delay so initial page load, styles and React hydration run smoothly
-      await new Promise((r) => setTimeout(r, 150));
-      if (!alive) return;
-
-      const mobile = isMobile();
-      // On mobile load every 2nd frame (55 frames = buttery smooth + light memory). On desktop load every frame.
-      const step = mobile ? 2 : 1;
-      const keyStep = mobile ? 6 : 4;
-
-      // Priority 1: Key frames across the range so scrubbing is immediately responsive
-      for (let i = keyStep; i < FRAME_COUNT; i += keyStep) {
-        if (!alive) return;
-        try {
-          frames[i] = await loadFrame(frameSrc(i));
-        } catch {
-          // ignore
-        }
-      }
-
-      // Priority 2: Fill remaining frames gently in background
-      let idx = 1;
-      while (alive && idx < FRAME_COUNT) {
-        if (!frames[idx]) {
-          try {
-            frames[idx] = await loadFrame(frameSrc(idx));
-          } catch {
-            frames[idx] = null;
-          }
-        }
-        idx += step;
-        // Yield to browser event loop so UI stays snappy and responsive
-        if (idx % (step * 4) === 0) {
-          await new Promise((r) => setTimeout(r, 16));
-        }
-      }
-    };
-
-    void boot();
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize, { passive: true });
-
-    return () => {
-      alive = false;
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  const desktopScrollDist = Math.round((FRAME_COUNT - 1) * 6); // Snappy scroll on desktop
+    secondaryLink === '#templates' ? t('hero.availableThemes') : 'Browse Companies';
 
   return (
-    <>
-      <style>{`
-        .watch-hero-track {
-          height: auto;
-        }
-        @media (min-width: 1024px) {
-          .watch-hero-track {
-            height: calc(100svh - 106px + ${desktopScrollDist}px);
-          }
-        }
-      `}</style>
-      <section
-        ref={trackRef}
-        className="relative watch-hero-track"
-      >
-        <div className="relative lg:sticky top-0 lg:top-[106px] flex flex-col justify-start lg:justify-center min-h-0 h-auto lg:h-[calc(100svh-106px)] overflow-hidden pt-[82px] pb-3 sm:pt-24 sm:pb-4 lg:py-6 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-linear-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950" />
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-30" />
-        <div className="absolute top-1/4 left-1/4 hidden h-72 w-72 rounded-full bg-indigo-400/20 blur-3xl sm:block" />
-        <div className="absolute bottom-1/4 right-1/4 hidden h-72 w-72 rounded-full bg-purple-400/20 blur-3xl sm:block" />
-        <span className="pointer-events-none absolute inset-x-0 top-0 z-20 h-px origin-left scale-x-0 bg-indigo-500" ref={barRef} />
+    <section className="relative overflow-hidden min-h-[480px] sm:min-h-[560px] lg:min-h-[640px] flex items-center py-6 sm:py-10 lg:py-14">
+      {/* 1. Full Hero Background Image - Positioned from top right so head/store are NEVER cut by navbar */}
+      <div 
+        className="absolute inset-0 pointer-events-none transition-all duration-700 select-none"
+        style={{
+          backgroundImage: "url('/hero-vyapari-bg.jpg')",
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          backgroundPosition: 'right 0% top 0%',
+        }}
+      />
 
-        <div className="relative z-10 mx-auto flex flex-col justify-start w-full max-w-7xl lg:grid lg:grid-cols-2 lg:items-center gap-2 sm:gap-3 lg:gap-8">
+      {/* 2. Responsive Scrim: Smooth left-to-right fade leaving merchant vivid and text 100% readable */}
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 sm:via-slate-950/55 lg:via-slate-950/25 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent sm:hidden pointer-events-none" />
+      
+      {/* Bottom feathering into VyapariTicker */}
+      <div className="absolute inset-x-0 bottom-0 h-16 sm:h-20 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent pointer-events-none" />
+
+      {/* Subtle Ambient Accent Glow Behind Left Text */}
+      <div className="absolute top-1/4 left-4 sm:left-12 w-64 sm:w-96 h-64 sm:h-96 bg-indigo-600/20 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-6 left-1/4 w-48 sm:w-80 h-48 sm:h-80 bg-amber-500/10 blur-[80px] rounded-full pointer-events-none" />
+
+      {/* 3. Hero Content Container: Strictly One-Sided (Left-Aligned), 100% Responsive */}
+      <div className="relative z-10 mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8 w-full">
+        <div className="grid lg:grid-cols-12 gap-6 sm:gap-8 items-center">
+          {/* Left Column: Headline, Subtitle, CTAs & Features */}
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -25 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex min-h-0 flex-col justify-start lg:justify-center lg:pr-6 shrink-0"
+            className="lg:col-span-8 xl:col-span-7 flex flex-col items-start text-left max-w-full"
           >
-            <div className="mb-2 sm:mb-2.5 inline-flex items-center gap-1.5 sm:gap-2 rounded-2xl sm:rounded-full border border-amber-300/80 bg-linear-to-r from-amber-50 to-orange-50 px-3 sm:px-3.5 py-1.5 text-[11px] sm:text-xs text-amber-900 font-semibold dark:border-amber-700/60 dark:bg-linear-to-r dark:from-amber-950/40 dark:to-orange-950/30 dark:text-amber-300 shadow-2xs font-display max-w-full">
+            {/* Live Glowing Beacon Badge */}
+            <div className="mb-2.5 sm:mb-4 inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-900/85 backdrop-blur-md px-2.5 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm text-amber-300 font-bold shadow-lg shadow-black/40 max-w-full">
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
               <span className="text-xs sm:text-sm select-none shrink-0">🇮🇳</span>
-              <span className="leading-snug tracking-wide font-medium break-words">Chhota ho ya bada kaam, Bhartiyebazar par har vyapari ka naam</span>
+              <span className="leading-snug tracking-wide font-medium break-words text-amber-200">
+                {badgeText}
+              </span>
             </div>
 
-            <h1 className="font-cursive text-[1.35rem] xs:text-[1.65rem] sm:text-3xl md:text-5xl lg:text-[4rem] font-bold leading-[1.25] sm:leading-[1.18] tracking-normal py-1">
-              <span className="block whitespace-nowrap bg-linear-to-r from-indigo-600 via-purple-600 to-amber-600 dark:from-indigo-400 dark:via-purple-300 dark:to-amber-300 bg-clip-text text-transparent text-3d-gradient pr-2">
-                {highlightText}
+            {/* 3D Cursive Flowing Headline - Strictly 2 Lines, Responsive Fluid Font */}
+            <h1 className="font-cursive text-[clamp(1.45rem,5.6vw,4.25rem)] font-bold leading-[1.18] sm:leading-[1.12] tracking-tight py-0.5 sm:py-1 select-none text-left max-w-full overflow-hidden">
+              <span className="block whitespace-nowrap bg-gradient-to-r from-amber-300 via-orange-300 to-amber-200 bg-clip-text text-transparent text-3d-gradient animate-gradient-flow pr-2 drop-shadow-md">
+                {titleLine1}
               </span>
-              {restText && (
-                <span className="block whitespace-nowrap text-gray-900 dark:text-white text-3d-solid pr-2 mt-0.5 sm:mt-1">
-                  {restText}
-                </span>
-              )}
+              <span className="block whitespace-nowrap text-white text-3d-solid pr-2 mt-0.5 sm:mt-1 drop-shadow-lg">
+                {titleLine2}
+              </span>
             </h1>
 
-            <p className="mt-1.5 sm:mt-2.5 max-w-xl text-xs sm:text-sm md:text-base leading-relaxed text-gray-600 dark:text-gray-300 font-normal tracking-[-0.01em]">
+            {/* Subtitle */}
+            <p className="mt-2 sm:mt-3.5 max-w-xl text-left text-xs sm:text-base md:text-lg leading-relaxed text-slate-200/90 font-normal tracking-[-0.01em] drop-shadow-sm">
               {subtitleText}
             </p>
 
-            {/* CTAs with clean Available Themes button */}
-            <div className="mt-2.5 sm:mt-5 flex flex-wrap items-center gap-2 sm:gap-3.5 font-display">
-              <Button asChild variant="gradient" className="h-9 sm:h-11 lg:h-12 rounded-xl sm:rounded-2xl px-4 sm:px-6 lg:px-7 font-bold text-xs sm:text-sm shadow-md shadow-indigo-500/25 active:scale-95 transition-all tracking-wide shrink-0">
-                <Link href={primaryLink} className="inline-flex items-center gap-1.5 sm:gap-2">
-                  <span>✨</span>
-                  <span>{config?.primaryCtaText || 'Start Free Trial'}</span>
-                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            {/* CTAs: Side-by-side on Mobile and Desktop */}
+            <div className="mt-3.5 sm:mt-6 flex flex-row items-center justify-start gap-2 sm:gap-3.5 w-full sm:w-auto font-display">
+              <Button
+                asChild
+                variant="gradient"
+                className="flex-1 sm:flex-initial h-10 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-7 font-bold text-xs sm:text-sm shadow-xl shadow-indigo-600/40 hover:shadow-indigo-600/60 hover:scale-[1.02] active:scale-95 transition-all tracking-tight sm:tracking-wide shrink-0 border border-indigo-400/30"
+              >
+                <Link href={primaryLink} className="inline-flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
+                  <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-300 shrink-0" />
+                  <span>{primaryText}</span>
+                  <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="h-9 sm:h-11 lg:h-12 rounded-xl sm:rounded-2xl border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-gray-900/90 px-3.5 sm:px-5 lg:px-6 font-bold text-xs sm:text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 shadow-2xs active:scale-95 transition-all tracking-wide shrink-0">
-                <Link href={secondaryLink} className="inline-flex items-center gap-1.5 sm:gap-2">
+
+              <Button
+                asChild
+                variant="outline"
+                className="flex-1 sm:flex-initial h-10 sm:h-12 rounded-xl sm:rounded-2xl border-white/20 bg-slate-900/75 backdrop-blur-md px-3 sm:px-6 font-bold text-xs sm:text-sm text-white hover:bg-slate-800/90 hover:border-amber-400/50 shadow-md hover:scale-[1.02] active:scale-95 transition-all tracking-tight sm:tracking-wide shrink-0"
+              >
+                <Link href={secondaryLink} className="inline-flex items-center justify-center gap-1 sm:gap-2 whitespace-nowrap">
                   <span>🎨</span>
                   <span>{secondaryText}</span>
                 </Link>
               </Button>
             </div>
 
-            {/* Premium trial & trust indicator */}
-            <div className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-tight flex-wrap">
-              <span className="flex h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
-              <span>14-Day Free Trial • Premium Themes • 🇮🇳 Har Vyapari Ke Liye</span>
+            {/* Trust Indicator */}
+            <div className="mt-2.5 sm:mt-4 flex items-center justify-start gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold text-slate-300/90 tracking-tight flex-wrap text-left">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              <span>{t('hero.trialNote')}</span>
             </div>
 
-            {/* Feature Highlights with Premium / Theme indicators */}
-            <div className="mt-2 sm:mt-5 grid grid-cols-3 gap-1.5 sm:gap-3.5 max-w-lg">
+            {/* 3 Glassmorphic Feature Cards (Aligned Left) */}
+            <div className="mt-4 sm:mt-7 grid grid-cols-3 gap-1.5 sm:gap-3 w-full max-w-lg">
               {[
-                { value: '12+ Themes', label: 'Har Business Ke Liye', emoji: '🎨' },
-                { value: 'Live Preview', label: 'Instant Setup', emoji: '⚡' },
-                { value: 'SEO Ready', label: 'Google Pe Ranking', emoji: '⭐' },
+                { value: t('hero.stat1.val'), label: t('hero.stat1.lbl'), emoji: '🎨' },
+                { value: t('hero.stat2.val'), label: t('hero.stat2.lbl'), emoji: '⚡' },
+                { value: t('hero.stat3.val'), label: t('hero.stat3.lbl'), emoji: '⭐' },
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-xl sm:rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/80 dark:bg-gray-900/80 p-2 sm:p-2.5 backdrop-blur-md shadow-2xs"
+                  className="rounded-xl sm:rounded-2xl border border-white/15 bg-slate-900/60 p-2 sm:p-2.5 backdrop-blur-md shadow-md hover:border-amber-400/40 hover:bg-slate-900/80 transition-all text-left"
                 >
-                  <div className="font-display text-[11px] sm:text-xs md:text-sm font-extrabold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 tracking-tight">
+                  <div className="font-display text-xs sm:text-sm md:text-base font-extrabold text-amber-300 flex items-center justify-start gap-1 tracking-tight">
                     <span className="text-xs sm:text-sm select-none">{stat.emoji}</span>
                     <span>{stat.value}</span>
                   </div>
-                  <div className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400 font-semibold leading-snug mt-0.5 tracking-tight">
+                  <div className="text-[9px] sm:text-xs text-slate-300 font-medium leading-snug mt-0.5 tracking-tight line-clamp-1">
                     {stat.label}
                   </div>
                 </div>
@@ -337,28 +160,10 @@ export function WatchHero({
             </div>
           </motion.div>
 
-          <div className="flex min-h-0 items-center justify-center pt-1 pb-0.5 lg:py-0 lg:pl-4">
-            <div className="relative w-full aspect-video sm:aspect-[16/10] lg:aspect-[16/11] max-w-xs xs:max-w-sm sm:max-w-md lg:max-w-none mx-auto overflow-hidden rounded-xl sm:rounded-2xl border-[2.5px] sm:border-[4px] lg:border-[5px] border-indigo-200 dark:border-indigo-800/60 shadow-xl">
-              <canvas
-                ref={canvasRef}
-                className="absolute inset-0 h-full w-full [contain:strict]"
-                aria-hidden
-              />
-              <img
-                ref={fallbackRef}
-                src={FIRST_FRAME_SRC}
-                alt=""
-                width={800}
-                height={450}
-                fetchPriority="high"
-                decoding="async"
-                className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300"
-              />
-            </div>
-          </div>
+          {/* Right Column: Open space to highlight the merchant and store visual */}
+          <div className="hidden lg:flex lg:col-span-4 xl:col-span-5 pointer-events-none" />
         </div>
       </div>
     </section>
-    </>
   );
 }

@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { BrandLogo } from '@/components/BrandLogo';
 import { siteConfig } from '@/config/site';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function Footer({ config }: { config?: any }) {
   const router = useRouter();
   const { isAuthenticated, user, logout } = useAuth();
+  const { t } = useLanguage();
   const footerConfig = config?.footerConfig || {};
   const themeConfig = config?.themeConfig || {};
   const featureToggles = config?.featureToggles || {};
@@ -16,14 +18,14 @@ export function Footer({ config }: { config?: any }) {
   
   const copyrightText = (
     footerConfig.copyrightText ||
-    `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`
+    `© ${new Date().getFullYear()} ${brandName}. ${t('footer.copyright')}`
   ).replaceAll('TenantHub', brandName);
 
   const productLinks = [
-    featureToggles.showFeatures !== false && { href: '#features', label: 'Features' },
-    featureToggles.showPricing !== false && { href: '#pricing', label: 'Pricing' },
-    featureToggles.showTemplates !== false && { href: '#templates', label: 'Templates' },
-    { href: '/search', label: 'Directory' },
+    featureToggles.showFeatures !== false && { href: '#features', label: t('footer.features') },
+    featureToggles.showPricing !== false && { href: '#pricing', label: t('footer.pricing') },
+    featureToggles.showTemplates !== false && { href: '#templates', label: t('footer.themes') },
+    { href: '/search', label: t('footer.directory') },
   ].filter((link): link is { href: string; label: string } => Boolean(link));
 
   const accountLink =
@@ -34,10 +36,10 @@ export function Footer({ config }: { config?: any }) {
         : '/search';
   const accountLabel =
     user?.role === 'super_admin'
-      ? 'Admin Dashboard'
+      ? t('footer.adminPortal')
       : user?.role === 'company_admin'
         ? 'Dashboard'
-        : 'Browse Companies';
+        : t('footer.directory');
 
   const handleLogout = async () => {
     await logout();
@@ -45,27 +47,27 @@ export function Footer({ config }: { config?: any }) {
   };
 
   const footerSections = [
-    { title: 'Product', links: productLinks },
+    { title: t('footer.product'), links: productLinks },
     {
-      title: 'Company',
+      title: t('footer.company'),
       links: [
-        { href: '#contact', label: 'Contact' },
-        { href: '/search', label: 'Company Directory' },
-        { href: '/sitemap', label: 'Sitemap' },
+        { href: '#contact', label: t('footer.contact') },
+        { href: '/search', label: t('footer.directory') },
+        { href: '/sitemap', label: t('footer.sitemap') },
         {
           href: user?.role === 'super_admin' ? '/admin' : '/admin/login',
-          label: 'Admin Portal',
+          label: t('footer.adminPortal'),
         },
       ],
     },
     {
-      title: 'Account',
+      title: t('footer.account'),
       links: isAuthenticated
         ? [{ href: accountLink, label: accountLabel }]
         : [
-            { href: '/login', label: 'Sign In' },
-            { href: '/register/company', label: 'Register Company' },
-            { href: '/forgot-password', label: 'Reset Password' },
+            { href: '/login', label: t('footer.signIn') },
+            { href: '/register/company', label: t('footer.registerCompany') },
+            { href: '/forgot-password', label: t('footer.resetPassword') },
           ],
     },
   ];
@@ -82,7 +84,7 @@ export function Footer({ config }: { config?: any }) {
               textClassName="text-lg text-gray-900 dark:text-white"
             />
             <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-              {siteConfig.description}
+              {t('footer.desc')}
             </p>
             <div className="flex items-center gap-4 mt-6">
               {footerConfig.facebookLink && footerConfig.facebookLink !== '#' && (
@@ -122,14 +124,14 @@ export function Footer({ config }: { config?: any }) {
                     </Link>
                   </li>
                 ))}
-                {section.title === 'Account' && isAuthenticated && (
+                {section.title === t('footer.account') && isAuthenticated && (
                   <li>
                     <button
                       type="button"
                       onClick={handleLogout}
                       className="text-sm text-red-600 hover:text-red-700"
                     >
-                      Sign out
+                      {t('footer.signOut')}
                     </button>
                   </li>
                 )}

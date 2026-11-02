@@ -9,8 +9,10 @@ import axios from 'axios';
 import { CompanyCard } from '@/components/company/CompanyCard';
 import { THEME_OPTIONS } from '@/components/themes/ThemeRenderer';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function Templates({ config }: { config?: any }) {
+  const { t } = useLanguage();
   const [liveCompanies, setLiveCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +24,6 @@ export function Templates({ config }: { config?: any }) {
   useEffect(() => {
     const fetchLiveCompanies = async () => {
       try {
-        // Fetch 3 most recent approved/live companies with timeout so page never stalls
         const res = await axios.get('/api/companies/search?limit=3&newest=true', { timeout: 3500 });
         if (res.data?.success && res.data?.data) {
           setLiveCompanies(res.data.data);
@@ -47,13 +48,13 @@ export function Templates({ config }: { config?: any }) {
         >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/70 px-3 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300 mb-2">
             <span>🎨</span>
-            <span>Available Themes & Templates</span>
+            <span>{t('templates.badge')}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-            {config?.title || 'Available Themes'}
+            {t('templates.title')}
           </h2>
           <p className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            {config?.subtitle || 'Choose from professionally designed themes with Free and Premium options'}
+            {t('templates.subtitle')}
           </p>
         </motion.div>
 
@@ -87,11 +88,11 @@ export function Templates({ config }: { config?: any }) {
                     <div className="absolute top-2.5 right-2.5 z-10">
                       {isPremium ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-amber-500 to-amber-600 px-2.5 py-0.5 text-[11px] font-black text-white shadow-md">
-                          ⭐ Premium
+                          {t('templates.premium')}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/90 px-2.5 py-0.5 text-[11px] font-bold text-white shadow-xs">
-                          ✓ Included
+                          {t('templates.included')}
                         </span>
                       )}
                     </div>
@@ -101,7 +102,7 @@ export function Templates({ config }: { config?: any }) {
                         variant="secondary"
                         className="opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 rounded-xl font-bold text-xs"
                       >
-                        <Link href="/search">View Live Pages</Link>
+                        <Link href="/search">{t('templates.viewLive')}</Link>
                       </Button>
                     </div>
                   </div>
@@ -118,13 +119,13 @@ export function Templates({ config }: { config?: any }) {
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-gray-100 dark:border-gray-800/80 pt-2.5 text-xs font-semibold">
                       <span className={isPremium ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-emerald-600 dark:text-emerald-400'}>
-                        {isPremium ? '⭐ Premium Plan' : '✓ All Plans'}
+                        {isPremium ? t('templates.premiumPlan') : t('templates.allPlans')}
                       </span>
                       <Link
                         href={`/register/company?template=${template.id}`}
                         className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-bold inline-flex items-center gap-1 hover:underline"
                       >
-                        Use Theme →
+                        {t('templates.useTheme')}
                       </Link>
                     </div>
                   </CardContent>
@@ -142,13 +143,13 @@ export function Templates({ config }: { config?: any }) {
         >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-50/70 px-3 py-1 text-xs font-bold text-purple-700 dark:border-purple-800 dark:bg-purple-950/50 dark:text-purple-300 mb-2">
             <span>⚡</span>
-            <span>Real Businesses Using Our Themes</span>
+            <span>{t('templates.liveExamplesBadge')}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
-            Live Examples
+            {t('templates.liveExamplesTitle')}
           </h2>
           <p className="mt-1.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            See how businesses build their brand presence with our templates
+            {t('templates.liveExamplesSubtitle')}
           </p>
         </motion.div>
 
@@ -194,11 +195,14 @@ export function Templates({ config }: { config?: any }) {
         <div className="text-center mt-8 sm:mt-10">
           <Button asChild variant="gradient" className="h-11 rounded-2xl px-6 font-bold text-sm shadow-md shadow-indigo-500/25">
             <Link href="/register/company">
-              Start Building with Templates
+              {t('templates.startBuilding')}
             </Link>
           </Button>
           <p className="mt-2.5 text-xs text-gray-500">
-            Or <Link href="/search" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">browse the full directory</Link>
+            {t('templates.or')}{' '}
+            <Link href="/search" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+              {t('templates.browseDirectory')}
+            </Link>
           </p>
         </div>
       </div>

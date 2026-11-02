@@ -13,10 +13,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Mail, Phone, MapPin, Send, User, MessageSquare, Clock, MessageCircle, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { z } from 'zod';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type ContactForm = z.infer<typeof contactSchema>;
 
 export function Contact({ config }: { config?: any }) {
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
@@ -64,19 +66,19 @@ export function Contact({ config }: { config?: any }) {
         >
           <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1 text-xs font-bold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 mb-2.5 shadow-2xs">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>24x7 Vyapari Support</span>
+            <span>{t('contact.badge')}</span>
           </div>
           <h2 className="text-3xl font-black sm:text-4xl text-gray-900 dark:text-white tracking-tight">
-            Get in Touch
+            {t('contact.title')}
           </h2>
           <p className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
-            Koi bhi sawaal ya query ho? Humari support team har vyapari ki madad ke liye hamesha taiyyar hai.
+            {t('contact.subtitle')}
           </p>
         </motion.div>
 
         {/* 2-Column Balanced Height Grid */}
         <div className="grid gap-6 lg:grid-cols-12 items-stretch">
-          {/* Left Column: Office & Contact Info Card (Equal Height) */}
+          {/* Left Column: Office & Contact Info Card */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -84,18 +86,17 @@ export function Contact({ config }: { config?: any }) {
             className="lg:col-span-5 h-full"
           >
             <div className="h-full flex flex-col justify-between rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-linear-to-br from-indigo-900 via-indigo-950 to-purple-950 text-white p-5 sm:p-8 shadow-xl relative overflow-hidden">
-              {/* Subtle background glow */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
               <div className="relative z-10">
                 <span className="inline-block text-xs font-bold uppercase tracking-wider text-indigo-300 mb-2">
-                  Contact Information
+                  {t('contact.infoTag')}
                 </span>
                 <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-white mb-2">
-                  Bhartiyebazar Support
+                  {t('contact.supportTitle')}
                 </h3>
                 <p className="text-xs sm:text-sm text-indigo-200/90 leading-relaxed mb-6">
-                  Chhota ho ya bada kaam — humare experts se seedhe sampark karein aur apni dukan ko aaj hi online banayein.
+                  {t('contact.infoDesc')}
                 </p>
 
                 {/* Contact List */}
@@ -108,7 +109,9 @@ export function Contact({ config }: { config?: any }) {
                       <Mail className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider">Email Us</div>
+                      <div className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider">
+                        {t('contact.emailUs')}
+                      </div>
                       <div className="text-xs sm:text-sm font-semibold text-white break-all">{emailValue}</div>
                     </div>
                   </a>
@@ -121,7 +124,9 @@ export function Contact({ config }: { config?: any }) {
                       <Phone className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[11px] font-bold text-emerald-300 uppercase tracking-wider">Call / WhatsApp</div>
+                      <div className="text-[11px] font-bold text-emerald-300 uppercase tracking-wider">
+                        {t('contact.callWhatsapp')}
+                      </div>
                       <div className="text-xs sm:text-sm font-semibold text-white">{phoneValue}</div>
                     </div>
                   </a>
@@ -131,7 +136,9 @@ export function Contact({ config }: { config?: any }) {
                       <MapPin className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[11px] font-bold text-amber-300 uppercase tracking-wider">Head Office</div>
+                      <div className="text-[11px] font-bold text-amber-300 uppercase tracking-wider">
+                        {t('contact.headOffice')}
+                      </div>
                       <div className="text-xs sm:text-sm font-medium text-white/95 leading-relaxed">{addressValue}</div>
                     </div>
                   </div>
@@ -143,9 +150,9 @@ export function Contact({ config }: { config?: any }) {
                 <div className="flex items-center justify-between text-xs text-indigo-200 font-semibold mb-3">
                   <div className="flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5 text-indigo-400" />
-                    <span>Mon - Sat: 9 AM - 7 PM</span>
+                    <span>{t('contact.timing')}</span>
                   </div>
-                  <span className="text-emerald-400 font-bold">● Active Now</span>
+                  <span className="text-emerald-400 font-bold">{t('contact.activeNow')}</span>
                 </div>
                 <a
                   href={`https://wa.me/${phoneValue.replace(/[^0-9]/g, '')}`}
@@ -154,13 +161,13 @@ export function Contact({ config }: { config?: any }) {
                   className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs sm:text-sm py-2.5 shadow-md shadow-emerald-500/25 active:scale-95 transition-all"
                 >
                   <MessageCircle className="h-4 w-4" />
-                  <span>Chat on WhatsApp</span>
+                  <span>{t('contact.chatWhatsapp')}</span>
                 </a>
               </div>
             </div>
           </motion.div>
 
-          {/* Right Column: Contact Message Form (Equal Height) */}
+          {/* Right Column: Contact Message Form */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -172,19 +179,18 @@ export function Contact({ config }: { config?: any }) {
                 <div>
                   <div className="mb-5">
                     <h4 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
-                      Send us a Message
+                      {t('contact.formTitle')}
                     </h4>
                     <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Fill out the form below, and we will get back to you within 2 business hours.
+                      {t('contact.formSubtitle')}
                     </p>
                   </div>
 
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    {/* Row 1: Name & Email side-by-side on sm+ screens */}
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="name" className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                          Your Name
+                          {t('contact.nameLabel')}
                         </Label>
                         <div className="relative mt-1.5">
                           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -194,7 +200,7 @@ export function Contact({ config }: { config?: any }) {
                             id="name"
                             {...register('name')}
                             className="pl-9 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus-visible:ring-indigo-500 h-10 sm:h-11 rounded-xl text-xs sm:text-sm"
-                            placeholder="John Doe"
+                            placeholder={t('contact.namePlaceholder')}
                           />
                         </div>
                         {errors.name && (
@@ -204,7 +210,7 @@ export function Contact({ config }: { config?: any }) {
 
                       <div>
                         <Label htmlFor="email" className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                          Email Address
+                          {t('contact.emailLabel')}
                         </Label>
                         <div className="relative mt-1.5">
                           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -215,7 +221,7 @@ export function Contact({ config }: { config?: any }) {
                             type="email"
                             {...register('email')}
                             className="pl-9 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus-visible:ring-indigo-500 h-10 sm:h-11 rounded-xl text-xs sm:text-sm"
-                            placeholder="john@example.com"
+                            placeholder={t('contact.emailPlaceholder')}
                           />
                         </div>
                         {errors.email && (
@@ -224,10 +230,9 @@ export function Contact({ config }: { config?: any }) {
                       </div>
                     </div>
 
-                    {/* Row 2: Subject */}
                     <div>
                       <Label htmlFor="subject" className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                        Subject
+                        {t('contact.subjectLabel')}
                       </Label>
                       <div className="relative mt-1.5">
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -237,7 +242,7 @@ export function Contact({ config }: { config?: any }) {
                           id="subject"
                           {...register('subject')}
                           className="pl-9 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus-visible:ring-indigo-500 h-10 sm:h-11 rounded-xl text-xs sm:text-sm"
-                          placeholder="How can we help?"
+                          placeholder={t('contact.subjectPlaceholder')}
                         />
                       </div>
                       {errors.subject && (
@@ -245,24 +250,22 @@ export function Contact({ config }: { config?: any }) {
                       )}
                     </div>
 
-                    {/* Row 3: Message */}
                     <div>
                       <Label htmlFor="message" className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                        Message
+                        {t('contact.messageLabel')}
                       </Label>
                       <Textarea
                         id="message"
                         rows={3}
                         {...register('message')}
                         className="mt-1.5 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus-visible:ring-indigo-500 rounded-xl resize-none text-xs sm:text-sm"
-                        placeholder="Your message here..."
+                        placeholder={t('contact.messagePlaceholder')}
                       />
                       {errors.message && (
                         <p className="text-xs text-red-500 mt-1 font-medium">{errors.message.message}</p>
                       )}
                     </div>
 
-                    {/* Submit Button */}
                     <Button
                       type="submit"
                       variant="gradient"
@@ -270,7 +273,7 @@ export function Contact({ config }: { config?: any }) {
                       disabled={isSubmitting}
                     >
                       <Send className="h-4 w-4" />
-                      <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
+                      <span>{isSubmitting ? t('contact.sendingBtn') : t('contact.sendBtn')}</span>
                     </Button>
                   </form>
                 </div>

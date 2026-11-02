@@ -66,7 +66,7 @@ export function Hero({
             <span className="tracking-wide font-medium leading-tight">Chhota ho ya bada kaam, Bhartiyebazar par hoga har vyapari ka naam</span>
           </div>
 
-          <h1 className="font-cursive text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-normal leading-[1.25] sm:leading-[1.18] py-1">
+          <h1 className="font-cursive text-[clamp(1.85rem,8vw,5.5rem)] font-bold tracking-tight leading-[1.18] sm:leading-[1.15] py-1 select-none">
             <span className="block whitespace-nowrap bg-linear-to-r from-indigo-600 via-purple-600 to-amber-600 dark:from-indigo-400 dark:via-purple-300 dark:to-amber-300 bg-clip-text text-transparent text-3d-gradient pr-2">
               {highlightText}
             </span>
@@ -81,16 +81,18 @@ export function Hero({
             {subtitleText}
           </p>
 
-          <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 font-display">
-            <Button asChild variant="gradient" size="lg" className="gap-2 rounded-2xl font-bold tracking-wide w-full sm:w-auto">
-              <Link href={primaryLink} className="inline-flex items-center justify-center gap-2">
-                {config?.primaryCtaText || "Start Free Trial"}
-                <ArrowRight className="h-5 w-5" />
+          <div className="mt-8 sm:mt-10 flex flex-row items-center justify-center gap-2.5 sm:gap-4 font-display max-w-md mx-auto">
+            <Button asChild variant="gradient" className="flex-1 sm:flex-initial h-10 sm:h-12 rounded-xl sm:rounded-2xl px-3 sm:px-6 font-bold text-xs sm:text-base tracking-wide shrink-0">
+              <Link href={primaryLink} className="inline-flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap">
+                <span>✨</span>
+                <span>{config?.primaryCtaText || "Start Free Trial"}</span>
+                <ArrowRight className="h-3.5 w-3.5 sm:h-5 sm:w-5 shrink-0" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="rounded-2xl font-bold tracking-wide w-full sm:w-auto">
-              <Link href={secondaryLink} className="inline-flex items-center justify-center">
-                {secondaryText}
+            <Button asChild variant="outline" className="flex-1 sm:flex-initial h-10 sm:h-12 rounded-xl sm:rounded-2xl border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-gray-900/90 px-3 sm:px-6 font-bold text-xs sm:text-base tracking-wide shrink-0">
+              <Link href={secondaryLink} className="inline-flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap">
+                <span>🎨</span>
+                <span>{secondaryText}</span>
               </Link>
             </Button>
           </div>
