@@ -67,6 +67,7 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
   // Row 1 buttons (Platform Navigation) in the requested 2-tier pill design
   const row1Buttons = [
     { href: '/', label: t('nav.home'), emoji: '🏠', show: true },
+    { href: '#vyapari-software', label: 'Billing & Khata', emoji: '🧾', show: true },
     { href: '#pricing', label: t('nav.pricing'), emoji: '💳', show: featureToggles?.showPricing !== false },
     { href: '#how-it-works', label: t('nav.howItWorks'), emoji: '⚙️', show: featureToggles?.showHowItWorks !== false },
     { href: '#templates', label: t('nav.themes'), emoji: '🎨', show: featureToggles?.showTemplates !== false },
@@ -89,7 +90,7 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
 
   const closeMenu = () => setIsOpen(false);
 
-  const brandName = config?.logoText || siteConfig.name || 'Bhartiyebazar';
+  const brandName = 'Bhartiyebazar';
 
   return (
     <motion.nav
@@ -150,13 +151,13 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
                 className={cn(
                   'inline-flex items-center gap-1 xl:gap-1.5 rounded-xl xl:rounded-2xl px-2.5 xl:px-3 py-1 text-xs xl:text-[13px] font-bold transition-all duration-150 active:scale-95 shadow-2xs whitespace-nowrap shrink-0',
                   btn.variant === 'primary' &&
-                    'border border-indigo-600 bg-linear-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-xs shadow-indigo-500/25 px-3.5 xl:px-4',
+                  'border border-indigo-600 bg-linear-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-xs shadow-indigo-500/25 px-3.5 xl:px-4',
                   btn.variant === 'accent' &&
-                    'border border-indigo-200/90 dark:border-indigo-800/80 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/80 dark:hover:bg-indigo-900/60 hover:border-indigo-300',
+                  'border border-indigo-200/90 dark:border-indigo-800/80 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/80 dark:hover:bg-indigo-900/60 hover:border-indigo-300',
                   btn.variant === 'admin' &&
-                    'border border-amber-200/90 dark:border-amber-800/80 bg-amber-50/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100/80 dark:hover:bg-amber-900/60 hover:border-amber-300',
+                  'border border-amber-200/90 dark:border-amber-800/80 bg-amber-50/70 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100/80 dark:hover:bg-amber-900/60 hover:border-amber-300',
                   btn.variant === 'default' &&
-                    'border border-slate-300/80 dark:border-slate-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-600',
+                  'border border-slate-300/80 dark:border-slate-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-600',
                 )}
               >
                 <span className="text-xs xl:text-sm select-none">{btn.emoji}</span>

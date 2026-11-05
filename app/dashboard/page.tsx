@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Package, Wrench, Users, Star, TrendingUp, Globe } from 'lucide-react';
+import { Package, Wrench, Users, Star, TrendingUp, Globe, Receipt, BookOpen, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useCompany } from '@/hooks/useCompany';
@@ -70,6 +70,57 @@ export default function DashboardPage() {
             </Link>
           </Button>
         )}
+      </div>
+
+      {/* Quick Launch: Vyapari Daily Software Suite */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900 bg-linear-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950/60 dark:via-gray-900 dark:to-purple-950/40 p-5 shadow-xs flex flex-col justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md">
+              <Receipt className="h-6 w-6" />
+            </div>
+            <div>
+              <span className="inline-block rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 px-2.5 py-0.5 text-[10px] font-extrabold uppercase mb-1">
+                Daily Shop Software #1
+              </span>
+              <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">
+                🧾 GST / Non-GST Billing & Invoice Software
+              </h2>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                1-Click me customer ka Pukka Bill banayein, Paid/Unpaid record save rakhein, PDF print karein ya WhatsApp par bill bhejein.
+              </p>
+            </div>
+          </div>
+          <Button asChild className="w-full sm:w-fit rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs">
+            <Link href="/dashboard/billing">
+              Open Billing Software <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </div>
+
+        <div className="rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-linear-to-br from-emerald-50 via-white to-teal-50 dark:from-emerald-950/60 dark:via-gray-900 dark:to-teal-950/40 p-5 shadow-xs flex flex-col justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md">
+              <BookOpen className="h-6 w-6" />
+            </div>
+            <div>
+              <span className="inline-block rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 text-[10px] font-extrabold uppercase mb-1">
+                Daily Shop Software #2
+              </span>
+              <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">
+                📒 Digital Bahi-Khata / Udhaar Software
+              </h2>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                KhataBook style me grahakon ka Udhaar (Maine Diya) aur Jama (Mujhe Mila) likhein aur 1-Click me WhatsApp Payment Reminder bhejein.
+              </p>
+            </div>
+          </div>
+          <Button asChild className="w-full sm:w-fit rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs">
+            <Link href="/dashboard/khata">
+              Open Digital Bahi-Khata <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">

@@ -63,7 +63,7 @@ export default async function RootLayout({
 }>) {
   const settings = await getPlatformSettings();
   const initialBranding = {
-    logoText: settings?.themeConfig?.logoText || siteConfig.name,
+    logoText: 'Bhartiyebazar',
     logoImage: settings?.themeConfig?.logoImage || '',
   };
 

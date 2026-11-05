@@ -542,7 +542,7 @@ export function CarpenterWorksTheme(props: Props) {
           
           <div className="pt-8 border-t border-white/10 text-center text-white/50 text-sm">
             <p>&copy; {new Date().getFullYear()} {page.brandName}. All rights reserved.</p>
-            <p className="mt-2">Promoted By Multi-Tenant Platform Provisioning Tech</p>
+            <p className="mt-2">Promoted By Bhartiyebazar</p>
           </div>
         </div>
       </footer>

@@ -6,6 +6,26 @@ import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import crypto from 'crypto';
 
+const LEGACY_BRAND_REGEX =
+  /Multi-Tenant(?:\s+Platform)?(?:\s+Provisioning\s+Tech)?|multitenant|multi-tenant|TenantHub|ProvisioningTechHub|Provisioning\s+Tech/gi;
+
+function sanitizeBrandStrings<T>(val: T): T {
+  if (typeof val === 'string') {
+    return val.replace(LEGACY_BRAND_REGEX, 'Bhartiyebazar') as unknown as T;
+  }
+  if (Array.isArray(val)) {
+    return val.map(sanitizeBrandStrings) as unknown as T;
+  }
+  if (val && typeof val === 'object') {
+    const out: Record<string, any> = {};
+    for (const [k, v] of Object.entries(val)) {
+      out[k] = sanitizeBrandStrings(v);
+    }
+    return out as T;
+  }
+  return val;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const [settingsList] = await pool.execute<RowDataPacket[]>('SELECT * FROM platform_settings LIMIT 1');
@@ -18,20 +38,23 @@ export async function GET(request: NextRequest) {
       settings = newSettings[0];
     }
 
+    const themeConfig = sanitizeBrandStrings(typeof settings.themeConfig === 'string' ? JSON.parse(settings.themeConfig) : settings.themeConfig) || {};
+    themeConfig.logoText = 'Bhartiyebazar';
+
     return apiSuccess({
       ...settings,
-      heroConfig: typeof settings.heroConfig === 'string' ? JSON.parse(settings.heroConfig) : settings.heroConfig,
-      themeConfig: typeof settings.themeConfig === 'string' ? JSON.parse(settings.themeConfig) : settings.themeConfig,
+      heroConfig: sanitizeBrandStrings(typeof settings.heroConfig === 'string' ? JSON.parse(settings.heroConfig) : settings.heroConfig),
+      themeConfig,
       featureToggles: typeof settings.featureToggles === 'string' ? JSON.parse(settings.featureToggles) : settings.featureToggles,
-      seoConfig: typeof settings.seoConfig === 'string' ? JSON.parse(settings.seoConfig) : settings.seoConfig,
-      featuresConfig: typeof settings.featuresConfig === 'string' ? JSON.parse(settings.featuresConfig) : settings.featuresConfig,
-      howItWorksConfig: typeof settings.howItWorksConfig === 'string' ? JSON.parse(settings.howItWorksConfig) : settings.howItWorksConfig,
-      pricingConfig: typeof settings.pricingConfig === 'string' ? JSON.parse(settings.pricingConfig) : settings.pricingConfig,
-      faqConfig: typeof settings.faqConfig === 'string' ? JSON.parse(settings.faqConfig) : settings.faqConfig,
-      testimonialsConfig: typeof settings.testimonialsConfig === 'string' ? JSON.parse(settings.testimonialsConfig) : settings.testimonialsConfig,
-      contactConfig: typeof settings.contactConfig === 'string' ? JSON.parse(settings.contactConfig) : settings.contactConfig,
-      footerConfig: typeof settings.footerConfig === 'string' ? JSON.parse(settings.footerConfig) : settings.footerConfig,
-      templatesConfig: typeof settings.templatesConfig === 'string' ? JSON.parse(settings.templatesConfig) : settings.templatesConfig,
+      seoConfig: sanitizeBrandStrings(typeof settings.seoConfig === 'string' ? JSON.parse(settings.seoConfig) : settings.seoConfig),
+      featuresConfig: sanitizeBrandStrings(typeof settings.featuresConfig === 'string' ? JSON.parse(settings.featuresConfig) : settings.featuresConfig),
+      howItWorksConfig: sanitizeBrandStrings(typeof settings.howItWorksConfig === 'string' ? JSON.parse(settings.howItWorksConfig) : settings.howItWorksConfig),
+      pricingConfig: sanitizeBrandStrings(typeof settings.pricingConfig === 'string' ? JSON.parse(settings.pricingConfig) : settings.pricingConfig),
+      faqConfig: sanitizeBrandStrings(typeof settings.faqConfig === 'string' ? JSON.parse(settings.faqConfig) : settings.faqConfig),
+      testimonialsConfig: sanitizeBrandStrings(typeof settings.testimonialsConfig === 'string' ? JSON.parse(settings.testimonialsConfig) : settings.testimonialsConfig),
+      contactConfig: sanitizeBrandStrings(typeof settings.contactConfig === 'string' ? JSON.parse(settings.contactConfig) : settings.contactConfig),
+      footerConfig: sanitizeBrandStrings(typeof settings.footerConfig === 'string' ? JSON.parse(settings.footerConfig) : settings.footerConfig),
+      templatesConfig: sanitizeBrandStrings(typeof settings.templatesConfig === 'string' ? JSON.parse(settings.templatesConfig) : settings.templatesConfig),
       customHeaderCode: settings.customHeaderCode || '',
     });
   } catch (error) {

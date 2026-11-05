@@ -46,6 +46,13 @@ export function FooterSection({
   const variant = section.designVariant || 'variant-1';
   const rawItems = (section.items || []) as Array<Record<string, string>>;
   const items = filterNavFooterItems(rawItems);
+  const footerContent = (
+    section.content?.trim() ||
+    `© ${new Date().getFullYear()} ${companyName}. All rights reserved. - Promoted By Bhartiyebazar`
+  ).replace(
+    /Multi-Tenant(?:\s+Platform)?(?:\s+Provisioning\s+Tech)?|multitenant|multi-tenant|TenantHub|ProvisioningTechHub/gi,
+    'Bhartiyebazar',
+  );
 
   // ---------------------------------------------------------------------------
   // Variant 1: Standard 4-Column Corporate Footer
@@ -111,7 +118,7 @@ export function FooterSection({
           </div>
           <div className="mx-auto mt-16 max-w-7xl border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/50">
             <p>
-              {section.content?.trim() || `© ${new Date().getFullYear()} ${companyName}. All rights reserved.`}
+              {footerContent}
             </p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-white transition">Privacy Policy</a>
@@ -158,7 +165,7 @@ export function FooterSection({
           )}
 
           <div className="border-t border-gray-200 pt-8 text-sm text-gray-400 font-medium flex flex-col md:flex-row justify-center items-center gap-2">
-            {section.content?.trim() || `© ${new Date().getFullYear()} ${companyName}. All rights reserved.`}
+            {footerContent}
           </div>
         </div>
       </footer>
@@ -196,7 +203,7 @@ export function FooterSection({
             <div className="text-center lg:text-left">
               <span className="text-2xl font-black text-white">{companyName}</span>
               <p className="mt-2 text-sm text-gray-500">
-                {section.content?.trim() || `© ${new Date().getFullYear()} ${companyName}. All rights reserved.`}
+                {footerContent}
               </p>
             </div>
             

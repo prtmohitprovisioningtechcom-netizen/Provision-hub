@@ -14,12 +14,15 @@ export function Footer({ config }: { config?: any }) {
   const footerConfig = config?.footerConfig || {};
   const themeConfig = config?.themeConfig || {};
   const featureToggles = config?.featureToggles || {};
-  const brandName = themeConfig.logoText || siteConfig.name;
+  const brandName = 'Bhartiyebazar';
   
   const copyrightText = (
     footerConfig.copyrightText ||
     `© ${new Date().getFullYear()} ${brandName}. ${t('footer.copyright')}`
-  ).replaceAll('TenantHub', brandName);
+  ).replace(
+    /Multi-Tenant(?:\s+Platform)?(?:\s+Provisioning\s+Tech)?|multitenant|multi-tenant|TenantHub|ProvisioningTechHub|Provisioning\s+Tech/gi,
+    brandName,
+  );
 
   const productLinks = [
     featureToggles.showFeatures !== false && { href: '#features', label: t('footer.features') },

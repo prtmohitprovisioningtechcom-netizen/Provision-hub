@@ -118,7 +118,7 @@ export function CompanyProfileView({
   gallery,
 }: CompanyProfileViewProps) {
   const platformBranding = usePlatformBranding();
-  const platformName = platformBranding.logoText || 'TenantHub';
+  const platformName = platformBranding.logoText || 'Bhartiyebazar';
   const whatsappNumber = company.socialLinks?.whatsapp || company.phone;
   const whatsappUrl = whatsappNumber
     ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${company.name}, I found you on ${platformName} and would like to enquire.`)}`

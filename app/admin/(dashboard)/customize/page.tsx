@@ -48,8 +48,8 @@ export default function CustomizePage() {
           heroConfig: d.heroConfig || settings.heroConfig,
           featureToggles: d.featureToggles || settings.featureToggles,
           seoConfig: d.seoConfig || settings.seoConfig,
-          themeConfig: d.themeConfig || { logoText: 'ProvisioningTechHub', logoImage: '', primaryColor: '#4f46e5', secondaryColor: '#ec4899' },
-          contactConfig: d.contactConfig || { email: 'hello@provisioningtechhub.com', phone: '+1 (555) 123-4567', address: '123 SaaS Street, San Francisco, CA' },
+          themeConfig: d.themeConfig || { logoText: 'Bhartiyebazar', logoImage: '', primaryColor: '#4f46e5', secondaryColor: '#ec4899' },
+          contactConfig: d.contactConfig || { email: 'support@bhartiyebazar.com', phone: '+91 6397650818', address: '11121, 11th floor, Gaur City Mall, Sector-4, Greater Noida, Uttar Pradesh - 201009' },
           featuresConfig: {
             title: d.featuresConfig?.title || 'Dukan Wahi, Pehchan Nayi — Apne Vyapar Ko Dein Digital Raftaar!',
             subtitle: d.featuresConfig?.subtitle || 'Gali-mohalle se poore shehar tak — Chuniye apni dukan aur dekhiye 0% commission ke sath bikri kaise doguni hoti hai.',
@@ -95,7 +95,7 @@ export default function CustomizePage() {
           testimonialsConfig: {
             title: d.testimonialsConfig?.title || 'Loved by Businesses Worldwide',
             items: d.testimonialsConfig?.items?.length > 0 ? d.testimonialsConfig.items : [
-              { name: 'Sarah Johnson', role: 'CEO, TechStart Inc.', content: 'ProvisioningTechHub transformed our online presence. We went from zero to a professional landing page in under an hour.', rating: 5, initials: 'SJ' },
+              { name: 'Sarah Johnson', role: 'CEO, TechStart Inc.', content: 'Bhartiyebazar transformed our online presence. We went from zero to a professional landing page in under an hour.', rating: 5, initials: 'SJ' },
               { name: 'Michael Chen', role: 'Founder, GreenLeaf Services', content: 'The lead management system alone has increased our conversions by 40%. Highly recommended for any business.', rating: 5, initials: 'MC' },
               { name: 'Emily Rodriguez', role: 'Marketing Director, Bloom Studio', content: 'Beautiful templates, easy customization, and the analytics dashboard gives us insights we never had before.', rating: 5, initials: 'ER' },
             ]
@@ -105,7 +105,7 @@ export default function CustomizePage() {
             subtitle: d.templatesConfig?.subtitle || 'Choose from professionally designed themes for every industry',
             enabledThemeIds: d.templatesConfig?.enabledThemeIds || THEME_OPTIONS.map(t => t.id),
           },
-          footerConfig: d.footerConfig || { copyrightText: '© 2026 ProvisioningTechHub Inc. All rights reserved.', facebookLink: '#', twitterLink: '#', instagramLink: '#', linkedinLink: '#' },
+          footerConfig: d.footerConfig || { copyrightText: '© 2026 Bhartiyebazar. All rights reserved.', facebookLink: '#', twitterLink: '#', instagramLink: '#', linkedinLink: '#' },
           customHeaderCode: d.customHeaderCode || '',
         });
       }
@@ -293,7 +293,7 @@ export default function CustomizePage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Support Email</Label>
-                <Input value={settings.contactConfig.email} onChange={e => updateSection('contactConfig', 'email', e.target.value)} type="email" placeholder="hello@provisioningtechhub.com" />
+                <Input value={settings.contactConfig.email} onChange={e => updateSection('contactConfig', 'email', e.target.value)} type="email" placeholder="support@bhartiyebazar.com" />
               </div>
               <div className="space-y-2">
                 <Label>Phone Number</Label>

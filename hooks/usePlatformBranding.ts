@@ -11,8 +11,21 @@ const BRAND_EVENT = 'platform-branding-updated';
 let cachedBranding: PlatformBranding | null = null;
 let brandingRequest: Promise<PlatformBranding> | null = null;
 
+function normalizeBranding(branding?: PlatformBranding): PlatformBranding {
+  if (!branding) return { logoText: 'Bhartiyebazar' };
+  const raw = branding.logoText?.trim() || '';
+  const cleaned = raw.replace(
+    /Multi-Tenant(?:\s+Platform)?(?:\s+Provisioning\s+Tech)?|multitenant|multi-tenant|TenantHub|ProvisioningTechHub|Provisioning\s+Tech/gi,
+    'Bhartiyebazar',
+  );
+  return {
+    ...branding,
+    logoText: cleaned || 'Bhartiyebazar',
+  };
+}
+
 export function initializePlatformBranding(branding: PlatformBranding) {
-  cachedBranding = branding;
+  cachedBranding = normalizeBranding(branding);
 }
 
 async function loadBranding(): Promise<PlatformBranding> {
@@ -20,8 +33,8 @@ async function loadBranding(): Promise<PlatformBranding> {
 
   brandingRequest ??= fetch('/api/admin/settings')
     .then((response) => response.json())
-    .then((response) => response?.data?.themeConfig || {})
-    .catch(() => ({}))
+    .then((response) => normalizeBranding(response?.data?.themeConfig || {}))
+    .catch(() => ({ logoText: 'Bhartiyebazar' }))
     .finally(() => {
       brandingRequest = null;
     });
@@ -31,25 +44,27 @@ async function loadBranding(): Promise<PlatformBranding> {
 }
 
 export function setPlatformBranding(branding: PlatformBranding) {
-  cachedBranding = branding;
-  window.dispatchEvent(new CustomEvent(BRAND_EVENT, { detail: branding }));
+  const normalized = normalizeBranding(branding);
+  cachedBranding = normalized;
+  window.dispatchEvent(new CustomEvent(BRAND_EVENT, { detail: normalized }));
 }
 
 export function usePlatformBranding(initialBranding?: PlatformBranding) {
   const [branding, setBranding] = useState<PlatformBranding>(
-    initialBranding || cachedBranding || {},
+    normalizeBranding(initialBranding || cachedBranding || {}),
   );
 
   useEffect(() => {
     if (initialBranding) {
-      cachedBranding = initialBranding;
-      requestAnimationFrame(() => setBranding(initialBranding));
+      const normalized = normalizeBranding(initialBranding);
+      cachedBranding = normalized;
+      requestAnimationFrame(() => setBranding(normalized));
     } else {
       loadBranding().then(setBranding);
     }
 
     const handleUpdate = (event: Event) => {
-      setBranding((event as CustomEvent<PlatformBranding>).detail);
+      setBranding(normalizeBranding((event as CustomEvent<PlatformBranding>).detail));
     };
 
     window.addEventListener(BRAND_EVENT, handleUpdate);

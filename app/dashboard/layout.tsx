@@ -21,6 +21,8 @@ import {
   X,
   ChevronLeft,
   Clock,
+  Receipt,
+  BookOpen,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '@/services/api';
@@ -34,6 +36,8 @@ import { getInitials } from '@/lib/utils';
 
 const sidebarLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/billing', label: 'Billing & Invoice', icon: Receipt },
+  { href: '/dashboard/khata', label: 'Digital Bahi-Khata', icon: BookOpen },
   { href: '/dashboard/website', label: 'Website Builder', icon: Globe },
   { href: '/dashboard/products', label: 'Products', icon: Package },
   { href: '/dashboard/blogs', label: 'Blogs', icon: FileText },

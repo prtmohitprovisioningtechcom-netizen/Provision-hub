@@ -13,8 +13,8 @@ export const siteConfig = {
   url: deploymentUrl,
   ogImage: '/og-image.png',
   links: {
-    twitter: 'https://twitter.com/tenanthub',
-    github: 'https://github.com/tenanthub',
+    twitter: 'https://twitter.com/bhartiyebazar',
+    github: 'https://github.com/bhartiyebazar',
   },
-  creator: 'TenantHub Team',
+  creator: 'Bhartiyebazar Team',
 };

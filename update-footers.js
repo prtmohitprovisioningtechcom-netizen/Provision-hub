@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const themesDir = path.join(__dirname, 'components/themes');
-const textToAppend = ' - Promoted By Multi-Tenant Platform Provisioning Tech';
+const textToAppend = ' - Promoted By Bhartiyebazar';
 
 function processDirectory(dir) {
   const files = fs.readdirSync(dir);
@@ -17,7 +17,7 @@ function processDirectory(dir) {
 
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
-        if (line.includes('{new Date().getFullYear()}') && !line.includes('Promoted By Multi-Tenant Platform Provisioning Tech')) {
+        if (line.includes('{new Date().getFullYear()}') && !line.includes('Promoted By Bhartiyebazar')) {
           // If the line already has closing tags like </p>, we need to insert before them
           if (line.includes('</p>')) {
             lines[i] = line.replace('</p>', `${textToAppend}</p>`);

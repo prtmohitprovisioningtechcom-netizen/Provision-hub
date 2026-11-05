@@ -171,7 +171,7 @@ const TESTIMONIALS_MAP = {
 
 export function Testimonials({ config }: { config?: TestimonialsConfig }) {
   const branding = usePlatformBranding();
-  const brandName = branding.logoText || 'Bhartiyebazar';
+  const brandName = 'Bhartiyebazar';
   const { language, t } = useLanguage();
 
   const activeTestimonials = (TESTIMONIALS_MAP as any)[language] || TESTIMONIALS_MAP.en;
@@ -229,7 +229,7 @@ export function Testimonials({ config }: { config?: TestimonialsConfig }) {
                     </div>
 
                     <p className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm leading-relaxed mb-6 italic">
-                      &ldquo;{tItem.content.replaceAll('TenantHub', brandName)}&rdquo;
+                      &ldquo;{tItem.content.replace(/Multi-Tenant(?:\s+Platform)?(?:\s+Provisioning\s+Tech)?|multitenant|multi-tenant|TenantHub|ProvisioningTechHub/gi, brandName)}&rdquo;
                     </p>
                   </div>
 

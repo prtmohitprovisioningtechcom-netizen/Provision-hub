@@ -1,6 +1,6 @@
 import { SubscriptionPlan } from '@/types';
 
-export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'TenantHub';
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'Bhartiyebazar';
 
 export const ROLES = {
   SUPER_ADMIN: 'super_admin',

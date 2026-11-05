@@ -517,7 +517,7 @@ export function CreativeStudioTheme(props: Props) {
             {page.brandName}
           </div>
           <div className="text-gray-500 text-sm font-medium">
-            &copy; {new Date().getFullYear()} {page.brandName}. - Promoted By Multi-Tenant Platform Provisioning Tech All rights reserved.
+            &copy; {new Date().getFullYear()} {page.brandName}. - Promoted By Bhartiyebazar All rights reserved.
           </div>
         </div>
       </footer>
