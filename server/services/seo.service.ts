@@ -239,6 +239,24 @@ export class SeoService {
   }
 
   /**
+   * Fetches the global SEO settings from `seo_global_settings`.
+   */
+  static async getGlobalSettings() {
+    try {
+      await this.ensureSeoTables();
+      const [rows] = await pool.execute<RowDataPacket[]>(
+        'SELECT * FROM seo_global_settings LIMIT 1',
+      );
+      if (rows.length > 0) {
+        return rows[0];
+      }
+    } catch (e) {
+      console.error('getGlobalSettings error:', e);
+    }
+    return null;
+  }
+
+  /**
    * Synchronizes all categories from `categories` table into `seo_records`.
    * If a category doesn't have an SEO record yet, it auto-generates one!
    */

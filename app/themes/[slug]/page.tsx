@@ -140,17 +140,52 @@ export default async function ThemeShowcasePage({ params }: Props) {
     })),
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://bhartiyebazar.com',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Themes',
+        item: 'https://bhartiyebazar.com/vyapari-software',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: themeMeta.name,
+        item: `https://bhartiyebazar.com/themes/${cleanSlug}`,
+      },
+    ],
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       <Navbar />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
       <main className="flex-1 pt-24 pb-16">
         {/* Theme Hero Section */}
         <section className="bg-linear-to-b from-indigo-950 via-slate-900 to-slate-950 text-white py-14 px-4 sm:px-6 lg:px-8 border-b border-indigo-900/50">
           <div className="mx-auto max-w-5xl text-center space-y-4">
+            {/* Breadcrumb Navigation for SEO */}
+            <nav aria-label="Breadcrumb" className="flex items-center justify-center gap-2 text-xs text-indigo-300">
+              <Link href="/" className="hover:text-white transition-colors">Home</Link>
+              <span>/</span>
+              <Link href="/vyapari-software" className="hover:text-white transition-colors">Themes</Link>
+              <span>/</span>
+              <span className="text-white font-bold">{themeMeta.name}</span>
+            </nav>
+
             <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-3.5 py-1 text-xs font-black uppercase">
               <Sparkles className="h-3.5 w-3.5" />
               <span>Official Website Template</span>
@@ -234,6 +269,26 @@ export default async function ThemeShowcasePage({ params }: Props) {
               </div>
             </section>
           )}
+
+          {/* Internal Linking: Explore Other Themes */}
+          <section className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 shadow-sm space-y-4">
+            <h2 className="text-base sm:text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-indigo-600" />
+              Explore Other Industry-Specific Website Themes
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+              {PLATFORM_THEMES.filter((t) => t.slug !== cleanSlug).map((t) => (
+                <Link
+                  key={t.slug}
+                  href={`/themes/${t.slug}`}
+                  className="p-3 rounded-2xl bg-gray-50 hover:bg-indigo-50 hover:border-indigo-200 dark:bg-gray-800 dark:hover:bg-indigo-950/60 dark:hover:border-indigo-800 text-xs font-semibold text-gray-800 dark:text-gray-200 transition-colors border border-gray-200/60 dark:border-gray-700/60 block"
+                >
+                  <div className="font-extrabold text-indigo-600 dark:text-indigo-400">{t.name}</div>
+                  <div className="text-[10px] text-gray-500 truncate mt-0.5">{t.category}</div>
+                </Link>
+              ))}
+            </div>
+          </section>
 
           {/* Bottom CTA */}
           <section className="rounded-3xl bg-linear-to-r from-indigo-600 to-purple-700 text-white p-6 sm:p-8 text-center space-y-3 shadow-xl">

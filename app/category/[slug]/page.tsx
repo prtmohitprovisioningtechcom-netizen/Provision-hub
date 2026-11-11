@@ -162,6 +162,31 @@ export default async function CategoryPage({ params }: Props) {
     url: `https://bhartiyebazar.com/category/${cleanSlug}`,
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://bhartiyebazar.com',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Categories',
+        item: 'https://bhartiyebazar.com/search',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: categoryName,
+        item: `https://bhartiyebazar.com/category/${cleanSlug}`,
+      },
+    ],
+  };
+
   const faqJsonLd =
     faqs.length > 0
       ? {
@@ -187,6 +212,10 @@ export default async function CategoryPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {faqJsonLd && (
         <script
           type="application/ld+json"
@@ -198,6 +227,15 @@ export default async function CategoryPage({ params }: Props) {
         {/* Category Hero Section */}
         <section className="bg-linear-to-b from-indigo-900 via-indigo-950 to-slate-900 text-white py-14 px-4 sm:px-6 lg:px-8 border-b border-indigo-900">
           <div className="mx-auto max-w-6xl text-center space-y-4">
+            {/* Breadcrumb Navigation for SEO & UX */}
+            <nav aria-label="Breadcrumb" className="flex items-center justify-center gap-2 text-xs text-indigo-200">
+              <Link href="/" className="hover:text-white transition-colors">Home</Link>
+              <span>/</span>
+              <Link href="/search" className="hover:text-white transition-colors">Categories</Link>
+              <span>/</span>
+              <span className="text-white font-bold">{categoryName}</span>
+            </nav>
+
             <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1 text-xs font-bold text-amber-300 backdrop-blur-md">
               <Tag className="h-3.5 w-3.5" />
               <span>Verified Category Directory</span>
@@ -246,13 +284,27 @@ export default async function CategoryPage({ params }: Props) {
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="font-extrabold text-base text-gray-900 dark:text-white line-clamp-1">
-                            {c.name}
-                          </h3>
-                          <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                            <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
-                            <span>{c.city}</span>
+                        <div className="flex items-center gap-3">
+                          {c.logo ? (
+                            <img
+                              src={c.logo}
+                              alt={`${c.name} - Verified ${categoryName} in ${c.city}`}
+                              className="h-10 w-10 rounded-xl object-cover shrink-0 border border-gray-100 dark:border-gray-800"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-sm shrink-0 border border-indigo-100 dark:border-indigo-900">
+                              {c.name.charAt(0)}
+                            </div>
+                          )}
+                          <div>
+                            <h3 className="font-extrabold text-base text-gray-900 dark:text-white line-clamp-1">
+                              {c.name}
+                            </h3>
+                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                              <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
+                              <span>{c.city}</span>
+                            </div>
                           </div>
                         </div>
                         {Boolean(c.isVerified) && (
@@ -335,6 +387,38 @@ export default async function CategoryPage({ params }: Props) {
               </div>
             </section>
           )}
+
+          {/* Internal Linking: Find in Major Indian Cities */}
+          <section className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 shadow-sm space-y-4">
+            <h2 className="text-base sm:text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-indigo-600" />
+              Find {categoryName} in Major Indian Cities
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { city: 'Delhi', slug: 'delhi' },
+                { city: 'Mumbai', slug: 'mumbai' },
+                { city: 'Bengaluru', slug: 'bengaluru' },
+                { city: 'Hyderabad', slug: 'hyderabad' },
+                { city: 'Chennai', slug: 'chennai' },
+                { city: 'Kolkata', slug: 'kolkata' },
+                { city: 'Pune', slug: 'pune' },
+                { city: 'Ahmedabad', slug: 'ahmedabad' },
+                { city: 'Jaipur', slug: 'jaipur' },
+                { city: 'Lucknow', slug: 'lucknow' },
+                { city: 'Noida', slug: 'noida' },
+                { city: 'Gurugram', slug: 'gurugram' },
+              ].map((loc) => (
+                <Link
+                  key={loc.slug}
+                  href={`/explore/${loc.slug}/${cleanSlug}`}
+                  className="px-3.5 py-1.5 rounded-xl bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-gray-800 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-300 text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors border border-gray-200/60 dark:border-gray-700/60"
+                >
+                  {categoryName} in {loc.city}
+                </Link>
+              ))}
+            </div>
+          </section>
         </div>
       </main>
 

@@ -160,17 +160,52 @@ export default async function LocationCategoryPage({ params }: Props) {
     })),
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://bhartiyebazar.com',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: categoryName,
+        item: `https://bhartiyebazar.com/category/${cleanCategory}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: cityName,
+        item: `https://bhartiyebazar.com/${targetSlug}`,
+      },
+    ],
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       <Navbar />
 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
       <main className="flex-1 pt-24 pb-16">
         {/* Hero Section */}
         <section className="bg-linear-to-b from-indigo-950 via-slate-900 to-slate-950 text-white py-14 px-4 sm:px-6 lg:px-8 border-b border-indigo-900/50">
           <div className="mx-auto max-w-5xl text-center space-y-4">
+            {/* Breadcrumb Navigation for SEO */}
+            <nav aria-label="Breadcrumb" className="flex items-center justify-center gap-2 text-xs text-indigo-300">
+              <Link href="/" className="hover:text-white transition-colors">Home</Link>
+              <span>/</span>
+              <Link href={`/category/${cleanCategory}`} className="hover:text-white transition-colors">{categoryName}</Link>
+              <span>/</span>
+              <span className="text-white font-bold">{cityName}</span>
+            </nav>
+
             <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-3.5 py-1 text-xs font-black uppercase">
               <MapPin className="h-3.5 w-3.5" />
               <span>{cityName} &bull; Local Verified Business Directory</span>
@@ -215,13 +250,27 @@ export default async function LocationCategoryPage({ params }: Props) {
                   >
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="font-extrabold text-base text-gray-900 dark:text-white line-clamp-1">
-                            {c.name}
-                          </h3>
-                          <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                            <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
-                            <span>{c.city}</span>
+                        <div className="flex items-center gap-3">
+                          {c.logo ? (
+                            <img
+                              src={c.logo}
+                              alt={`${c.name} - Verified ${categoryName} in ${cityName}`}
+                              className="h-10 w-10 rounded-xl object-cover shrink-0 border border-gray-100 dark:border-gray-800"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-sm shrink-0 border border-indigo-100 dark:border-indigo-900">
+                              {c.name.charAt(0)}
+                            </div>
+                          )}
+                          <div>
+                            <h3 className="font-extrabold text-base text-gray-900 dark:text-white line-clamp-1">
+                              {c.name}
+                            </h3>
+                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                              <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
+                              <span>{c.city}</span>
+                            </div>
                           </div>
                         </div>
                         {Boolean(c.isVerified) && (
@@ -304,6 +353,46 @@ export default async function LocationCategoryPage({ params }: Props) {
               </div>
             </section>
           )}
+
+          {/* Internal Linking: Find in Other Indian Cities */}
+          <section className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base sm:text-lg font-black text-gray-900 dark:text-white flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-indigo-600" />
+                Find {categoryName} in Other Cities
+              </h2>
+              <Link
+                href={`/category/${cleanCategory}`}
+                className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
+              >
+                All {categoryName} in India <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { city: 'Delhi', slug: 'delhi' },
+                { city: 'Mumbai', slug: 'mumbai' },
+                { city: 'Bengaluru', slug: 'bengaluru' },
+                { city: 'Hyderabad', slug: 'hyderabad' },
+                { city: 'Chennai', slug: 'chennai' },
+                { city: 'Kolkata', slug: 'kolkata' },
+                { city: 'Pune', slug: 'pune' },
+                { city: 'Ahmedabad', slug: 'ahmedabad' },
+                { city: 'Jaipur', slug: 'jaipur' },
+                { city: 'Lucknow', slug: 'lucknow' },
+                { city: 'Noida', slug: 'noida' },
+                { city: 'Gurugram', slug: 'gurugram' },
+              ].filter((loc) => loc.slug !== cleanCity).map((loc) => (
+                <Link
+                  key={loc.slug}
+                  href={`/explore/${loc.slug}/${cleanCategory}`}
+                  className="px-3.5 py-1.5 rounded-xl bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-gray-800 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-300 text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors border border-gray-200/60 dark:border-gray-700/60"
+                >
+                  {categoryName} in {loc.city}
+                </Link>
+              ))}
+            </div>
+          </section>
         </div>
       </main>
 
