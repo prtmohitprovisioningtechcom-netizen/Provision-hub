@@ -224,7 +224,8 @@ export default function DigitalKhataSoftwarePage() {
     ? customerBalances[selectedCustomerId] || { gave: 0, got: 0, net: 0 }
     : { gave: 0, got: 0, net: 0 };
 
-  const buildWhatsAppReminderUrl = (customer: KhataCustomer, netAmount: number) => {
+  const buildWhatsAppReminderUrl = (customer: KhataCustomer | null, netAmount: number) => {
+    if (!customer) return '#';
     const custEntries = selectedCustomerEntries.map((e) => ({
       id: e.id,
       type: e.entryType,
@@ -575,7 +576,7 @@ export default function DigitalKhataSoftwarePage() {
                     </h3>
                     <button
                       type="button"
-                      onClick={() => handleDeleteCustomer(selectedCustomer.id)}
+                      onClick={() => selectedCustomer && handleDeleteCustomer(selectedCustomer.id)}
                       className="text-xs text-red-500 hover:underline flex items-center gap-1 print:hidden cursor-pointer"
                     >
                       <Trash2 className="h-3.5 w-3.5" /> Delete Customer Khata

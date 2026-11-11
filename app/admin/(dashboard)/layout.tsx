@@ -14,6 +14,7 @@ import {
   Tags,
   ClipboardList,
   Layers,
+  CreditCard,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn, getInitials } from '@/lib/utils';
@@ -24,6 +25,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/vyapari-payments', label: 'Vyapari Payments', icon: CreditCard },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/companies', label: 'Companies', icon: Building2 },
   { href: '/admin/requirements', label: 'Requirements', icon: ClipboardList },

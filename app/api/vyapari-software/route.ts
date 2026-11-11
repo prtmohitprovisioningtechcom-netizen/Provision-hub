@@ -6,7 +6,17 @@ import { apiSuccess, apiError, parseBody } from '@/server/utils/api-response';
 
 let tablesReady = false;
 
-async function ensureSoftwareTables() {
+async function addColumnIfNotExists(table: string, column: string, def: string) {
+  try {
+    await pool.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${def}`);
+  } catch (err: any) {
+    if (err?.errno !== 1060 && !String(err?.message).includes('Duplicate column name')) {
+      console.warn(`Column ${column} migration:`, err?.message);
+    }
+  }
+}
+
+export async function ensureSoftwareTables() {
   if (tablesReady) return;
 
   await pool.execute(`
@@ -19,9 +29,25 @@ async function ensureSoftwareTables() {
       address VARCHAR(500) DEFAULT '',
       passwordHash VARCHAR(255) NOT NULL,
       isPaidPro BOOLEAN DEFAULT FALSE,
+      planType VARCHAR(50) DEFAULT 'free',
+      paymentStatus VARCHAR(50) DEFAULT 'unpaid',
+      paymentAmount DECIMAL(10,2) DEFAULT 0,
+      paymentReference VARCHAR(255) DEFAULT '',
+      paidAt DATETIME NULL,
+      expiresAt DATETIME NULL,
+      adminNotes VARCHAR(500) DEFAULT '',
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Migrate columns for existing tables
+  await addColumnIfNotExists('vyapari_sw_users', 'planType', "VARCHAR(50) DEFAULT 'free'");
+  await addColumnIfNotExists('vyapari_sw_users', 'paymentStatus', "VARCHAR(50) DEFAULT 'unpaid'");
+  await addColumnIfNotExists('vyapari_sw_users', 'paymentAmount', "DECIMAL(10,2) DEFAULT 0");
+  await addColumnIfNotExists('vyapari_sw_users', 'paymentReference', "VARCHAR(255) DEFAULT ''");
+  await addColumnIfNotExists('vyapari_sw_users', 'paidAt', "DATETIME NULL");
+  await addColumnIfNotExists('vyapari_sw_users', 'expiresAt', "DATETIME NULL");
+  await addColumnIfNotExists('vyapari_sw_users', 'adminNotes', "VARCHAR(500) DEFAULT ''");
 
   await pool.execute(`
     CREATE TABLE IF NOT EXISTS vyapari_sw_bills (
@@ -70,7 +96,13 @@ export async function GET(request: NextRequest) {
     if (!userId) return apiError('userId is required', 400);
 
     const [users] = await pool.execute<RowDataPacket[]>(
-      'SELECT id, shopName, ownerName, phone, gstNumber, address, isPaidPro, createdAt FROM vyapari_sw_users WHERE id = ? LIMIT 1',
+      `SELECT id, shopName, ownerName, phone, gstNumber, address, isPaidPro,
+              COALESCE(planType, 'free') as planType,
+              COALESCE(paymentStatus, 'unpaid') as paymentStatus,
+              COALESCE(paymentAmount, 0) as paymentAmount,
+              COALESCE(paymentReference, '') as paymentReference,
+              paidAt, expiresAt, adminNotes, createdAt 
+       FROM vyapari_sw_users WHERE id = ? LIMIT 1`,
       [userId],
     );
     if (!users.length) return apiError('User not found', 404);
@@ -89,6 +121,12 @@ export async function GET(request: NextRequest) {
       user: {
         ...users[0],
         isPaidPro: Boolean(users[0].isPaidPro),
+        planType: users[0].planType || 'free',
+        paymentStatus: users[0].paymentStatus || 'unpaid',
+        paymentAmount: Number(users[0].paymentAmount || 0),
+        paymentReference: users[0].paymentReference || '',
+        paidAt: users[0].paidAt || null,
+        expiresAt: users[0].expiresAt || null,
       },
       bills: bills.map((b) => ({
         ...b,
@@ -184,7 +222,39 @@ export async function POST(request: NextRequest) {
         gstNumber: u.gstNumber || '',
         address: u.address || '',
         isPaidPro: Boolean(u.isPaidPro),
+        planType: u.planType || 'free',
+        paymentStatus: u.paymentStatus || 'unpaid',
+        paymentAmount: Number(u.paymentAmount || 0),
+        paymentReference: u.paymentReference || '',
+        paidAt: u.paidAt || null,
+        expiresAt: u.expiresAt || null,
       });
+    }
+
+    if (action === 'submit_payment_request') {
+      const { userId, planType, paymentReference, paymentAmount } = body;
+      if (!userId) return apiError('Unauthorized', 401);
+      const plan = planType === 'yearly' ? 'yearly' : 'monthly';
+      const amount = Number(paymentAmount) || (plan === 'yearly' ? 999 : 199);
+      const ref = String(paymentReference || '').trim();
+
+      await pool.execute(
+        `UPDATE vyapari_sw_users 
+         SET paymentStatus = 'pending', planType = ?, paymentReference = ?, paymentAmount = ? 
+         WHERE id = ?`,
+        [plan, ref, amount, userId],
+      );
+
+      return apiSuccess(
+        {
+          userId,
+          paymentStatus: 'pending',
+          planType: plan,
+          paymentReference: ref,
+          paymentAmount: amount,
+        },
+        'Payment details submitted! Admin will verify and activate your Unlimited Pro account shortly.',
+      );
     }
 
     if (action === 'create_bill') {

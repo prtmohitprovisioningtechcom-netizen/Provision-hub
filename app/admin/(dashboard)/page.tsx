@@ -7,7 +7,7 @@ import axios from 'axios';
 import api from '@/services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Building2, Clock, MessageSquare, Star, ArrowRight } from 'lucide-react';
+import { Users, Building2, Clock, MessageSquare, Star, ArrowRight, CreditCard, CheckCircle2 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
 interface AdminDashboardData {
@@ -84,6 +84,34 @@ export default function AdminDashboardPage() {
           </motion.div>
         ))}
       </div>
+
+      {/* Vyapari Software Subscription Banner */}
+      <Card className="rounded-3xl border-indigo-200 dark:border-indigo-900 bg-linear-to-r from-indigo-50/80 via-white to-purple-50/80 dark:from-indigo-950/40 dark:via-gray-900 dark:to-purple-950/40 shadow-sm overflow-hidden">
+        <CardContent className="p-6 sm:p-7 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md">
+              <CreditCard className="h-6 w-6" />
+            </div>
+            <div>
+              <span className="inline-block rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 text-[10px] font-black uppercase px-2.5 py-0.5">
+                Vyapari Software Subscriptions
+              </span>
+              <h3 className="text-lg font-black text-gray-900 dark:text-white mt-1">
+                Vyapari Software &amp; Payments Tracker
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Check kiska payment aa gaya (Paid Pro) aur kiska baki hai (Free / Unpaid). 1-Click me Pro Unlimited activate karein ya payment reminder bhejein.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/admin/vyapari-payments"
+            className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs px-5 py-3 shadow-md shrink-0 transition-transform active:scale-95"
+          >
+            Manage Vyapari Payments <ArrowRight className="h-4 w-4" />
+          </Link>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

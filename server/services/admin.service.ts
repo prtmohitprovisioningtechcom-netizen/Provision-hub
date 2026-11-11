@@ -67,7 +67,7 @@ export class AdminService {
 
     await pool.execute(
       'INSERT INTO users (id, name, email, password, role, isEmailVerified) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, 'Super Admin', 'admin@tenanthub.com', hashedPassword, 'super_admin', true]
+      [id, 'Super Admin', 'admin@bhartiyebazar.com', hashedPassword, 'super_admin', true]
     );
     
     const [users] = await pool.execute<RowDataPacket[]>('SELECT * FROM users WHERE id = ?', [id]);

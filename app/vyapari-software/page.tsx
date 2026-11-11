@@ -51,6 +51,11 @@ interface SoftwareUser {
   phone: string;
   password?: string;
   isPaidPro?: boolean;
+  planType?: string;
+  paymentStatus?: 'paid' | 'pending' | 'unpaid' | string;
+  paymentAmount?: number;
+  paymentReference?: string;
+  expiresAt?: string | null;
 }
 
 interface BillItem {
@@ -127,6 +132,8 @@ function VyapariSoftwareContent() {
   // Payment Modal
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+  const [utrNumber, setUtrNumber] = useState('');
+  const [isSubmittingProof, setIsSubmittingProof] = useState(false);
 
   // Per-User Billing State
   const [savedBills, setSavedBills] = useState<SavedBill[]>([]);
@@ -197,6 +204,18 @@ function VyapariSoftwareContent() {
         const res = await fetch(`/api/vyapari-software?userId=${encodeURIComponent(user.id)}`);
         const json = await res.json();
         if (json?.success && json.data) {
+          if (json.data.user) {
+            const freshUser: SoftwareUser = {
+              ...user,
+              ...json.data.user,
+              isPaidPro: Boolean(json.data.user.isPaidPro || json.data.user.paymentStatus === 'paid'),
+            };
+            setCurrentUser(freshUser);
+            const usersRaw = localStorage.getItem(USERS_MAP_KEY);
+            const usersMap = usersRaw ? JSON.parse(usersRaw) : {};
+            usersMap[user.phone] = freshUser;
+            localStorage.setItem(USERS_MAP_KEY, JSON.stringify(usersMap));
+          }
           if (Array.isArray(json.data.bills)) {
             setSavedBills(json.data.bills);
             localStorage.setItem(getBillsKey(user.phone), JSON.stringify(json.data.bills));
@@ -219,8 +238,62 @@ function VyapariSoftwareContent() {
     }
   };
 
+  const isPaidUser = Boolean(currentUser?.isPaidPro || currentUser?.paymentStatus === 'paid');
   const billsUsed = savedBills.length;
-  const isLimitReached = !currentUser?.isPaidPro && billsUsed >= FREE_BILL_LIMIT;
+  const isLimitReached = !isPaidUser && billsUsed >= FREE_BILL_LIMIT;
+
+  const handleSubmitPaymentProof = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    if (!utrNumber.trim()) {
+      toast.error('Please enter UPI Ref / UTR / Transaction ID');
+      return;
+    }
+
+    setIsSubmittingProof(true);
+    try {
+      if (currentUser.id && !currentUser.id.startsWith('local-')) {
+        const res = await fetch('/api/vyapari-software', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'submit_payment_request',
+            userId: currentUser.id,
+            planType: selectedPlan,
+            paymentReference: utrNumber.trim(),
+            paymentAmount: selectedPlan === 'yearly' ? 999 : 199,
+          }),
+        });
+        const json = await res.json();
+        if (!json?.success) {
+          toast.error(json?.message || 'Failed to submit proof');
+          return;
+        }
+      }
+
+      const updated: SoftwareUser = {
+        ...currentUser,
+        paymentStatus: 'pending',
+        planType: selectedPlan,
+        paymentReference: utrNumber.trim(),
+        paymentAmount: selectedPlan === 'yearly' ? 999 : 199,
+      };
+      setCurrentUser(updated);
+
+      const usersRaw = localStorage.getItem(USERS_MAP_KEY);
+      const usersMap = usersRaw ? JSON.parse(usersRaw) : {};
+      usersMap[currentUser.phone] = updated;
+      localStorage.setItem(USERS_MAP_KEY, JSON.stringify(usersMap));
+
+      toast.success('Payment proof submitted! Admin will verify and activate your Unlimited Pro account.');
+      setShowPaymentModal(false);
+      setUtrNumber('');
+    } catch {
+      toast.error('Could not submit payment proof');
+    } finally {
+      setIsSubmittingProof(false);
+    }
+  };
 
   // ==================== STEP 1: REGISTER ====================
   const handleRegister = async (e: React.FormEvent) => {
@@ -949,29 +1022,47 @@ function VyapariSoftwareContent() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2.5">
-                <div
-                  className={cn(
-                    'rounded-xl border px-3.5 py-2 text-xs font-extrabold flex items-center gap-2',
-                    isLimitReached
-                      ? 'border-rose-300 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
-                      : 'border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300',
-                  )}
-                >
-                  <span>
-                    {isLimitReached
-                      ? txt.limitOverBadge
-                      : `🎁 ${txt.freeTrialBadge} ${billsUsed} / ${FREE_BILL_LIMIT}`}
-                  </span>
-                </div>
+                {isPaidUser ? (
+                  <div className="rounded-xl border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 px-3.5 py-2 text-xs font-black flex items-center gap-1.5 shadow-xs">
+                    <Crown className="h-4 w-4 text-emerald-600" />
+                    <span>👑 PRO ACTIVE &bull; Unlimited Bills</span>
+                    {currentUser.expiresAt && (
+                      <span className="text-[10px] font-normal text-emerald-600 dark:text-emerald-400">
+                        (Exp: {new Date(currentUser.expiresAt).toLocaleDateString('en-IN')})
+                      </span>
+                    )}
+                  </div>
+                ) : currentUser.paymentStatus === 'pending' ? (
+                  <div className="rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 px-3.5 py-2 text-xs font-black flex items-center gap-1.5 animate-pulse shadow-xs">
+                    <span>⏳ Payment Verification Pending (Admin Approval Soon)</span>
+                  </div>
+                ) : (
+                  <div
+                    className={cn(
+                      'rounded-xl border px-3.5 py-2 text-xs font-extrabold flex items-center gap-2',
+                      isLimitReached
+                        ? 'border-rose-300 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
+                        : 'border-amber-300 bg-amber-50 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300',
+                    )}
+                  >
+                    <span>
+                      {isLimitReached
+                        ? txt.limitOverBadge
+                        : `🎁 ${txt.freeTrialBadge} ${billsUsed} / ${FREE_BILL_LIMIT}`}
+                    </span>
+                  </div>
+                )}
 
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => setShowPaymentModal(true)}
-                  className="rounded-xl bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs"
-                >
-                  {txt.upgradeBtn}
-                </Button>
+                {!isPaidUser && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => setShowPaymentModal(true)}
+                    className="rounded-xl bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs shadow-sm"
+                  >
+                    {txt.upgradeBtn}
+                  </Button>
+                )}
 
                 <Button
                   type="button"
@@ -1646,14 +1737,54 @@ function VyapariSoftwareContent() {
                 </button>
               </div>
 
-              <Button
-                asChild
-                className="mt-5 w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm"
+              <div className="mt-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 p-3.5 text-center text-xs space-y-1">
+                <div className="font-extrabold text-indigo-950 dark:text-indigo-200">
+                  📱 Official UPI ID / PhonePe / GPay / Paytm
+                </div>
+                <div className="text-base font-black text-indigo-600 font-mono tracking-wider">
+                  6397650818
+                </div>
+                <div className="text-[11px] text-gray-500">
+                  Pay {selectedPlan === 'yearly' ? '₹999' : '₹199'} to this number
+                </div>
+              </div>
+
+              <div className="mt-3 flex gap-2">
+                <Button
+                  asChild
+                  className="flex-1 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-md"
+                >
+                  <a href={paymentWhatsAppUrl} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="h-4 w-4 mr-1.5" />
+                    {txt.payNowBtn}
+                  </a>
+                </Button>
+              </div>
+
+              {/* Already Paid? Submit UTR Form */}
+              <form
+                onSubmit={handleSubmitPaymentProof}
+                className="mt-4 pt-3.5 border-t border-gray-200 dark:border-gray-800 space-y-2.5 text-left"
               >
-                <a href={paymentWhatsAppUrl} target="_blank" rel="noopener noreferrer">
-                  {txt.payNowBtn}
-                </a>
-              </Button>
+                <div className="text-xs font-black text-gray-900 dark:text-white flex items-center justify-between">
+                  <span>Already Paid? Submit UPI UTR Number</span>
+                  <span className="text-[10px] text-emerald-600 font-bold">Fast Activation</span>
+                </div>
+                <Input
+                  value={utrNumber}
+                  onChange={(e) => setUtrNumber(e.target.value)}
+                  placeholder="Enter 12-digit UTR / UPI Ref ID (e.g. 402918291029)"
+                  className="h-10 text-xs font-mono"
+                />
+                <Button
+                  type="submit"
+                  disabled={isSubmittingProof}
+                  variant="outline"
+                  className="w-full h-10 rounded-xl border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 font-extrabold text-xs"
+                >
+                  {isSubmittingProof ? 'Submitting...' : '✓ Payment Kar Diya — Submit Proof'}
+                </Button>
+              </form>
             </motion.div>
           </motion.div>
         )}
