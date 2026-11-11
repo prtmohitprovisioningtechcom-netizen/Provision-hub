@@ -5,7 +5,7 @@ import { siteConfig } from '@/config/site';
 import { PLATFORM_THEMES } from '@/server/services/seo.service';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 3600; // 1 hour
+export const revalidate = 0; // Always fetch fresh records from database on every request
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.url || 'https://bhartiyebazar.com';
