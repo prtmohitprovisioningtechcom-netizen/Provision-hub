@@ -43,7 +43,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { PLATFORM_THEMES, TOP_INDIAN_LOCATIONS } from '@/server/services/seo.service';
+import { PLATFORM_THEMES, TOP_INDIAN_LOCATIONS } from '@/config/seo-constants';
 
 interface SeoRecord {
   id: string;

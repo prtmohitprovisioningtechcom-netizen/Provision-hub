@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import { siteConfig } from '@/config/site';
-import { PLATFORM_THEMES } from '@/server/services/seo.service';
+import { PLATFORM_THEMES } from '@/config/seo-constants';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Always fetch fresh records from database on every request

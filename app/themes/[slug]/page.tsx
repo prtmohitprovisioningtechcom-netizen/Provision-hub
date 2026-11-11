@@ -6,7 +6,7 @@ import { siteConfig } from '@/config/site';
 import { Navbar } from '@/components/landing/Navbar';
 import { Footer } from '@/components/landing/Footer';
 import { Button } from '@/components/ui/button';
-import { PLATFORM_THEMES } from '@/server/services/seo.service';
+import { PLATFORM_THEMES } from '@/config/seo-constants';
 import {
   Sparkles,
   Smartphone,

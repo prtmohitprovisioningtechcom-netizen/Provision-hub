@@ -5,7 +5,7 @@ import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import { Navbar } from '@/components/landing/Navbar';
 import { Footer } from '@/components/landing/Footer';
-import { PLATFORM_THEMES } from '@/server/services/seo.service';
+import { PLATFORM_THEMES } from '@/config/seo-constants';
 
 export const metadata: Metadata = {
   title: `HTML Sitemap | ${siteConfig.name}`,

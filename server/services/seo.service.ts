@@ -7,43 +7,9 @@ import path from 'path';
 
 let seoTablesInitialized = false;
 
-// List of all platform themes available in components/themes
-export const PLATFORM_THEMES = [
-  { slug: 'bold-launch', name: 'Bold Launch Theme', category: 'Business & Startups', desc: 'High-impact, modern visual design for fast-moving startups and enterprise brands.' },
-  { slug: 'carpenter-works', name: 'Carpenter & Furniture Theme', category: 'Carpenter & Woodwork', desc: 'Artisan woodwork, custom furniture manufacturers, and interior carpentry specialists.' },
-  { slug: 'clean-presence', name: 'Clean Presence Theme', category: 'Corporate & Legal', desc: 'Minimalist, crisp, and trustworthy layout for professional services and corporate agencies.' },
-  { slug: 'creative-studio', name: 'Creative Studio Theme', category: 'Design & Media', desc: 'Vibrant, portfolio-driven theme for design studios, photographers, and creative agencies.' },
-  { slug: 'elegant-serif', name: 'Elegant Serif Theme', category: 'Luxury & Boutiques', desc: 'Luxury, heritage, boutique hotels, jewelry, and high-end fashion establishments.' },
-  { slug: 'herbal-cosmetics', name: 'Herbal & Organic Theme', category: 'Beauty & Wellness', desc: 'Natural wellness, ayurvedic, skincare, and organic beauty brands.' },
-  { slug: 'neon-dark', name: 'Neon Dark Theme', category: 'Tech & Gaming', desc: 'Ultra-modern cyberpunk dark mode aesthetic for gaming, tech, nightlife, and digital innovators.' },
-  { slug: 'premium-showcase', name: 'Premium Showcase Theme', category: 'E-commerce & Showrooms', desc: 'Multi-product catalog and enterprise showroom with interactive product galleries.' },
-  { slug: 'royal-glow', name: 'Royal Glow Theme', category: 'Bridal & Salon', desc: 'Regal aesthetics, bridal, wedding planners, fine jewelry, and salon & spa luxury services.' },
-  { slug: 'sleek-glass', name: 'Sleek Glass Theme', category: 'SaaS & IT', desc: 'Glassmorphism UI with frosted blur panels for modern SaaS, tech firms, and IT solutions.' },
-  { slug: 'warm-showcase', name: 'Warm Showcase Theme', category: 'Restaurants & Food', desc: 'Inviting, warm palette for restaurants, bakeries, cafes, and hospitality businesses.' },
-];
-
-export const TOP_INDIAN_LOCATIONS = [
-  { state: 'Delhi NCR', city: 'New Delhi', district: 'Central Delhi', slug: 'new-delhi' },
-  { state: 'Delhi NCR', city: 'Noida', district: 'Gautam Buddha Nagar', slug: 'noida' },
-  { state: 'Delhi NCR', city: 'Greater Noida', district: 'Gautam Buddha Nagar', slug: 'greater-noida' },
-  { state: 'Delhi NCR', city: 'Gurugram', district: 'Gurugram', slug: 'gurugram' },
-  { state: 'Delhi NCR', city: 'Faridabad', district: 'Faridabad', slug: 'faridabad' },
-  { state: 'Delhi NCR', city: 'Ghaziabad', district: 'Ghaziabad', slug: 'ghaziabad' },
-  { state: 'Uttar Pradesh', city: 'Lucknow', district: 'Lucknow', slug: 'lucknow' },
-  { state: 'Uttar Pradesh', city: 'Agra', district: 'Agra', slug: 'agra' },
-  { state: 'Uttar Pradesh', city: 'Etawah', district: 'Etawah', slug: 'etawah' },
-  { state: 'Uttar Pradesh', city: 'Kanpur', district: 'Kanpur Nagar', slug: 'kanpur' },
-  { state: 'Uttar Pradesh', city: 'Varanasi', district: 'Varanasi', slug: 'varanasi' },
-  { state: 'Uttar Pradesh', city: 'Prayagraj', district: 'Prayagraj', slug: 'prayagraj' },
-  { state: 'Maharashtra', city: 'Mumbai', district: 'Mumbai City', slug: 'mumbai' },
-  { state: 'Maharashtra', city: 'Pune', district: 'Pune', slug: 'pune' },
-  { state: 'Maharashtra', city: 'Nagpur', district: 'Nagpur', slug: 'nagpur' },
-  { state: 'Karnataka', city: 'Bangalore', district: 'Bengaluru Urban', slug: 'bangalore' },
-  { state: 'Rajasthan', city: 'Jaipur', district: 'Jaipur', slug: 'jaipur' },
-  { state: 'Gujarat', city: 'Ahmedabad', district: 'Ahmedabad', slug: 'ahmedabad' },
-  { state: 'West Bengal', city: 'Kolkata', district: 'Kolkata', slug: 'kolkata' },
-  { state: 'Madhya Pradesh', city: 'Indore', district: 'Indore', slug: 'indore' },
-];
+// List of all platform themes and locations available from config
+export { PLATFORM_THEMES, TOP_INDIAN_LOCATIONS } from '@/config/seo-constants';
+import { PLATFORM_THEMES, TOP_INDIAN_LOCATIONS } from '@/config/seo-constants';
 
 export class SeoService {
   /**
