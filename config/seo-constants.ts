@@ -35,3 +35,4 @@ export const TOP_INDIAN_LOCATIONS = [
   { state: 'West Bengal', city: 'Kolkata', district: 'Kolkata', slug: 'kolkata' },
   { state: 'Madhya Pradesh', city: 'Indore', district: 'Indore', slug: 'indore' },
 ];
+
