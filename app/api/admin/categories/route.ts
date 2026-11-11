@@ -3,6 +3,7 @@ import pool from '@/lib/db';
 import { requireAuth } from '@/server/middleware/auth';
 import { RowDataPacket } from 'mysql2';
 import crypto from 'crypto';
+import { SeoService } from '@/server/services/seo.service';
 
 function createSlug(value: string) {
   return value
@@ -68,6 +69,11 @@ export async function POST(request: NextRequest) {
     await pool.execute(
       'INSERT INTO categories (id, name, slug, description, icon, isActive, type) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [id, name, slug, description, icon, isActive, 'business']
+    );
+
+    // Auto-generate dynamic SEO record for newly added category immediately
+    SeoService.syncCategoriesToSeo().catch((err) =>
+      console.error('Failed to auto-sync new category to SEO:', err)
     );
 
     const [created] = await pool.execute<RowDataPacket[]>('SELECT id as _id, name, slug, description, icon, isActive, type, createdAt, updatedAt FROM categories WHERE id = ?', [id]);

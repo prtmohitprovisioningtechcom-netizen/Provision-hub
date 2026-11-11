@@ -23,6 +23,7 @@ import {
   Clock,
   Receipt,
   BookOpen,
+  Sparkles,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '@/services/api';
@@ -39,6 +40,7 @@ const sidebarLinks = [
   { href: '/dashboard/billing', label: 'Billing & Invoice', icon: Receipt },
   { href: '/dashboard/khata', label: 'Digital Bahi-Khata', icon: BookOpen },
   { href: '/dashboard/website', label: 'Website Builder', icon: Globe },
+  { href: '/dashboard/seo', label: 'SEO Management', icon: Sparkles },
   { href: '/dashboard/products', label: 'Products', icon: Package },
   { href: '/dashboard/blogs', label: 'Blogs', icon: FileText },
   { href: '/dashboard/leads', label: 'Leads', icon: Users },
