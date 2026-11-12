@@ -105,7 +105,7 @@ export default function CustomizePage() {
             subtitle: d.templatesConfig?.subtitle || 'Choose from professionally designed themes for every industry',
             enabledThemeIds: d.templatesConfig?.enabledThemeIds || THEME_OPTIONS.map(t => t.id),
           },
-          footerConfig: d.footerConfig || { copyrightText: '© 2026 Bhartiyebazar. All rights reserved.', facebookLink: '#', twitterLink: '#', instagramLink: '#', linkedinLink: '#' },
+          footerConfig: d.footerConfig || { copyrightText: 'Copyright © 2026 Bhartiyebazar • Developed & Powered by Provisioning Tech. All rights reserved to Provisioning Tech.', facebookLink: '#', twitterLink: '#', instagramLink: '#', linkedinLink: '#' },
           customHeaderCode: d.customHeaderCode || '',
         });
       }

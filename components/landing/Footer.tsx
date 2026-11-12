@@ -16,13 +16,17 @@ export function Footer({ config }: { config?: any }) {
   const featureToggles = config?.featureToggles || {};
   const brandName = 'Bhartiyebazar';
   
-  const copyrightText = (
-    footerConfig.copyrightText ||
-    `© ${new Date().getFullYear()} ${brandName}. ${t('footer.copyright')}`
-  ).replace(
-    /Multi-Tenant(?:\s+Platform)?(?:\s+Provisioning\s+Tech)?|multitenant|multi-tenant|TenantHub|ProvisioningTechHub|Provisioning\s+Tech/gi,
-    brandName,
-  );
+  const rawCopyright = footerConfig.copyrightText || '';
+  const isLegacyDefault =
+    !rawCopyright ||
+    /TenantHub Inc\.|Bhartiyebazar Inc\.|Bhartiyebazar\.\s*All rights reserved/i.test(rawCopyright);
+
+  const copyrightText = isLegacyDefault
+    ? `Copyright © ${new Date().getFullYear()} Bhartiyebazar • Developed & Powered by Provisioning Tech. All rights reserved to Provisioning Tech.`
+    : rawCopyright.replace(
+        /Multi-Tenant(?:\s+Platform)?|multitenant|multi-tenant|TenantHub|ProvisioningTechHub/gi,
+        brandName,
+      );
 
   const productLinks = [
     featureToggles.showFeatures !== false && { href: '#features', label: t('footer.features') },
@@ -144,7 +148,20 @@ export function Footer({ config }: { config?: any }) {
         </div>
 
         <div className="mt-12 border-t border-gray-200 dark:border-gray-800 pt-8 text-center text-sm text-gray-500">
-          {copyrightText}
+          {copyrightText.includes('Provisioning Tech') ? (
+            <div className="space-y-1">
+              <p className="font-medium text-gray-700 dark:text-gray-300">
+                Copyright &copy; {new Date().getFullYear()}{' '}
+                <span className="font-bold text-gray-900 dark:text-white">Bhartiyebazar</span> &bull; Developed &amp; Powered by{' '}
+                <span className="font-bold text-indigo-600 dark:text-indigo-400">Provisioning Tech</span>
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                All rights reserved to Provisioning Tech.
+              </p>
+            </div>
+          ) : (
+            copyrightText
+          )}
         </div>
       </div>
     </footer>
