@@ -67,6 +67,7 @@ export function Navbar({ config, featureToggles }: NavbarProps) {
   // Row 1 buttons (Platform Navigation) in the requested 2-tier pill design
   const row1Buttons = [
     { href: '/', label: t('nav.home'), emoji: '🏠', show: true },
+    { href: '/school-management-software', label: 'School ERP', emoji: '🎓', show: true },
     { href: '#vyapari-software', label: 'Billing & Khata', emoji: '🧾', show: true },
     { href: '#pricing', label: t('nav.pricing'), emoji: '💳', show: featureToggles?.showPricing !== false },
     { href: '#how-it-works', label: t('nav.howItWorks'), emoji: '⚙️', show: featureToggles?.showHowItWorks !== false },

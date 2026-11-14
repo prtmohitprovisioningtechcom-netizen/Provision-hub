@@ -9,6 +9,7 @@ import {
   LogIn,
   UserPlus,
   ArrowRight,
+  GraduationCap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -42,6 +43,22 @@ export function VyapariSoftwareShowcase() {
       badgeBg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
       primaryBtnBg: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20',
       icon: BookOpen,
+      registerUrl: '/vyapari-software?mode=register&tool=khata',
+      loginUrl: '/vyapari-software?mode=login&tool=khata',
+    },
+    {
+      id: 'school',
+      badge: '🎓 School ERP • 3 Marksheet Designs',
+      title: 'School Management Software',
+      shortDesc: 'Complete digital campus ERP: fees & receipts, 3-design marksheet generator with QR verification, and parent portal.',
+      image: '/billing-software-preview.jpg',
+      pills: ['3 Marksheet Designs', 'Fees & Receipts', 'Parent Portal'],
+      accentBorder: 'border-purple-200/90 dark:border-purple-900/80 hover:border-purple-500',
+      badgeBg: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300',
+      primaryBtnBg: 'bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/20',
+      icon: GraduationCap,
+      registerUrl: '/school-management-software/register',
+      loginUrl: '/school-management-software/login',
     },
   ];
 
@@ -77,8 +94,8 @@ export function VyapariSoftwareShowcase() {
           </Button>
         </div>
 
-        {/* 2 Visual Software Cards with Minimal Text + Register / Login Buttons */}
-        <div className="grid gap-5 md:grid-cols-2">
+        {/* 3 Visual Software Cards with Minimal Text + Register / Login Buttons */}
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {cards.map((card, idx) => (
             <motion.div
               key={card.id}
@@ -133,7 +150,7 @@ export function VyapariSoftwareShowcase() {
                   asChild
                   className={`flex-1 h-10 sm:h-11 rounded-2xl font-extrabold text-xs sm:text-sm shadow-md ${card.primaryBtnBg}`}
                 >
-                  <Link href={`/vyapari-software?mode=register&tool=${card.id}`}>
+                  <Link href={card.registerUrl || `/vyapari-software?mode=register&tool=${card.id}`}>
                     <UserPlus className="h-4 w-4 mr-1.5" />
                     {txt.registerBtn}
                   </Link>
@@ -144,7 +161,7 @@ export function VyapariSoftwareShowcase() {
                   variant="outline"
                   className="flex-1 h-10 sm:h-11 rounded-2xl font-extrabold text-xs sm:text-sm border-slate-300 dark:border-slate-700 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
-                  <Link href={`/vyapari-software?mode=login&tool=${card.id}`}>
+                  <Link href={card.loginUrl || `/vyapari-software?mode=login&tool=${card.id}`}>
                     <LogIn className="h-4 w-4 mr-1.5 text-indigo-600 dark:text-indigo-400" />
                     {txt.loginBtn}
                   </Link>

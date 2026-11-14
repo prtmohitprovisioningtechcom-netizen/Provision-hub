@@ -28,6 +28,12 @@ html,
 body {
   max-width: 100%;
   overflow-x: clip;
+  scroll-behavior: smooth;
+}
+
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 body {

@@ -45,6 +45,10 @@ export function SitemapClient({ categories, companies }: SitemapClientProps) {
   // 1. Core Platform Pages
   const corePages = [
     { name: 'Home Page', href: '/', desc: 'Official landing page & local vyapari discovery platform', icon: '🏠' },
+    { name: 'School ERP SaaS Platform', href: '/school-management-software', desc: 'All-in-one school management software: fees, 3-design marksheets & attendance', icon: '🎓' },
+    { name: 'School Registration', href: '/school-management-software/register', desc: 'Register any school in India for 14-day full free trial', icon: '🏫' },
+    { name: 'School Admin Login', href: '/school-management-software/login', desc: 'School administration & teacher portal login', icon: '🔑' },
+    { name: 'Parent & Student Portal', href: '/school-management-software/portal', desc: 'Live attendance, fee receipts & term marksheet download', icon: '👨‍🎓' },
     { name: 'All Services Hub', href: '/services', desc: '13 core service categories with custom website themes', icon: '🩺' },
     { name: 'Search Business Directory', href: '/search', desc: 'Find local stores, suppliers & verified professionals', icon: '🔍' },
     { name: 'Verified Directory', href: '/search?verified=true', desc: 'Browse 100% phone & credential verified merchants', icon: '✅' },

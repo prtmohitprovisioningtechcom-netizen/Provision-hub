@@ -16,6 +16,7 @@ import {
   Layers,
   CreditCard,
   Globe,
+  School,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn, getInitials } from '@/lib/utils';
@@ -26,6 +27,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/schools', label: 'School ERP SaaS', icon: School },
   { href: '/admin/seo', label: 'SEO Master Control', icon: Globe },
   { href: '/admin/vyapari-payments', label: 'Vyapari Payments', icon: CreditCard },
   { href: '/admin/users', label: 'Users', icon: Users },

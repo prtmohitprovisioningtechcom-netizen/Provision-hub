@@ -67,11 +67,11 @@ export default function DigitalKhataSoftwarePage() {
   const shopName = user?.name ? `${user.name}` : 'Hamari Dukan';
 
   useEffect(() => {
-    fetchKhataData();
+    fetchKhataData(true);
   }, []);
 
-  const fetchKhataData = async () => {
-    setIsLoading(true);
+  const fetchKhataData = async (isInitial = false) => {
+    if (isInitial) setIsLoading(true);
     try {
       const { data } = await api.get('/api/dashboard/khata');
       if (data?.success && data.data) {
@@ -86,7 +86,7 @@ export default function DigitalKhataSoftwarePage() {
     } catch {
       toast.error('Could not load Bahi-Khata records');
     } finally {
-      setIsLoading(false);
+      if (isInitial) setIsLoading(false);
     }
   };
 

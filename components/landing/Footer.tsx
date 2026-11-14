@@ -26,6 +26,7 @@ export function Footer({ config }: { config?: Record<string, any> }) {
     featureToggles.showFeatures !== false && { href: '#features', label: t('footer.features') },
     featureToggles.showPricing !== false && { href: '#pricing', label: t('footer.pricing') },
     featureToggles.showTemplates !== false && { href: '#templates', label: t('footer.themes') },
+    { href: '/school-management-software', label: 'School ERP Software' },
     { href: '/services', label: 'All Services' },
     { href: '/search', label: t('footer.directory') },
   ].filter((link): link is { href: string; label: string } => Boolean(link));
@@ -54,6 +55,8 @@ export function Footer({ config }: { config?: Record<string, any> }) {
       title: t('footer.company'),
       links: [
         { href: '#contact', label: t('footer.contact') },
+        { href: '/school-management-software', label: 'School Management ERP' },
+        { href: '/school-management-software/portal', label: 'Student / Parent Portal' },
         { href: '/sitemap', label: 'Sitemap (All Pages)' },
         { href: '/terms', label: t('footer.terms') },
         { href: '/privacy', label: t('footer.privacy') },

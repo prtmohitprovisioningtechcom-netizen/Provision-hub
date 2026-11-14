@@ -127,6 +127,39 @@ export async function POST(request: NextRequest) {
       ],
     );
 
+    // Auto-attach to Digital Bahi-Khata if unpaid or partial
+    if (status === 'unpaid' || status === 'partial') {
+      try {
+        const custPhone = String(body.customerPhone || '').trim();
+        const custName = String(body.customerName || '').trim();
+        if (custName && custPhone) {
+          const [existingCust] = await pool.execute<RowDataPacket[]>(
+            'SELECT id FROM merchant_khata_customers WHERE companyId = ? AND phone = ? LIMIT 1',
+            [companyId, custPhone]
+          );
+
+          let customerId = existingCust[0]?.id;
+          if (!customerId) {
+            customerId = crypto.randomUUID();
+            await pool.execute(
+              `INSERT INTO merchant_khata_customers (id, companyId, name, phone, address, partyType)
+               VALUES (?, ?, ?, ?, ?, 'customer')`,
+              [customerId, companyId, custName, custPhone, String(body.customerAddress || '').trim()]
+            );
+          }
+
+          const entryId = crypto.randomUUID();
+          await pool.execute(
+            `INSERT INTO merchant_khata_entries (id, companyId, customerId, entryType, amount, note, entryDate)
+             VALUES (?, ?, ?, 'gave', ?, ?, NOW())`,
+            [entryId, companyId, customerId, grandTotal, `Pukka Bill #${invoiceNumber} (Udhaar)`]
+          );
+        }
+      } catch (khataErr) {
+        console.error('Khata auto-sync warning:', khataErr);
+      }
+    }
+
     const [created] = await pool.execute<RowDataPacket[]>(
       'SELECT * FROM merchant_invoices WHERE id = ?',
       [id],
@@ -165,10 +198,40 @@ export async function PATCH(request: NextRequest) {
       return apiError('Invoice ID and status are required', 400);
     }
 
+    // Fetch existing invoice to check previous status
+    const [invRows] = await pool.execute<RowDataPacket[]>(
+      'SELECT * FROM merchant_invoices WHERE id = ? AND companyId = ? LIMIT 1',
+      [body.id, companyId]
+    );
+
     await pool.execute(
       'UPDATE merchant_invoices SET status = ? WHERE id = ? AND companyId = ?',
       [body.status, body.id, companyId],
     );
+
+    // If marked as paid, record payment received in Khata
+    if (invRows.length > 0 && body.status === 'paid' && invRows[0].status !== 'paid') {
+      const inv = invRows[0];
+      try {
+        const custPhone = String(inv.customerPhone || '').trim();
+        if (custPhone) {
+          const [existingCust] = await pool.execute<RowDataPacket[]>(
+            'SELECT id FROM merchant_khata_customers WHERE companyId = ? AND phone = ? LIMIT 1',
+            [companyId, custPhone]
+          );
+          if (existingCust.length > 0) {
+            const entryId = crypto.randomUUID();
+            await pool.execute(
+              `INSERT INTO merchant_khata_entries (id, companyId, customerId, entryType, amount, note, entryDate)
+               VALUES (?, ?, ?, 'got', ?, ?, NOW())`,
+              [entryId, companyId, existingCust[0].id, inv.grandTotal, `Bill #${inv.invoiceNumber} Payment Received`]
+            );
+          }
+        }
+      } catch (khataErr) {
+        console.error('Khata auto-payment sync warning:', khataErr);
+      }
+    }
 
     return apiSuccess({ id: body.id, status: body.status }, 'Invoice status updated');
   } catch (error) {

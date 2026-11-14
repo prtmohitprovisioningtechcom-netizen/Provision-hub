@@ -16,9 +16,9 @@ const poolConfig = {
   database: process.env.DB_NAME || 'bhartiyebazar',
   port: parseInt(process.env.DB_PORT || '3306'),
   waitForConnections: true,
-  connectionLimit: 10, // Increased to support fast concurrent requests without queuing
-  maxIdle: 10,
-  idleTimeout: 30000,
+  connectionLimit: 20, // High-performance concurrent connection pool
+  maxIdle: 15,
+  idleTimeout: 60000,
   queueLimit: 0,
   namedPlaceholders: true,
   enableKeepAlive: true,
@@ -26,14 +26,10 @@ const poolConfig = {
   ...sslConfig,
 };
 
-if (process.env.NODE_ENV === 'production') {
-  pool = mysql.createPool(poolConfig);
-} else {
-  if (!global.mysqlPool) {
-    global.mysqlPool = mysql.createPool(poolConfig);
-  }
-  pool = global.mysqlPool;
+if (!global.mysqlPool) {
+  global.mysqlPool = mysql.createPool(poolConfig);
 }
+pool = global.mysqlPool;
 
 export default pool;
 

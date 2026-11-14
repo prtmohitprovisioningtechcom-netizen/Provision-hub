@@ -33,6 +33,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 1. Core static platform pages
   addUrl('/', 1.0, 'daily');
+  addUrl('/school-management-software', 0.95, 'daily');
+  addUrl('/school-management-software/register', 0.9, 'weekly');
+  addUrl('/school-management-software/login', 0.85, 'weekly');
+  addUrl('/school-management-software/portal', 0.85, 'weekly');
   addUrl('/services', 0.95, 'daily');
   for (const svc of ALL_SERVICES) {
     addUrl(`/services/${svc.slug}`, 0.9, 'weekly');

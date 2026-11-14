@@ -95,11 +95,24 @@ export default function BillingSoftwarePage() {
 
   // Selected invoice for preview/printing
   const [previewInvoice, setPreviewInvoice] = useState<InvoiceRecord | null>(null);
+  const [khataCustomers, setKhataCustomers] = useState<Array<{ id: string; name: string; phone: string; address?: string }>>([]);
 
   useEffect(() => {
-    fetchInvoices();
+    fetchInvoices(true);
     fetchShopProfile();
+    fetchKhataCustomers();
   }, []);
+
+  const fetchKhataCustomers = async () => {
+    try {
+      const { data } = await api.get('/api/dashboard/khata');
+      if (data?.success && Array.isArray(data?.data?.customers)) {
+        setKhataCustomers(data.data.customers);
+      }
+    } catch {
+      // silent
+    }
+  };
 
   const fetchShopProfile = async () => {
     try {
@@ -121,8 +134,8 @@ export default function BillingSoftwarePage() {
     }
   };
 
-  const fetchInvoices = async () => {
-    setIsLoading(true);
+  const fetchInvoices = async (isInitial = false) => {
+    if (isInitial) setIsLoading(true);
     try {
       const { data } = await api.get('/api/dashboard/billing');
       if (data?.success && Array.isArray(data.data)) {
@@ -131,7 +144,7 @@ export default function BillingSoftwarePage() {
     } catch {
       toast.error('Could not load saved bills');
     } finally {
-      setIsLoading(false);
+      if (isInitial) setIsLoading(false);
     }
   };
 
@@ -228,27 +241,42 @@ export default function BillingSoftwarePage() {
 
   const handleToggleStatus = async (inv: InvoiceRecord) => {
     const nextStatus = inv.status === 'paid' ? 'unpaid' : 'paid';
+    // Optimistic instant UI update
+    setInvoices((prev) =>
+      prev.map((item) => (item.id === inv.id ? { ...item, status: nextStatus } : item)),
+    );
+    if (previewInvoice?.id === inv.id) {
+      setPreviewInvoice({ ...previewInvoice, status: nextStatus });
+    }
+
     try {
       await api.patch('/api/dashboard/billing', { id: inv.id, status: nextStatus });
-      setInvoices((prev) =>
-        prev.map((item) => (item.id === inv.id ? { ...item, status: nextStatus } : item)),
-      );
-      if (previewInvoice?.id === inv.id) {
-        setPreviewInvoice({ ...previewInvoice, status: nextStatus });
-      }
       toast.success(`Bill marked as ${nextStatus.toUpperCase()}`);
     } catch {
+      // Revert if network failed
+      setInvoices((prev) =>
+        prev.map((item) => (item.id === inv.id ? { ...item, status: inv.status } : item)),
+      );
+      if (previewInvoice?.id === inv.id) {
+        setPreviewInvoice({ ...previewInvoice, status: inv.status });
+      }
       toast.error('Failed to update bill status');
     }
   };
 
   const handleDeleteInvoice = async (id: string) => {
+    const toDelete = invoices.find((item) => item.id === id);
+    // Optimistic instant UI removal
+    setInvoices((prev) => prev.filter((item) => item.id !== id));
+    if (previewInvoice?.id === id) setPreviewInvoice(null);
+
     try {
       await api.delete(`/api/dashboard/billing?id=${id}`);
-      setInvoices((prev) => prev.filter((item) => item.id !== id));
-      if (previewInvoice?.id === id) setPreviewInvoice(null);
       toast.success('Bill deleted');
     } catch {
+      if (toDelete) {
+        setInvoices((prev) => [toDelete, ...prev]);
+      }
       toast.error('Failed to delete bill');
     }
   };
@@ -440,16 +468,39 @@ export default function BillingSoftwarePage() {
             {/* Customer Details */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <Label className="text-xs font-bold">Customer Name *</Label>
+                <Label className="text-xs font-bold flex items-center justify-between">
+                  <span>Customer Name *</span>
+                  {khataCustomers.length > 0 && (
+                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                      {khataCustomers.length} Khata contacts available
+                    </span>
+                  )}
+                </Label>
                 <Input
+                  list="khata-customer-suggestions"
                   value={customerName}
                   onChange={(e) => {
                     setPreviewInvoice(null);
-                    setCustomerName(e.target.value);
+                    const val = e.target.value;
+                    setCustomerName(val);
+                    const matched = khataCustomers.find(
+                      (c) => c.name.toLowerCase() === val.toLowerCase()
+                    );
+                    if (matched) {
+                      if (matched.phone) setCustomerPhone(matched.phone);
+                      if (matched.address) setCustomerAddress(matched.address);
+                    }
                   }}
                   placeholder="e.g. Ramesh Kumar"
                   className="mt-1"
                 />
+                <datalist id="khata-customer-suggestions">
+                  {khataCustomers.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.phone ? `${c.phone}` : ''} {c.address ? `• ${c.address}` : ''}
+                    </option>
+                  ))}
+                </datalist>
               </div>
               <div>
                 <Label className="text-xs font-bold">Mobile Number (WhatsApp) *</Label>
@@ -616,6 +667,15 @@ export default function BillingSoftwarePage() {
                 </select>
               </div>
             </div>
+
+            {status === 'unpaid' && (
+              <div className="flex items-center gap-2 p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs font-semibold text-amber-900 dark:text-amber-200">
+                <Sparkles className="h-4 w-4 text-amber-600 shrink-0" />
+                <span>
+                  <strong>Digital Bahi-Khata Auto-Sync:</strong> Saving this bill as Unpaid automatically registers an Udhaar entry for ₹{grandTotal.toLocaleString('en-IN')} in <strong>{customerName || 'customer'}</strong>&apos;s ledger.
+                </span>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-3">
