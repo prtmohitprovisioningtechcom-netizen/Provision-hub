@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       message: 'Super admin ready',
-      email: admin.email || 'admin@tenanthub.com',
+      email: admin.email || 'admin@bhartiyebazar.com',
       passwordHint: 'Admin@123 (only if newly created)',
     });
   } catch (e: unknown) {

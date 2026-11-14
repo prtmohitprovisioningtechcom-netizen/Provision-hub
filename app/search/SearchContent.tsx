@@ -4,7 +4,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal, Palette, ArrowRight, Sparkles } from 'lucide-react';
+import {
+  findMatchingServiceByQuery,
+  getThemesForService,
+} from '@/config/service-themes';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -169,11 +173,89 @@ export default function SearchContent() {
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4"
         >
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Find Companies</h1>
-          <p className="mt-2 text-gray-500">Discover verified businesses across categories and locations</p>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Find Companies &amp; Service Themes</h1>
+            <p className="mt-2 text-gray-500">Discover verified businesses or explore website themes tailored for every service</p>
+          </div>
+          <Button asChild variant="outline" className="rounded-xl text-xs font-bold shrink-0">
+            <Link href="/services">
+              <Palette className="h-4 w-4 mr-1.5 text-indigo-600" />
+              All Services &amp; Themes
+              <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+            </Link>
+          </Button>
         </motion.div>
+
+        {(() => {
+          const matchedService =
+            findMatchingServiceByQuery(query) || findMatchingServiceByQuery(category);
+          if (!matchedService) return null;
+          const matchedThemes = getThemesForService(matchedService.slug);
+          return (
+            <div className="mb-8 rounded-2xl border border-indigo-200/80 dark:border-indigo-900/70 bg-white dark:bg-gray-900 p-5 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">{matchedService.icon}</span>
+                  <div>
+                    <div className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                      <Sparkles className="h-3 w-3" />
+                      Service-Wise Themes
+                    </div>
+                    <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">
+                      {matchedService.name} Website Themes ({matchedThemes.length})
+                    </h2>
+                  </div>
+                </div>
+                <Link
+                  href={`/services/${matchedService.slug}`}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  Open Dedicated {matchedService.name} Themes Page
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {matchedThemes.map((theme) => (
+                  <div
+                    key={theme.id}
+                    className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-800 p-2.5 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors bg-slate-50/70 dark:bg-gray-800/50"
+                  >
+                    <img
+                      src={theme.previewImg}
+                      alt={theme.name}
+                      className="h-16 w-20 rounded-lg object-cover shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                        {theme.name}
+                      </h3>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1">
+                        {theme.description}
+                      </p>
+                      <div className="mt-1.5 flex items-center gap-2 text-[11px] font-bold">
+                        <Link
+                          href={`/themes/${theme.id}`}
+                          className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                        >
+                          Preview
+                        </Link>
+                        <span className="text-gray-300">•</span>
+                        <Link
+                          href={`/register/company?template=${theme.id}&category=${encodeURIComponent(matchedService.name)}`}
+                          className="text-emerald-600 dark:text-emerald-400 hover:underline"
+                        >
+                          Use Theme
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         <form onSubmit={handleSearch} className="mb-6 space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">

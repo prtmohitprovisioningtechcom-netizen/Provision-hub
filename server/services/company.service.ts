@@ -12,10 +12,10 @@ function buildSearchQuery(filters: SearchFilters) {
   const params: unknown[] = [];
 
   if (filters.query) {
-    queryStr += ' AND (c.name LIKE ? OR c.description LIKE ?)';
-    countQueryStr += ' AND (c.name LIKE ? OR c.description LIKE ?)';
+    queryStr += ' AND (c.name LIKE ? OR c.description LIKE ? OR c.category LIKE ?)';
+    countQueryStr += ' AND (c.name LIKE ? OR c.description LIKE ? OR c.category LIKE ?)';
     const term = `%${filters.query}%`;
-    params.push(term, term);
+    params.push(term, term, term);
   }
   if (filters.category) {
     queryStr += ' AND c.category = ?';

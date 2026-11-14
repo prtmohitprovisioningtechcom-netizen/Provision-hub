@@ -27,16 +27,9 @@ import { setUser } from '@/store/slices/authSlice';
 export default function CompanyRegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<{name: string, slug: string}[]>([]);
+  const [preselectedCategory, setPreselectedCategory] = useState<string>('');
   const router = useRouter();
   const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    axios.get('/api/categories').then(res => {
-      if (res.data.success) {
-        setCategories(res.data.data);
-      }
-    }).catch(console.error);
-  }, []);
 
   const {
     register,
@@ -44,6 +37,21 @@ export default function CompanyRegisterPage() {
     setValue,
     formState: { errors },
   } = useForm<CompanyRegisterInput>({ resolver: zodResolver(companyRegisterSchema) });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const catParam = params.get('category');
+    if (catParam) {
+      setPreselectedCategory(catParam);
+      setValue('category', catParam);
+    }
+
+    axios.get('/api/categories').then(res => {
+      if (res.data.success) {
+        setCategories(res.data.data);
+      }
+    }).catch(console.error);
+  }, [setValue]);
 
   const onSubmit = async (data: CompanyRegisterInput) => {
     setIsLoading(true);
@@ -118,7 +126,13 @@ export default function CompanyRegisterPage() {
 
               <div>
                 <Label>Business Category *</Label>
-                <Select onValueChange={(v) => setValue('category', v)}>
+                <Select
+                  value={preselectedCategory || undefined}
+                  onValueChange={(v) => {
+                    setPreselectedCategory(v);
+                    setValue('category', v);
+                  }}
+                >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
@@ -168,6 +182,17 @@ export default function CompanyRegisterPage() {
               <Button type="submit" variant="gradient" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Creating...' : 'Create Company Account'}
               </Button>
+
+              <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+                By registering, you agree to Bhartiyebazar&apos;s{' '}
+                <Link href="/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold" target="_blank">
+                  Terms &amp; Conditions
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold" target="_blank">
+                  Privacy Policy
+                </Link>.
+              </p>
             </form>
 
             <p className="mt-6 text-center text-sm text-gray-600">

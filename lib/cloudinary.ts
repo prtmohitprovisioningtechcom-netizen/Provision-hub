@@ -6,7 +6,7 @@ import { saveMediaFromDataUrl, deleteMediaById } from '@/lib/media-storage';
  */
 export async function uploadToCloudinary(
   file: string,
-  folder = 'multi-tenant',
+  folder = 'bhartiyebazar',
 ): Promise<{ url: string; publicId: string }> {
   // folder kept for API compatibility; companyId is extracted by callers when needed.
   // When folder looks like `gallery/{companyId}`, use that id.
@@ -17,7 +17,7 @@ export async function uploadToCloudinary(
 export async function uploadBufferToCloudinary(
   buffer: Buffer,
   mimeType: string,
-  folder = 'multi-tenant',
+  folder = 'bhartiyebazar',
 ): Promise<{ url: string; publicId: string }> {
   const { saveMediaBuffer } = await import('@/lib/media-storage');
   const companyId = folder.includes('/') ? folder.split('/').pop()! : folder;

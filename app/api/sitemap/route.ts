@@ -15,6 +15,10 @@ export async function GET(request: NextRequest) {
     <lastmod>${new Date().toISOString()}</lastmod>
   </sitemap>
   <sitemap>
+    <loc>${baseUrl}/api/sitemap?section=services</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+  </sitemap>
+  <sitemap>
     <loc>${baseUrl}/api/sitemap?section=themes</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
   </sitemap>

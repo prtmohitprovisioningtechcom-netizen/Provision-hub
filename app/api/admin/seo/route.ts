@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
       const [[totalRecordsRes]] = await pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM seo_records');
       const [[categoriesRes]] = await pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM seo_records WHERE type = "category"');
       const [[themesRes]] = await pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM seo_records WHERE type = "theme"');
+      const [[servicesRes]] = await pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM seo_records WHERE type = "service"');
       const [[locationsRes]] = await pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM seo_records WHERE type = "location"');
       const [[publishedRes]] = await pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM seo_records WHERE status = "published"');
       const [[pendingRes]] = await pool.execute<RowDataPacket[]>('SELECT COUNT(*) as count FROM seo_records WHERE status = "pending_approval"');
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest) {
           total: totalRecordsRes.count || 0,
           categories: categoriesRes.count || 0,
           themes: themesRes.count || 0,
+          services: servicesRes.count || 0,
           locations: locationsRes.count || 0,
           keywords: keywordsRes.count || 0,
           published: publishedRes.count || 0,
@@ -206,6 +208,15 @@ export async function POST(request: NextRequest) {
     const body = (await parseBody(request)) as any;
     const action = body?.action;
     const isSuperAdmin = auth.role === 'super_admin';
+
+    // 0. 1-CLICK SYNC ALL SEO (Services, Themes, Categories)
+    if (action === 'sync_all_seo') {
+      if (!isSuperAdmin) return apiError('Only Super Admin can execute bulk sync', 403);
+      await SeoService.syncCategoriesToSeo();
+      await SeoService.syncThemesToSeo();
+      await SeoService.syncServicesToSeo();
+      return apiSuccess({}, 'Successfully synchronized all Categories, Themes, and Services into SEO database!');
+    }
 
     // 1. AI SEO GENERATOR
     if (action === 'ai_generate') {

@@ -10,6 +10,7 @@ let seoTablesInitialized = false;
 // List of all platform themes and locations available from config
 export { PLATFORM_THEMES, TOP_INDIAN_LOCATIONS } from '@/config/seo-constants';
 import { PLATFORM_THEMES, TOP_INDIAN_LOCATIONS } from '@/config/seo-constants';
+import { CORE_SERVICES } from '@/config/service-themes';
 
 export class SeoService {
   /**
@@ -195,9 +196,10 @@ export class SeoService {
       );
     }
 
-    // Auto-sync Categories and Themes
+    // Auto-sync Categories, Themes, and Core Services
     await this.syncCategoriesToSeo();
     await this.syncThemesToSeo();
+    await this.syncServicesToSeo();
     await this.seedLocations();
     await this.seedDefaultTemplates();
 
@@ -363,6 +365,97 @@ export class SeoService {
       }
     } catch (e) {
       console.error('syncThemesToSeo error:', e);
+    }
+  }
+
+  /**
+   * Synchronizes all Core Services into `seo_records`.
+   * Medical Store, Doctor, Hospital, Lawyer, Hotel, Grocery, Electrician, etc.
+   */
+  static async syncServicesToSeo() {
+    try {
+      const servicesToSync = [
+        {
+          slug: 'services',
+          name: 'All Services & Website Themes Hub',
+          description: 'Browse all local business services, verified merchant themes, and online storefront templates.',
+          isHub: true,
+        },
+        ...CORE_SERVICES.map((s) => ({
+          slug: `services/${s.slug}`,
+          name: `${s.name} Website Themes & Services`,
+          description: s.description,
+          icon: s.icon,
+          serviceName: s.name,
+        })),
+        {
+          slug: 'services/other',
+          name: 'Specialty Business Services & Themes',
+          description: 'Custom website themes, tools, and digital solutions for all other local and specialized businesses.',
+          serviceName: 'Specialty Business',
+        },
+      ];
+
+      for (const item of servicesToSync) {
+        const [existing] = await pool.execute<RowDataPacket[]>(
+          'SELECT id FROM seo_records WHERE type = "service" AND targetId = ? LIMIT 1',
+          [item.slug],
+        );
+
+        if (existing.length === 0) {
+          const id = crypto.randomUUID();
+          const metaTitle = item.isHub
+            ? 'All Services & Service-Wise Website Themes | Bhartiyebazar'
+            : `${item.name} | Verified Business Themes - Bhartiyebazar`;
+          const metaDescription = `${item.description} Launch your professional digital storefront on Bhartiyebazar with instant customer inquiries, zero commission, and verified trust badge.`;
+          const focusKeyword = item.isHub ? 'local business services' : `${item.serviceName?.toLowerCase() || item.slug} website theme`;
+          const faqs = [
+            {
+              question: `How do ${item.name} themes help my business grow?`,
+              answer: `Our ${item.name} themes are customized specifically for local customer trust, instant WhatsApp ordering, Google search visibility, and mobile-friendly layouts.`,
+            },
+            {
+              question: `Can I connect my own branding and WhatsApp with this theme?`,
+              answer: `Yes, every theme on Bhartiyebazar supports custom branding, direct WhatsApp integration, and automated QR code standees for your shop counter.`,
+            },
+          ];
+          const schema = {
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            name: item.name,
+            description: metaDescription,
+            provider: { '@type': 'Organization', name: 'Bhartiyebazar', url: 'https://bhartiyebazar.com' },
+            url: `https://bhartiyebazar.com/${item.slug}`,
+          };
+
+          await pool.execute(
+            `INSERT INTO seo_records 
+              (id, type, targetId, targetName, slug, urlPath, metaTitle, metaDescription, focusKeyword, 
+               secondaryKeywords, canonicalUrl, h1, h2, h3, contentBody, faqs, customSchema, inSitemap, sitemapPriority, status, seoScore)
+             VALUES (?, 'service', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0.90, 'published', 96)`,
+            [
+              id,
+              item.slug,
+              item.name,
+              item.slug,
+              `/${item.slug}`,
+              metaTitle,
+              metaDescription,
+              focusKeyword,
+              JSON.stringify([`${item.slug} online`, `${item.slug} directory`, 'verified vyapari themes', 'local shop website']),
+              `https://bhartiyebazar.com/${item.slug}`,
+              item.name,
+              'High Converting & Responsive Business Architecture',
+              'Fast Loading with Zero Commission Customer Inquiries',
+              `<p>${metaDescription}</p>`,
+              JSON.stringify(faqs),
+              JSON.stringify(schema),
+            ],
+          );
+        }
+      }
+    } catch (e) {
+      console.error('syncServicesToSeo error:', e);
     }
   }
 
@@ -614,6 +707,23 @@ export class SeoService {
       }));
     }
 
+    if (section === 'services') {
+      await this.syncServicesToSeo().catch(console.error);
+
+      const [rows] = await pool.execute<RowDataPacket[]>(
+        `SELECT urlPath, updatedAt, sitemapPriority, sitemapChangeFreq 
+         FROM seo_records 
+         WHERE type = 'service' AND status = 'published' AND inSitemap = 1 AND indexDirective LIKE '%index%' 
+         ORDER BY updatedAt DESC`,
+      );
+      return rows.map((r) => ({
+        url: `${baseUrl}${r.urlPath}`,
+        lastModified: r.updatedAt ? new Date(r.updatedAt).toISOString() : new Date().toISOString(),
+        priority: Number(r.sitemapPriority || 0.9),
+        changeFreq: r.sitemapChangeFreq || 'weekly',
+      }));
+    }
+
     if (section === 'companies') {
       const [rows] = await pool.execute<RowDataPacket[]>(
         `SELECT slug, updatedAt FROM companies WHERE status = 'approved' ORDER BY updatedAt DESC LIMIT 5000`,
@@ -629,10 +739,13 @@ export class SeoService {
     // Default static core pages
     return [
       { url: `${baseUrl}`, lastModified: new Date().toISOString(), priority: 1.0, changeFreq: 'daily' },
+      { url: `${baseUrl}/services`, lastModified: new Date().toISOString(), priority: 0.95, changeFreq: 'daily' },
       { url: `${baseUrl}/search`, lastModified: new Date().toISOString(), priority: 0.9, changeFreq: 'daily' },
       { url: `${baseUrl}/post-requirement`, lastModified: new Date().toISOString(), priority: 0.8, changeFreq: 'monthly' },
       { url: `${baseUrl}/vyapari-software`, lastModified: new Date().toISOString(), priority: 0.85, changeFreq: 'weekly' },
-      { url: `${baseUrl}/sitemap`, lastModified: new Date().toISOString(), priority: 0.6, changeFreq: 'weekly' },
+      { url: `${baseUrl}/terms`, lastModified: new Date().toISOString(), priority: 0.7, changeFreq: 'monthly' },
+      { url: `${baseUrl}/privacy`, lastModified: new Date().toISOString(), priority: 0.7, changeFreq: 'monthly' },
+      { url: `${baseUrl}/sitemap`, lastModified: new Date().toISOString(), priority: 0.65, changeFreq: 'weekly' },
     ];
   }
 }

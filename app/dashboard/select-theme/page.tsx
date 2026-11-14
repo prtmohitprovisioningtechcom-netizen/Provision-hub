@@ -7,11 +7,13 @@ import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/comp
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
 import { THEME_OPTIONS } from '@/components/themes/ThemeRenderer';
+import { ALL_SERVICES, getThemesForService, getThemeServiceNames } from '@/config/service-themes';
 import { LAYOUT_OPTIONS, type LayoutId } from '@/lib/layout-id';
 
 export default function SelectThemePage() {
   const router = useRouter();
   const [step, setStep] = useState<'theme' | 'layout' | 'structure'>('theme');
+  const [serviceFilter, setServiceFilter] = useState<string>('all');
   const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
   const [selectedLayoutId, setSelectedLayoutId] = useState<LayoutId>('1');
   const [selectedWebsiteType, setSelectedWebsiteType] = useState<'single_page' | 'multi_page'>('single_page');
@@ -76,9 +78,44 @@ export default function SelectThemePage() {
 
       {step === 'theme' ? (
         <>
+          <div className="mb-7 flex flex-wrap items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setServiceFilter('all')}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all border cursor-pointer ${
+                serviceFilter === 'all'
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                  : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-indigo-300'
+              }`}
+            >
+              All Themes ({THEME_OPTIONS.length})
+            </button>
+            {ALL_SERVICES.map((svc) => {
+              const count = getThemesForService(svc.slug).length;
+              const active = serviceFilter === svc.slug;
+              return (
+                <button
+                  key={svc.slug}
+                  type="button"
+                  onClick={() => setServiceFilter(svc.slug)}
+                  className={`inline-flex items-center gap-1 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all border cursor-pointer ${
+                    active
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                      : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-indigo-300'
+                  }`}
+                >
+                  <span>{svc.icon}</span>
+                  <span>{svc.name}</span>
+                  <span className="opacity-75">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {THEME_OPTIONS.map((theme) => {
+            {getThemesForService(serviceFilter).map((theme) => {
               const isSelected = selectedThemeId === theme.id;
+              const serviceBadges = getThemeServiceNames(theme);
               return (
                 <Card
                   key={theme.id}
@@ -117,6 +154,16 @@ export default function SelectThemePage() {
                     </div>
                     <CardTitle className="text-xl">{theme.name}</CardTitle>
                     <CardDescription className="mt-2 line-clamp-2">{theme.description}</CardDescription>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {serviceBadges.map((s) => (
+                        <span
+                          key={s}
+                          className="rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
                   </CardHeader>
 
                   <CardFooter className="pt-0">

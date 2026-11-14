@@ -3,6 +3,7 @@ import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import { siteConfig } from '@/config/site';
 import { PLATFORM_THEMES } from '@/config/seo-constants';
+import { ALL_SERVICES } from '@/config/service-themes';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Always fetch fresh records from database on every request
@@ -32,10 +33,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 1. Core static platform pages
   addUrl('/', 1.0, 'daily');
+  addUrl('/services', 0.95, 'daily');
+  for (const svc of ALL_SERVICES) {
+    addUrl(`/services/${svc.slug}`, 0.9, 'weekly');
+  }
   addUrl('/search', 0.9, 'daily');
   addUrl('/post-requirement', 0.85, 'weekly');
   addUrl('/vyapari-software', 0.85, 'weekly');
   addUrl('/sitemap', 0.6, 'weekly');
+  addUrl('/terms', 0.7, 'monthly');
+  addUrl('/privacy', 0.7, 'monthly');
 
   try {
     // 2. Fetch all published, indexable SEO records (Categories, Themes, Locations, Services, Custom Pages)

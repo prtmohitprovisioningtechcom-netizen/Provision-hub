@@ -79,6 +79,7 @@ interface SeoDashboardData {
     total: number;
     categories: number;
     themes: number;
+    services?: number;
     locations: number;
     keywords: number;
     published: number;
@@ -91,12 +92,13 @@ interface SeoDashboardData {
 
 export default function SuperAdminSeoPage() {
   const [activeTab, setActiveTab] = useState<
-    'all' | 'category' | 'theme' | 'location' | 'pending' | 'keywords' | 'technical' | 'settings'
+    'all' | 'service' | 'category' | 'theme' | 'location' | 'pending' | 'keywords' | 'technical' | 'settings'
   >('all');
 
   const [dashboardData, setDashboardData] = useState<SeoDashboardData | null>(null);
   const [records, setRecords] = useState<SeoRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -180,6 +182,24 @@ export default function SuperAdminSeoPage() {
   useEffect(() => {
     fetchSeoData();
   }, [fetchSeoData]);
+
+  // 1-Click Sync All Services, Themes & Categories into SEO Engine
+  const handleSyncAllSeo = async () => {
+    setIsSyncingAll(true);
+    try {
+      const { data } = await api.post('/api/admin/seo', { action: 'sync_all_seo' });
+      if (data?.success) {
+        toast.success('Successfully synchronized all Services, Themes, and Categories into SEO database!');
+        await fetchSeoData();
+      } else {
+        toast.error(data?.message || 'Sync failed');
+      }
+    } catch {
+      toast.error('Failed to sync SEO records');
+    } finally {
+      setIsSyncingAll(false);
+    }
+  };
 
   // Open Edit Modal
   const handleOpenEdit = (rec: SeoRecord) => {
@@ -392,35 +412,68 @@ export default function SuperAdminSeoPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="rounded-3xl bg-linear-to-r from-slate-950 via-indigo-950 to-slate-900 text-white p-6 sm:p-8 shadow-xl border border-indigo-900/60">
+      <div className="rounded-3xl bg-linear-to-r from-slate-950 via-indigo-950 to-slate-900 text-white p-5 sm:p-7 lg:p-8 shadow-xl border border-indigo-900/60">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 px-3.5 py-1 text-xs font-bold text-indigo-300 border border-indigo-400/30 mb-2">
               <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
               <span>Enterprise VIP &bull; Dynamic SEO Master Control</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black">
               SEO Master Control &amp; Dynamic Engine
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-              Centralized SEO management for Categories, Platform Themes, Locations, Keywords, and AI Page Generation. Every published page is automatically included in dynamic XML sitemaps.
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              Centralized SEO management for Services, Platform Themes, Categories, Locations, Keywords, and AI Page Generation. Every published page is automatically indexed into live XML and HTML sitemaps.
             </p>
+
+            {/* Live Sitemap Quick Feeds */}
+            <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-indigo-900/50">
+              <span className="text-[11px] font-bold text-indigo-300">Live Feeds:</span>
+              <a
+                href="/sitemap"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-colors"
+              >
+                <span>📄 HTML Visual Sitemap</span>
+                <ExternalLink className="h-3 w-3 text-indigo-300" />
+              </a>
+              <a
+                href="/sitemap.xml"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-emerald-300 transition-colors"
+              >
+                <span>🤖 Dynamic XML Feed</span>
+                <ExternalLink className="h-3 w-3 text-emerald-400" />
+              </a>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <Button
               type="button"
-              onClick={() => setIsBulkModalOpen(true)}
-              className="rounded-xl bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs h-10 shadow-md gap-1.5"
+              onClick={handleSyncAllSeo}
+              disabled={isSyncingAll}
+              className="rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-xs h-9 sm:h-10 shadow-md gap-1.5 w-full sm:w-auto"
             >
-              <Zap className="h-4 w-4" />
-              ⚡ Bulk Location SEO Generator
+              <RefreshCw className={cn('h-3.5 w-3.5', isSyncingAll && 'animate-spin')} />
+              {isSyncingAll ? 'Syncing...' : '🔄 Auto-Sync Services & Themes'}
             </Button>
 
             <Button
               type="button"
-              onClick={() => handleOpenCreate('category')}
-              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs h-10 shadow-md gap-1.5"
+              onClick={() => setIsBulkModalOpen(true)}
+              className="rounded-xl bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs h-9 sm:h-10 shadow-md gap-1.5 w-full sm:w-auto"
+            >
+              <Zap className="h-4 w-4" />
+              ⚡ Bulk Location Generator
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => handleOpenCreate('service')}
+              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs h-9 sm:h-10 shadow-md gap-1.5 flex-1 sm:flex-none"
             >
               <Plus className="h-4 w-4" />
               New SEO Record
@@ -430,7 +483,7 @@ export default function SuperAdminSeoPage() {
               type="button"
               variant="outline"
               onClick={fetchSeoData}
-              className="rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold text-xs h-10"
+              className="rounded-xl border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold text-xs h-9 sm:h-10 shrink-0"
             >
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
             </Button>
@@ -438,75 +491,84 @@ export default function SuperAdminSeoPage() {
         </div>
       </div>
 
-      {/* 8 KPI Metrics Cards */}
+      {/* 9 KPI Metrics Cards */}
       {dashboardData && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3.5 shadow-xs text-center">
-            <div className="text-[10px] font-bold uppercase text-gray-500">Total SEO Pages</div>
-            <div className="text-xl font-black text-gray-900 dark:text-white mt-0.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-2.5 sm:gap-3">
+          <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 shadow-xs text-center">
+            <div className="text-[10px] font-bold uppercase text-gray-500">Total Pages</div>
+            <div className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mt-0.5">
               {dashboardData.stats.total}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/20 p-3.5 shadow-xs text-center">
+          <div className="rounded-2xl border border-teal-200 dark:border-teal-900 bg-teal-50/50 dark:bg-teal-950/20 p-3 shadow-xs text-center">
+            <div className="text-[10px] font-bold uppercase text-teal-700 dark:text-teal-300">
+              Services
+            </div>
+            <div className="text-lg sm:text-xl font-black text-teal-700 dark:text-teal-300 mt-0.5">
+              {dashboardData.stats.services || 13}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/20 p-3 shadow-xs text-center">
             <div className="text-[10px] font-bold uppercase text-indigo-700 dark:text-indigo-300">
               Categories
             </div>
-            <div className="text-xl font-black text-indigo-700 dark:text-indigo-300 mt-0.5">
+            <div className="text-lg sm:text-xl font-black text-indigo-700 dark:text-indigo-300 mt-0.5">
               {dashboardData.stats.categories}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-purple-200 dark:border-purple-900 bg-purple-50/50 dark:bg-purple-950/20 p-3.5 shadow-xs text-center">
+          <div className="rounded-2xl border border-purple-200 dark:border-purple-900 bg-purple-50/50 dark:bg-purple-950/20 p-3 shadow-xs text-center">
             <div className="text-[10px] font-bold uppercase text-purple-700 dark:text-purple-300">
               Themes
             </div>
-            <div className="text-xl font-black text-purple-700 dark:text-purple-300 mt-0.5">
+            <div className="text-lg sm:text-xl font-black text-purple-700 dark:text-purple-300 mt-0.5">
               {dashboardData.stats.themes}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-cyan-200 dark:border-cyan-900 bg-cyan-50/50 dark:bg-cyan-950/20 p-3.5 shadow-xs text-center">
+          <div className="rounded-2xl border border-cyan-200 dark:border-cyan-900 bg-cyan-50/50 dark:bg-cyan-950/20 p-3 shadow-xs text-center">
             <div className="text-[10px] font-bold uppercase text-cyan-700 dark:text-cyan-300">
               Locations
             </div>
-            <div className="text-xl font-black text-cyan-700 dark:text-cyan-300 mt-0.5">
+            <div className="text-lg sm:text-xl font-black text-cyan-700 dark:text-cyan-300 mt-0.5">
               {dashboardData.stats.locations}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/20 p-3.5 shadow-xs text-center">
+          <div className="rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/20 p-3 shadow-xs text-center">
             <div className="text-[10px] font-bold uppercase text-emerald-700 dark:text-emerald-300">
               Published
             </div>
-            <div className="text-xl font-black text-emerald-700 dark:text-emerald-300 mt-0.5">
+            <div className="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-300 mt-0.5">
               {dashboardData.stats.published}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 p-3.5 shadow-xs text-center">
+          <div className="rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 p-3 shadow-xs text-center">
             <div className="text-[10px] font-bold uppercase text-amber-700 dark:text-amber-300">
-              Pending Approval
+              Approvals
             </div>
-            <div className="text-xl font-black text-amber-700 dark:text-amber-300 mt-0.5">
+            <div className="text-lg sm:text-xl font-black text-amber-700 dark:text-amber-300 mt-0.5">
               {dashboardData.stats.pending}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-pink-200 dark:border-pink-900 bg-pink-50/50 dark:bg-pink-950/20 p-3.5 shadow-xs text-center">
+          <div className="rounded-2xl border border-pink-200 dark:border-pink-900 bg-pink-50/50 dark:bg-pink-950/20 p-3 shadow-xs text-center">
             <div className="text-[10px] font-bold uppercase text-pink-700 dark:text-pink-300">
               Keywords
             </div>
-            <div className="text-xl font-black text-pink-700 dark:text-pink-300 mt-0.5">
+            <div className="text-lg sm:text-xl font-black text-pink-700 dark:text-pink-300 mt-0.5">
               {dashboardData.stats.keywords}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 p-3.5 shadow-xs text-center">
+          <div className="col-span-2 sm:col-span-1 rounded-2xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 p-3 shadow-xs text-center">
             <div className="text-[10px] font-bold uppercase text-emerald-800 dark:text-emerald-300">
               SEO Health
             </div>
-            <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
+            <div className="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
               {dashboardData.stats.healthScore}%
             </div>
           </div>
@@ -515,7 +577,7 @@ export default function SuperAdminSeoPage() {
 
       {/* Navigation Sub-Tabs */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-800 pb-3">
-        <div className="flex items-center gap-1.5 overflow-x-auto text-xs font-bold p-1 rounded-2xl bg-gray-100 dark:bg-gray-800/80">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs font-bold p-1 rounded-2xl bg-gray-100 dark:bg-gray-800/80 -mx-1 px-1">
           <button
             type="button"
             onClick={() => setActiveTab('all')}
@@ -523,10 +585,23 @@ export default function SuperAdminSeoPage() {
               'px-3 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap',
               activeTab === 'all'
                 ? 'bg-white dark:bg-gray-900 text-indigo-600 shadow-xs'
-                : 'text-gray-600 dark:text-gray-400',
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
             )}
           >
             All Records
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('service')}
+            className={cn(
+              'px-3 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1',
+              activeTab === 'service'
+                ? 'bg-teal-600 text-white shadow-xs'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
+            )}
+          >
+            <span>🩺 Services SEO (13)</span>
           </button>
 
           <button
@@ -536,7 +611,7 @@ export default function SuperAdminSeoPage() {
               'px-3 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1',
               activeTab === 'category'
                 ? 'bg-indigo-600 text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-400',
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
             )}
           >
             <Tag className="h-3 w-3" /> Category SEO
@@ -549,10 +624,10 @@ export default function SuperAdminSeoPage() {
               'px-3 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1',
               activeTab === 'theme'
                 ? 'bg-purple-600 text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-400',
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
             )}
           >
-            <Layers className="h-3 w-3" /> Theme SEO (11 Themes)
+            <Layers className="h-3 w-3" /> Theme SEO (18)
           </button>
 
           <button
@@ -562,7 +637,7 @@ export default function SuperAdminSeoPage() {
               'px-3 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1',
               activeTab === 'location'
                 ? 'bg-cyan-600 text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-400',
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
             )}
           >
             <MapPin className="h-3 w-3" /> Location SEO
@@ -575,7 +650,7 @@ export default function SuperAdminSeoPage() {
               'px-3 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1',
               activeTab === 'pending'
                 ? 'bg-amber-500 text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-400',
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
             )}
           >
             <Clock className="h-3 w-3" /> Approvals ({dashboardData?.stats.pending || 0})
@@ -588,10 +663,10 @@ export default function SuperAdminSeoPage() {
               'px-3 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1',
               activeTab === 'keywords'
                 ? 'bg-pink-600 text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-400',
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
             )}
           >
-            <Key className="h-3 w-3" /> Keywords &amp; Cannibalization
+            <Key className="h-3 w-3" /> Keywords
           </button>
 
           <button
@@ -601,10 +676,10 @@ export default function SuperAdminSeoPage() {
               'px-3 py-1.5 rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1',
               activeTab === 'settings'
                 ? 'bg-slate-800 text-white shadow-xs'
-                : 'text-gray-600 dark:text-gray-400',
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
             )}
           >
-            <Settings className="h-3 w-3" /> Global &amp; Robots.txt
+            <Settings className="h-3 w-3" /> Global &amp; Robots
           </button>
         </div>
 
@@ -615,7 +690,7 @@ export default function SuperAdminSeoPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search target, slug, keyword..."
-              className="pl-9 h-9 rounded-xl text-xs bg-white dark:bg-gray-900"
+              className="pl-9 h-9 rounded-xl text-xs bg-white dark:bg-gray-900 w-full"
             />
           </div>
         )}
@@ -752,177 +827,328 @@ export default function SuperAdminSeoPage() {
           </form>
         </div>
       ) : (
-        /* ==================== SEO RECORDS TABLE ==================== */
-        <Card className="rounded-3xl border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        /* ==================== SEO RECORDS DUAL-VIEW (TABLE + MOBILE CARDS) ==================== */
+        <Card className="rounded-2xl sm:rounded-3xl border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-12 text-center text-sm text-gray-500">
+              <div className="p-10 sm:p-12 text-center text-sm text-gray-500">
                 <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-600" />
                 Loading SEO records...
               </div>
             ) : records.length === 0 ? (
-              <div className="p-12 text-center text-gray-500 space-y-2">
+              <div className="p-10 sm:p-12 text-center text-gray-500 space-y-2">
                 <Globe className="h-10 w-10 mx-auto text-gray-300" />
-                <p className="font-bold">No SEO records found</p>
-                <p className="text-xs">Create a new record or use the AI generator.</p>
+                <p className="font-bold text-sm sm:text-base text-gray-900 dark:text-white">No SEO records found</p>
+                <p className="text-xs text-gray-500">Click &ldquo;Auto-Sync Services &amp; Themes&rdquo; or create a new record.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs sm:text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 dark:bg-gray-900/60 text-left uppercase text-[11px] font-bold text-gray-500 border-b border-gray-200 dark:border-gray-800">
-                      <th className="py-3 px-4">Target &amp; Type</th>
-                      <th className="py-3 px-4">Public URL Path</th>
-                      <th className="py-3 px-4">Focus Keyword</th>
-                      <th className="py-3 px-4">SEO Health</th>
-                      <th className="py-3 px-4">Status &amp; Sitemap</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                    {records.map((r) => {
-                      const isLowScore = r.seoScore < 70;
-                      return (
-                        <tr key={r.id} className="hover:bg-gray-50/70 dark:hover:bg-gray-900/40 transition-colors">
-                          {/* Target */}
-                          <td className="py-3.5 px-4">
+              <div>
+                {/* Desktop View: Full Data Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-xs sm:text-sm">
+                    <thead>
+                      <tr className="bg-gray-50 dark:bg-gray-900/60 text-left uppercase text-[10.5px] font-bold text-gray-500 border-b border-gray-200 dark:border-gray-800">
+                        <th className="py-3 px-4">Target &amp; Type</th>
+                        <th className="py-3 px-4">Public URL Path</th>
+                        <th className="py-3 px-4">Focus Keyword</th>
+                        <th className="py-3 px-4">SEO Health</th>
+                        <th className="py-3 px-4">Status &amp; Sitemap</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                      {records.map((r) => {
+                        const isLowScore = r.seoScore < 70;
+                        return (
+                          <tr key={r.id} className="hover:bg-gray-50/70 dark:hover:bg-gray-900/40 transition-colors">
+                            {/* Target */}
+                            <td className="py-3 px-4">
+                              <div className="font-black text-gray-900 dark:text-white text-xs sm:text-sm">
+                                {r.targetName}
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span
+                                  className={cn(
+                                    'rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider',
+                                    r.type === 'service'
+                                      ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
+                                      : r.type === 'category'
+                                        ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                                        : r.type === 'theme'
+                                          ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                                          : r.type === 'location'
+                                            ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300'
+                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+                                  )}
+                                >
+                                  {r.type}
+                                </span>
+                                {r.faqs && r.faqs.length > 0 && (
+                                  <span className="text-[10px] text-gray-400">
+                                    {r.faqs.length} FAQs
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* URL Path */}
+                            <td className="py-3 px-4 font-mono text-xs">
+                              <a
+                                href={r.urlPath}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1"
+                              >
+                                <span>{r.urlPath}</span>
+                                <ExternalLink className="h-3 w-3 shrink-0" />
+                              </a>
+                            </td>
+
+                            {/* Keyword */}
+                            <td className="py-3 px-4 font-bold text-gray-700 dark:text-gray-300">
+                              {r.focusKeyword || '—'}
+                            </td>
+
+                            {/* SEO Health Score */}
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={cn(
+                                    'h-7 w-7 rounded-full flex items-center justify-center font-black text-xs',
+                                    r.seoScore >= 85
+                                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                      : r.seoScore >= 70
+                                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                        : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
+                                  )}
+                                >
+                                  {r.seoScore}
+                                </div>
+                                {isLowScore && (
+                                  <span className="text-[10px] text-rose-600 font-bold">Needs Fix</span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Status */}
+                            <td className="py-3 px-4">
+                              <div className="space-y-1">
+                                <span
+                                  className={cn(
+                                    'inline-block rounded-full px-2 py-0.5 text-[9.5px] font-black uppercase',
+                                    r.status === 'published'
+                                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                      : r.status === 'pending_approval'
+                                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 animate-pulse'
+                                        : r.status === 'rejected'
+                                          ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                                          : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+                                  )}
+                                >
+                                  {r.status.replace('_', ' ')}
+                                </span>
+                                {r.inSitemap && (
+                                  <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
+                                    <Check className="h-3 w-3" /> In Sitemap
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="py-3 px-4 text-right">
+                              <div className="inline-flex items-center justify-end gap-1.5 flex-wrap">
+                                {r.status === 'pending_approval' ? (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleApproveRecord(r.id)}
+                                      className="h-7 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
+                                    >
+                                      Approve
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleRejectRecord(r.id)}
+                                      className="h-7 rounded-lg text-rose-600 text-xs font-bold"
+                                    >
+                                      Reject
+                                    </Button>
+                                  </>
+                                ) : null}
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleOpenEdit(r)}
+                                  className="h-7 rounded-lg text-xs font-bold"
+                                >
+                                  <Edit3 className="h-3 w-3 mr-1" /> Edit
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteRecord(r.id, r.targetName)}
+                                  className="h-7 rounded-lg text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile & Tablet View: Clean Interactive Card List */}
+                <div className="block md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+                  {records.map((r) => {
+                    return (
+                      <div key={r.id} className="p-3.5 space-y-2.5">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
                             <div className="font-black text-gray-900 dark:text-white text-sm">
                               {r.targetName}
                             </div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
+                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                               <span
                                 className={cn(
                                   'rounded-md px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider',
-                                  r.type === 'category'
-                                    ? 'bg-indigo-100 text-indigo-800'
-                                    : r.type === 'theme'
-                                      ? 'bg-purple-100 text-purple-800'
-                                      : r.type === 'location'
-                                        ? 'bg-cyan-100 text-cyan-800'
-                                        : 'bg-gray-100 text-gray-800',
+                                  r.type === 'service'
+                                    ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
+                                    : r.type === 'category'
+                                      ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                                      : r.type === 'theme'
+                                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                                        : r.type === 'location'
+                                          ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300'
+                                          : 'bg-gray-100 text-gray-800',
                                 )}
                               >
                                 {r.type}
                               </span>
-                              {r.faqs && r.faqs.length > 0 && (
-                                <span className="text-[10px] text-gray-400">
-                                  {r.faqs.length} FAQs
-                                </span>
-                              )}
-                            </div>
-                          </td>
-
-                          {/* URL Path */}
-                          <td className="py-3.5 px-4 font-mono text-xs">
-                            <a
-                              href={r.urlPath}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-indigo-600 hover:underline flex items-center gap-1"
-                            >
-                              {r.urlPath}
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </td>
-
-                          {/* Keyword */}
-                          <td className="py-3.5 px-4 font-bold text-gray-700 dark:text-gray-300">
-                            {r.focusKeyword || '—'}
-                          </td>
-
-                          {/* SEO Health Score */}
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={cn(
-                                  'h-7 w-7 rounded-full flex items-center justify-center font-black text-xs',
-                                  r.seoScore >= 85
-                                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                    : r.seoScore >= 70
-                                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                                      : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
-                                )}
-                              >
-                                {r.seoScore}
-                              </div>
-                              {isLowScore && (
-                                <span className="text-[10px] text-rose-600 font-bold">Needs Fix</span>
-                              )}
-                            </div>
-                          </td>
-
-                          {/* Status */}
-                          <td className="py-3.5 px-4">
-                            <div className="space-y-1">
                               <span
                                 className={cn(
-                                  'inline-block rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase',
+                                  'rounded-full px-2 py-0.5 text-[9px] font-bold uppercase',
                                   r.status === 'published'
-                                    ? 'bg-emerald-100 text-emerald-800'
-                                    : r.status === 'pending_approval'
-                                      ? 'bg-amber-100 text-amber-800 animate-pulse'
-                                      : r.status === 'rejected'
-                                        ? 'bg-rose-100 text-rose-800'
-                                        : 'bg-gray-100 text-gray-800',
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                    : 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
                                 )}
                               >
                                 {r.status.replace('_', ' ')}
                               </span>
                               {r.inSitemap && (
-                                <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
-                                  <Check className="h-3 w-3" /> In Sitemap
-                                </div>
+                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
+                                  <Check className="h-3 w-3" /> Sitemap
+                                </span>
                               )}
                             </div>
-                          </td>
+                          </div>
 
-                          {/* Actions */}
-                          <td className="py-3.5 px-4 text-right">
-                            <div className="inline-flex items-center justify-end gap-1.5 flex-wrap">
-                              {r.status === 'pending_approval' ? (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleApproveRecord(r.id)}
-                                    className="h-7 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
-                                  >
-                                    Approve
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleRejectRecord(r.id)}
-                                    className="h-7 rounded-lg text-rose-600 text-xs font-bold"
-                                  >
-                                    Reject
-                                  </Button>
-                                </>
-                              ) : null}
+                          <div
+                            className={cn(
+                              'h-8 w-8 rounded-full flex flex-col items-center justify-center font-black text-xs shrink-0',
+                              r.seoScore >= 85
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                : r.seoScore >= 70
+                                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                  : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
+                            )}
+                          >
+                            <span>{r.seoScore}</span>
+                          </div>
+                        </div>
 
+                        {/* URL & Keyword */}
+                        <div className="text-xs space-y-1 bg-gray-50 dark:bg-gray-800/50 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">
+                          <div className="font-mono text-[11px] text-indigo-600 dark:text-indigo-400 flex items-center gap-1 break-all">
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                            <a href={r.urlPath} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                              {r.urlPath}
+                            </a>
+                          </div>
+                          {r.focusKeyword && (
+                            <div className="text-[11px] text-gray-600 dark:text-gray-400">
+                              <span className="font-semibold text-gray-800 dark:text-gray-200">Focus:</span> {r.focusKeyword}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Mobile Actions */}
+                        <div className="flex items-center gap-1.5 pt-1">
+                          {r.status === 'pending_approval' && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => handleApproveRecord(r.id)}
+                                className="flex-1 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold"
+                              >
+                                Approve
+                              </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleOpenEdit(r)}
-                                className="h-7 rounded-lg text-xs font-bold"
+                                onClick={() => handleRejectRecord(r.id)}
+                                className="flex-1 h-8 rounded-lg text-rose-600 text-xs font-bold"
                               >
-                                <Edit3 className="h-3 w-3 mr-1" /> Edit
+                                Reject
                               </Button>
+                            </>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleOpenEdit(r)}
+                            className="flex-1 h-8 rounded-lg text-xs font-bold"
+                          >
+                            <Edit3 className="h-3 w-3 mr-1" /> Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteRecord(r.id, r.targetName)}
+                            className="h-8 w-8 p-0 rounded-lg text-rose-600 hover:bg-rose-50"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
 
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteRecord(r.id, r.targetName)}
-                                className="h-7 rounded-lg text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between p-3 sm:p-4 border-t border-gray-100 dark:border-gray-800 text-xs">
+                    <span className="text-gray-500">
+                      Page <strong className="text-gray-900 dark:text-white">{page}</strong> of <strong className="text-gray-900 dark:text-white">{totalPages}</strong>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={page <= 1}
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        className="h-7 rounded-lg text-xs font-semibold"
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={page >= totalPages}
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        className="h-7 rounded-lg text-xs font-semibold"
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
@@ -942,7 +1168,7 @@ export default function SuperAdminSeoPage() {
               initial={{ scale: 0.94, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.94, opacity: 0 }}
-              className="relative w-full max-w-lg rounded-3xl bg-white dark:bg-gray-900 border-2 border-indigo-600 p-6 sm:p-7 shadow-2xl text-left"
+              className="relative w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white dark:bg-gray-900 border-2 border-indigo-600 p-4 sm:p-7 shadow-2xl text-left my-2 sm:my-6 max-h-[92vh] overflow-y-auto"
             >
               <button
                 type="button"
@@ -1042,7 +1268,7 @@ export default function SuperAdminSeoPage() {
               initial={{ scale: 0.94, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.94, opacity: 0 }}
-              className="relative w-full max-w-3xl rounded-3xl bg-white dark:bg-gray-900 border-2 border-indigo-600 p-6 sm:p-7 shadow-2xl text-left my-8 max-h-[90vh] overflow-y-auto"
+              className="relative w-full max-w-3xl rounded-2xl sm:rounded-3xl bg-white dark:bg-gray-900 border-2 border-indigo-600 p-4 sm:p-7 shadow-2xl text-left my-2 sm:my-8 max-h-[92vh] overflow-y-auto"
             >
               <button
                 type="button"

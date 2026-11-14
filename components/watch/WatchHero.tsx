@@ -1,10 +1,26 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Sparkles, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+const HERO_BANNERS = [
+  {
+    src: '/hero-vyapari-bg.jpg',
+    alt: 'Bhartiyebazar Indian Merchant Digital Storefront Banner 1',
+  },
+  {
+    src: '/hero-banner-2.jpg',
+    alt: 'Bhartiyebazar Indian Business Owner Mobile Dashboard Banner 2',
+  },
+  {
+    src: '/hero-banner-3.jpg',
+    alt: 'Bhartiyebazar Modern Store & Clinic Billing Counter Banner 3',
+  },
+] as const;
 
 export function WatchHero({
   config,
@@ -21,6 +37,22 @@ export function WatchHero({
   showTemplates?: boolean;
 }) {
   const { t } = useLanguage();
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % HERO_BANNERS.length);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, [activeSlide]);
+
+  const prevSlide = () => {
+    setActiveSlide((prev) => (prev - 1 + HERO_BANNERS.length) % HERO_BANNERS.length);
+  };
+
+  const nextSlide = () => {
+    setActiveSlide((prev) => (prev + 1) % HERO_BANNERS.length);
+  };
 
   const titleLine1 = t('hero.titleLine1');
   const titleLine2 = t('hero.titleLine2');
@@ -45,22 +77,30 @@ export function WatchHero({
     secondaryLink === '#templates' ? t('hero.availableThemes') : 'Browse Companies';
 
   return (
-    <section className="relative overflow-hidden min-h-[480px] sm:min-h-[560px] lg:min-h-[640px] flex items-center py-6 sm:py-10 lg:py-14">
-      {/* 1. Full Hero Background Image - Positioned from top right so head/store are NEVER cut by navbar */}
-      <div 
-        className="absolute inset-0 pointer-events-none transition-all duration-700 select-none"
-        style={{
-          backgroundImage: "url('/hero-vyapari-bg.jpg')",
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: 'cover',
-          backgroundPosition: 'right 0% top 0%',
-        }}
-      />
+    <section
+      className="relative overflow-hidden min-h-[480px] sm:min-h-[560px] lg:min-h-[640px] flex items-center py-6 sm:py-10 lg:py-14"
+    >
+      {/* 1. Three-Banner Smooth Crossfade Background Carousel */}
+      {HERO_BANNERS.map((banner, idx) => (
+        <div
+          key={banner.src}
+          aria-hidden={idx !== activeSlide}
+          className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ease-in-out select-none ${
+            idx === activeSlide ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{
+            backgroundImage: `url('${banner.src}')`,
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            backgroundPosition: 'right 0% top 0%',
+          }}
+        />
+      ))}
 
       {/* 2. Responsive Scrim: Smooth left-to-right fade leaving merchant vivid and text 100% readable */}
       <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/80 sm:via-slate-950/55 lg:via-slate-950/25 to-transparent pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent sm:hidden pointer-events-none" />
-      
+
       {/* Bottom feathering into VyapariTicker */}
       <div className="absolute inset-x-0 bottom-0 h-16 sm:h-20 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent pointer-events-none" />
 
@@ -163,6 +203,43 @@ export function WatchHero({
           {/* Right Column: Open space to highlight the merchant and store visual */}
           <div className="hidden lg:flex lg:col-span-4 xl:col-span-5 pointer-events-none" />
         </div>
+      </div>
+
+      {/* 4. Subtle 3-Banner Carousel Controls */}
+      <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-8 z-20 flex items-center gap-2 rounded-full border border-white/15 bg-slate-950/70 backdrop-blur-md px-2.5 py-1.5 shadow-lg">
+        <button
+          type="button"
+          onClick={prevSlide}
+          aria-label="Previous hero banner"
+          className="flex h-6 w-6 items-center justify-center rounded-full text-white/80 hover:bg-white/15 hover:text-white transition-colors cursor-pointer"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+        </button>
+
+        <div className="flex items-center gap-1.5 px-1">
+          {HERO_BANNERS.map((banner, idx) => (
+            <button
+              key={banner.src}
+              type="button"
+              onClick={() => setActiveSlide(idx)}
+              aria-label={`Show hero banner ${idx + 1}`}
+              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                idx === activeSlide
+                  ? 'w-6 bg-amber-400'
+                  : 'w-2 bg-white/40 hover:bg-white/70'
+              }`}
+            />
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={nextSlide}
+          aria-label="Next hero banner"
+          className="flex h-6 w-6 items-center justify-center rounded-full text-white/80 hover:bg-white/15 hover:text-white transition-colors cursor-pointer"
+        >
+          <ChevronRight className="h-3.5 w-3.5" />
+        </button>
       </div>
     </section>
   );
